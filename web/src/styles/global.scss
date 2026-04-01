@@ -1,0 +1,267 @@
+/* 全局样式 */
+@use './variables.scss' as *;
+@use './reset.scss';
+
+/* 页面容器 */
+.page-container {
+  padding: 20px;
+  background-color: $bg-page;
+  min-height: calc(100vh - #{$navbar-height} - #{$tagsview-height});
+}
+
+/* 卡片容器 */
+.card-container {
+  background-color: $bg-white;
+  border-radius: $border-radius-base;
+  box-shadow: $shadow-light;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+/* 搜索表单 */
+.search-form {
+  margin-bottom: 20px;
+  padding: 20px;
+  background-color: $bg-white;
+  border-radius: $border-radius-base;
+  box-shadow: $shadow-light;
+
+  .el-form-item {
+    margin-bottom: 10px;
+  }
+}
+
+/* 表格容器 */
+.table-container {
+  background-color: $bg-white;
+  border-radius: $border-radius-base;
+  box-shadow: $shadow-light;
+  padding: 20px;
+
+  .el-table {
+    margin-bottom: 20px;
+  }
+}
+
+/* 分页容器 */
+.pagination-container {
+  display: flex;
+  justify-content: flex-end;
+  padding: 20px 0;
+}
+
+/* 操作按钮组 */
+.action-buttons {
+  margin-bottom: 20px;
+}
+
+/* 状态标签 */
+.status-tag {
+  &.online {
+    color: $success-color;
+  }
+
+  &.offline {
+    color: $danger-color;
+  }
+
+  &.maintenance {
+    color: $warning-color;
+  }
+
+  &.fault {
+    color: $danger-color;
+  }
+}
+
+/* 告警级别 */
+.alarm-level {
+  &.critical {
+    color: $danger-color;
+  }
+
+  &.major {
+    color: $warning-color;
+  }
+
+  &.minor {
+    color: $info-color;
+  }
+
+  &.warning {
+    color: $primary-color;
+  }
+}
+
+/* 图表容器 */
+.chart-container {
+  width: 100%;
+  height: 400px;
+}
+
+/* 统计卡片 */
+.stat-card {
+  background-color: $bg-white;
+  border-radius: $border-radius-base;
+  box-shadow: $shadow-light;
+  padding: 20px;
+  margin-bottom: 20px;
+
+  .stat-title {
+    font-size: $font-size-base;
+    color: $text-secondary;
+    margin-bottom: 10px;
+  }
+
+  .stat-value {
+    font-size: $font-size-extra-large;
+    font-weight: bold;
+    color: $text-primary;
+  }
+
+  .stat-trend {
+    margin-top: 10px;
+    font-size: $font-size-small;
+
+    &.up {
+      color: $success-color;
+    }
+
+    &.down {
+      color: $danger-color;
+    }
+  }
+}
+
+/* 面包屑 */
+.breadcrumb-container {
+  padding: 15px 20px;
+  background-color: $bg-white;
+  border-bottom: 1px solid $border-lighter;
+}
+
+/* 工具栏 */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding: 15px 20px;
+  background-color: $bg-white;
+  border-radius: $border-radius-base;
+  box-shadow: $shadow-light;
+}
+
+/* 详情页 */
+.detail-container {
+  .detail-item {
+    display: flex;
+    margin-bottom: 15px;
+
+    .detail-label {
+      width: 120px;
+      color: $text-secondary;
+      text-align: right;
+      padding-right: 10px;
+    }
+
+    .detail-value {
+      flex: 1;
+      color: $text-primary;
+    }
+  }
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+  color: $text-secondary;
+
+  .empty-icon {
+    font-size: 60px;
+    margin-bottom: 20px;
+  }
+
+  .empty-text {
+    font-size: $font-size-base;
+  }
+}
+
+/* 加载状态 */
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+/* Element Plus 样式覆盖 */
+.el-dialog {
+  border-radius: $border-radius-large;
+}
+
+.el-message-box {
+  border-radius: $border-radius-large;
+}
+
+.el-card {
+  border-radius: $border-radius-base;
+  border: none;
+  box-shadow: $shadow-light;
+}
+
+.el-button {
+  border-radius: $border-radius-base;
+}
+
+.el-input__wrapper {
+  border-radius: $border-radius-base;
+}
+
+.el-select__wrapper {
+  border-radius: $border-radius-base;
+}
+
+.el-table {
+  border-radius: $border-radius-base;
+
+  th.el-table__cell {
+    background-color: $bg-base;
+    color: $text-primary;
+    font-weight: bold;
+  }
+}
+
+.el-pagination {
+  .el-pager li {
+    border-radius: $border-radius-base;
+  }
+}
+
+/* 响应式布局 */
+@media screen and (max-width: 768px) {
+  .page-container {
+    padding: 10px;
+  }
+
+  .card-container {
+    padding: 15px;
+    margin-bottom: 10px;
+  }
+
+  .search-form {
+    padding: 15px;
+  }
+
+  .table-container {
+    padding: 15px;
+  }
+
+  .chart-container {
+    height: 300px;
+  }
+}

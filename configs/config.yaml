@@ -1,0 +1,106 @@
+server:
+  name: api-server
+  port: 8080
+  mode: debug
+
+database:
+  type: postgres
+  host: localhost
+  port: 5432
+  user: postgres
+  password: postgres
+  dbname: nem_system
+  sslmode: disable
+  max_open_conns: 100
+  max_idle_conns: 10
+  conn_max_lifetime: 3600
+  conn_max_idle_time: 600
+
+redis:
+  addrs:
+    - localhost:6379
+  password: ""
+  db: 0
+  pool_size: 100
+
+kafka:
+  brokers:
+    - localhost:9092
+  topic_prefix: nem
+
+timeseries:
+  type: doris  # doris | clickhouse
+  doris:
+    hosts:
+      - localhost:9030
+    database: nem_ts
+    user: root
+    password: ""
+    max_open_conns: 100
+    max_idle_conns: 20
+    conn_timeout: 10s
+    write_timeout: 30s
+    query_timeout: 60s
+    batch_size: 10000
+  clickhouse:
+    addr:
+      - localhost:9000
+    database: nem_ts
+    user: default
+    password: ""
+    compression: zstd
+    max_open_conns: 100
+    max_idle_conns: 20
+    conn_timeout: 10s
+    write_timeout: 30s
+    query_timeout: 60s
+    batch_size: 10000
+    block_size: 65536
+    debug: false
+
+nacos:
+  enabled: false
+  server_addr: ""
+  namespace: ""
+  group: DEFAULT_GROUP
+  service_name: nem-api-server
+  weight: 1
+  metadata:
+    version: 1.0.0
+
+config_center:
+  enabled: false
+  provider: nacos
+  server_addr: ""
+  namespace: ""
+  group: DEFAULT_GROUP
+  data_id: nem-api-server.yaml
+  refresh_interval: 30
+
+logging:
+  level: debug
+  format: console
+  output: stdout
+
+tracing:
+  enabled: false
+  endpoint: localhost:4317
+  sampler_ratio: 1.0
+
+metrics:
+  enabled: true
+  port: 9090
+
+auth:
+  jwt:
+    secret: dev-jwt-secret-key-change-in-production
+    access_expire: 7200
+    refresh_expire: 604800
+  password:
+    min_length: 8
+    require_uppercase: true
+    require_lowercase: true
+    require_digit: true
+  login:
+    max_attempts: 5
+    lock_duration: 1800

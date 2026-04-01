@@ -1,0 +1,6 @@
+-- Test migration 001
+CREATE TABLE IF NOT EXISTS test_table_1 (
+    id VARCHAR(36) PRIMARY KEY,
+    name VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

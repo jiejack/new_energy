@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "new-energy-monitoring.fullname" . }}-collector
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "new-energy-monitoring.labels" . | nindent 4 }}
+    app.kubernetes.io/component: collector
+spec:
+  replicas: {{ .Values.collector.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "new-energy-monitoring.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: collector
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        {{- include "new-energy-monitoring.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: collector
+        {{- with .Values.collector.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- with .Values.collector.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "{{ .Values.collector.service.port }}"
+        prometheus.io/path: "/metrics"
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "new-energy-monitoring.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: collector
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.global.imageRegistry }}{{ .Values.collector.image.repository }}:{{ .Values.collector.image.tag }}"
+          imagePullPolicy: {{ .Values.collector.image.pullPolicy | default .Values.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.collector.service.targetPort }}
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+          env:
+            {{- with .Values.collector.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.collector.configFrom.configMapRef | default (printf "%s-config" (include "new-energy-monitoring.fullname" .)) }}
+            - configMapRef:
+                name: {{ .Values.collector.configFrom.configMapRef | default (printf "%s-protocols-config" (include "new-energy-monitoring.fullname" .)) }}
+            - secretRef:
+                name: {{ .Values.collector.configFrom.secretRef | default (printf "%s-secrets" (include "new-energy-monitoring.fullname" .)) }}
+          {{- if .Values.collector.healthCheck.liveness.enabled }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.collector.healthCheck.liveness.path }}
+              port: {{ .Values.collector.healthCheck.liveness.port }}
+            initialDelaySeconds: {{ .Values.collector.healthCheck.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.collector.healthCheck.liveness.periodSeconds }}
+            timeoutSeconds: {{ .Values.collector.healthCheck.liveness.timeoutSeconds | default 5 }}
+            failureThreshold: {{ .Values.collector.healthCheck.liveness.failureThreshold | default 3 }}
+          {{- end }}
+          {{- if .Values.collector.healthCheck.readiness.enabled }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.collector.healthCheck.readiness.path }}
+              port: {{ .Values.collector.healthCheck.readiness.port }}
+            initialDelaySeconds: {{ .Values.collector.healthCheck.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.collector.healthCheck.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.collector.healthCheck.readiness.timeoutSeconds | default 3 }}
+            failureThreshold: {{ .Values.collector.healthCheck.readiness.failureThreshold | default 3 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.collector.resources | nindent 12 }}
+      {{- with .Values.collector.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.collector.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.collector.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds | default 30 }}
+      priorityClassName: {{ .Values.priorityClassName | default "" }}

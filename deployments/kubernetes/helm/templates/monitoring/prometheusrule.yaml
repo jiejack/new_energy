@@ -1,0 +1,230 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.prometheusRule.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "new-energy-monitoring.fullname" . }}
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "new-energy-monitoring.labels" . | nindent 4 }}
+    {{- with .Values.monitoring.prometheusRule.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  groups:
+    - name: new-energy-monitoring.rules
+      rules:
+        # API Server告警规则
+        - alert: APIServerDown
+          expr: up{job="{{ include "new-energy-monitoring.fullname" . }}-api-server"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            component: api-server
+          annotations:
+            summary: "API Server实例宕机"
+            description: "API Server实例 {{ "{{" }} $labels.instance {{ "}}" }} 已经宕机超过5分钟"
+        
+        - alert: APIServerHighErrorRate
+          expr: |
+            sum(rate(http_requests_total{job="{{ include "new-energy-monitoring.fullname" . }}-api-server",status=~"5.."}[5m])) 
+            / 
+            sum(rate(http_requests_total{job="{{ include "new-energy-monitoring.fullname" . }}-api-server"}[5m])) > 0.05
+          for: 5m
+          labels:
+            severity: warning
+            component: api-server
+          annotations:
+            summary: "API Server错误率过高"
+            description: "API Server 5xx错误率超过5%，当前值: {{ "{{" }} $value {{ "}}" }}"
+        
+        - alert: APIServerHighLatency
+          expr: |
+            histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="{{ include "new-energy-monitoring.fullname" . }}-api-server"}[5m])) by (le)) > 2
+          for: 5m
+          labels:
+            severity: warning
+            component: api-server
+          annotations:
+            summary: "API Server响应延迟过高"
+            description: "API Server P95延迟超过2秒，当前值: {{ "{{" }} $value {{ "}}" }}秒"
+        
+        # Collector告警规则
+        - alert: CollectorDown
+          expr: up{job="{{ include "new-energy-monitoring.fullname" . }}-collector"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            component: collector
+          annotations:
+            summary: "Collector实例宕机"
+            description: "Collector实例 {{ "{{" }} $labels.instance {{ "}}" }} 已经宕机超过5分钟"
+        
+        - alert: CollectorHighErrorRate
+          expr: |
+            sum(rate(collector_errors_total{job="{{ include "new-energy-monitoring.fullname" . }}-collector"}[5m])) > 10
+          for: 5m
+          labels:
+            severity: warning
+            component: collector
+          annotations:
+            summary: "Collector错误率过高"
+            description: "Collector每分钟错误数超过10，当前值: {{ "{{" }} $value {{ "}}" }}"
+        
+        - alert: CollectorConnectionFailure
+          expr: |
+            sum(rate(collector_connection_failures_total{job="{{ include "new-energy-monitoring.fullname" . }}-collector"}[5m])) > 5
+          for: 5m
+          labels:
+            severity: warning
+            component: collector
+          annotations:
+            summary: "Collector连接失败率过高"
+            description: "Collector每分钟连接失败数超过5，当前值: {{ "{{" }} $value {{ "}}" }}"
+        
+        # Alarm Service告警规则
+        - alert: AlarmServiceDown
+          expr: up{job="{{ include "new-energy-monitoring.fullname" . }}-alarm-service"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            component: alarm-service
+          annotations:
+            summary: "Alarm Service实例宕机"
+            description: "Alarm Service实例 {{ "{{" }} $labels.instance {{ "}}" }} 已经宕机超过5分钟"
+        
+        - alert: AlarmServiceQueueBacklog
+          expr: |
+            alarm_service_queue_size{job="{{ include "new-energy-monitoring.fullname" . }}-alarm-service"} > 10000
+          for: 5m
+          labels:
+            severity: warning
+            component: alarm-service
+          annotations:
+            summary: "Alarm Service队列积压"
+            description: "Alarm Service队列大小超过10000，当前值: {{ "{{" }} $value {{ "}}" }}"
+        
+        # Compute Service告警规则
+        - alert: ComputeServiceDown
+          expr: up{job="{{ include "new-energy-monitoring.fullname" . }}-compute-service"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            component: compute-service
+          annotations:
+            summary: "Compute Service实例宕机"
+            description: "Compute Service实例 {{ "{{" }} $labels.instance {{ "}}" }} 已经宕机超过5分钟"
+        
+        - alert: ComputeServiceHighLatency
+          expr: |
+            histogram_quantile(0.95, sum(rate(compute_duration_seconds_bucket{job="{{ include "new-energy-monitoring.fullname" . }}-compute-service"}[5m])) by (le)) > 5
+          for: 5m
+          labels:
+            severity: warning
+            component: compute-service
+          annotations:
+            summary: "Compute Service计算延迟过高"
+            description: "Compute Service P95延迟超过5秒，当前值: {{ "{{" }} $value {{ "}}" }}秒"
+        
+        # AI Service告警规则
+        - alert: AIServiceDown
+          expr: up{job="{{ include "new-energy-monitoring.fullname" . }}-ai-service"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            component: ai-service
+          annotations:
+            summary: "AI Service实例宕机"
+            description: "AI Service实例 {{ "{{" }} $labels.instance {{ "}}" }} 已经宕机超过5分钟"
+        
+        - alert: AIServiceHighLatency
+          expr: |
+            histogram_quantile(0.95, sum(rate(ai_inference_duration_seconds_bucket{job="{{ include "new-energy-monitoring.fullname" . }}-ai-service"}[5m])) by (le)) > 30
+          for: 5m
+          labels:
+            severity: warning
+            component: ai-service
+          annotations:
+            summary: "AI Service推理延迟过高"
+            description: "AI Service P95推理延迟超过30秒，当前值: {{ "{{" }} $value {{ "}}" }}秒"
+        
+        - alert: AIServiceGPUMemoryHigh
+          expr: |
+            ai_service_gpu_memory_usage{job="{{ include "new-energy-monitoring.fullname" . }}-ai-service"} > 0.9
+          for: 5m
+          labels:
+            severity: warning
+            component: ai-service
+          annotations:
+            summary: "AI Service GPU内存使用率过高"
+            description: "AI Service GPU内存使用率超过90%，当前值: {{ "{{" }} $value {{ "}}" }}"
+        
+        # Scheduler告警规则
+        - alert: SchedulerDown
+          expr: up{job="{{ include "new-energy-monitoring.fullname" . }}-scheduler"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            component: scheduler
+          annotations:
+            summary: "Scheduler实例宕机"
+            description: "Scheduler实例 {{ "{{" }} $labels.instance {{ "}}" }} 已经宕机超过5分钟"
+        
+        - alert: SchedulerJobFailure
+          expr: |
+            sum(rate(scheduler_job_failures_total{job="{{ include "new-energy-monitoring.fullname" . }}-scheduler"}[5m])) > 5
+          for: 5m
+          labels:
+            severity: warning
+            component: scheduler
+          annotations:
+            summary: "Scheduler任务失败率过高"
+            description: "Scheduler每分钟任务失败数超过5，当前值: {{ "{{" }} $value {{ "}}" }}"
+        
+        # 资源使用告警规则
+        - alert: HighMemoryUsage
+          expr: |
+            container_memory_usage_bytes{namespace="{{ .Values.namespace.name }}"} 
+            / 
+            container_spec_memory_limit_bytes{namespace="{{ .Values.namespace.name }}"} > 0.9
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "容器内存使用率过高"
+            description: "容器 {{ "{{" }} $labels.pod {{ "}}" }} 内存使用率超过90%，当前值: {{ "{{" }} $value {{ "}}" }}"
+        
+        - alert: HighCPUUsage
+          expr: |
+            rate(container_cpu_usage_seconds_total{namespace="{{ .Values.namespace.name }}"}[5m]) 
+            / 
+            container_spec_cpu_quota{namespace="{{ .Values.namespace.name }}"} 
+            * 
+            container_spec_cpu_period{namespace="{{ .Values.namespace.name }}"} > 0.9
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "容器CPU使用率过高"
+            description: "容器 {{ "{{" }} $labels.pod {{ "}}" }} CPU使用率超过90%，当前值: {{ "{{" }} $value {{ "}}" }}"
+        
+        # Pod状态告警规则
+        - alert: PodCrashLooping
+          expr: |
+            rate(kube_pod_container_status_restarts_total{namespace="{{ .Values.namespace.name }}"}[15m]) * 60 * 15 > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod频繁重启"
+            description: "Pod {{ "{{" }} $labels.pod {{ "}}" }} 在过去15分钟内重启次数: {{ "{{" }} $value {{ "}}" }}"
+        
+        - alert: PodNotReady
+          expr: |
+            kube_pod_status_phase{namespace="{{ .Values.namespace.name }}",phase=~"Pending|Unknown"} > 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod未就绪"
+            description: "Pod {{ "{{" }} $labels.pod {{ "}}" }} 状态为 {{ "{{" }} $labels.phase {{ "}}" }} 超过10分钟"
+{{- end }}

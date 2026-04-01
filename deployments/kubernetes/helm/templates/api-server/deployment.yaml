@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "new-energy-monitoring.fullname" . }}-api-server
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "new-energy-monitoring.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api-server
+spec:
+  replicas: {{ .Values.apiServer.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "new-energy-monitoring.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: api-server
+  strategy:
+    type: {{ .Values.apiServer.updateStrategy.type | default "RollingUpdate" }}
+    {{- if eq .Values.apiServer.updateStrategy.type "RollingUpdate" }}
+    rollingUpdate:
+      maxSurge: {{ .Values.apiServer.updateStrategy.rollingUpdate.maxSurge | default 1 }}
+      maxUnavailable: {{ .Values.apiServer.updateStrategy.rollingUpdate.maxUnavailable | default 0 }}
+    {{- end }}
+  template:
+    metadata:
+      labels:
+        {{- include "new-energy-monitoring.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: api-server
+        {{- with .Values.apiServer.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- with .Values.apiServer.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "{{ .Values.apiServer.service.port }}"
+        prometheus.io/path: "/metrics"
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "new-energy-monitoring.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: api-server
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.global.imageRegistry }}{{ .Values.apiServer.image.repository }}:{{ .Values.apiServer.image.tag }}"
+          imagePullPolicy: {{ .Values.apiServer.image.pullPolicy | default .Values.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.apiServer.service.targetPort }}
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+          env:
+            {{- with .Values.apiServer.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.apiServer.configFrom.configMapRef | default (printf "%s-config" (include "new-energy-monitoring.fullname" .)) }}
+            - secretRef:
+                name: {{ .Values.apiServer.configFrom.secretRef | default (printf "%s-secrets" (include "new-energy-monitoring.fullname" .)) }}
+          {{- if .Values.apiServer.healthCheck.liveness.enabled }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.apiServer.healthCheck.liveness.path }}
+              port: {{ .Values.apiServer.healthCheck.liveness.port }}
+            initialDelaySeconds: {{ .Values.apiServer.healthCheck.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.apiServer.healthCheck.liveness.periodSeconds }}
+            timeoutSeconds: {{ .Values.apiServer.healthCheck.liveness.timeoutSeconds | default 5 }}
+            failureThreshold: {{ .Values.apiServer.healthCheck.liveness.failureThreshold | default 3 }}
+          {{- end }}
+          {{- if .Values.apiServer.healthCheck.readiness.enabled }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.apiServer.healthCheck.readiness.path }}
+              port: {{ .Values.apiServer.healthCheck.readiness.port }}
+            initialDelaySeconds: {{ .Values.apiServer.healthCheck.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.apiServer.healthCheck.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.apiServer.healthCheck.readiness.timeoutSeconds | default 3 }}
+            failureThreshold: {{ .Values.apiServer.healthCheck.readiness.failureThreshold | default 3 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.apiServer.resources | nindent 12 }}
+      {{- with .Values.apiServer.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.apiServer.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.apiServer.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds | default 30 }}
+      priorityClassName: {{ .Values.priorityClassName | default "" }}

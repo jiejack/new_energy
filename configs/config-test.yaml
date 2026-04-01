@@ -1,0 +1,84 @@
+server:
+  name: api-server
+  port: 8080
+  mode: release
+
+database:
+  type: postgres
+  host: ${DB_HOST:postgres}
+  port: ${DB_PORT:5432}
+  user: ${DB_USER:postgres}
+  password: ${DB_PASSWORD}
+  dbname: ${DB_NAME:nem_system_test}
+  sslmode: disable
+  max_open_conns: 100
+  max_idle_conns: 20
+  conn_max_lifetime: 3600
+
+redis:
+  addrs:
+    - ${REDIS_HOST:redis}:${REDIS_PORT:6379}
+  password: ${REDIS_PASSWORD:}
+  db: 0
+  pool_size: 100
+
+kafka:
+  brokers:
+    - ${KAFKA_HOST:kafka}:${KAFKA_PORT:9092}
+  topic_prefix: nem_test
+
+timeseries:
+  type: doris
+  host: ${DORIS_HOST:doris-fe}
+  port: ${DORIS_PORT:9030}
+  user: root
+  password: ${DORIS_PASSWORD:}
+  database: nem_ts_test
+
+nacos:
+  enabled: true
+  server_addr: ${NACOS_SERVER_ADDR:nacos:8848}
+  namespace: ${NACOS_NAMESPACE:test}
+  group: DEFAULT_GROUP
+  service_name: nem-api-server
+  weight: 1
+  metadata:
+    version: 1.0.0
+    env: test
+
+config_center:
+  enabled: true
+  provider: nacos
+  server_addr: ${NACOS_SERVER_ADDR:nacos:8848}
+  namespace: ${NACOS_NAMESPACE:test}
+  group: DEFAULT_GROUP
+  data_id: nem-api-server.yaml
+  refresh_interval: 30
+
+logging:
+  level: info
+  format: json
+  output: stdout
+
+tracing:
+  enabled: true
+  endpoint: ${OTEL_ENDPOINT:otel-collector:4317}
+  sampler_ratio: 0.5
+
+metrics:
+  enabled: true
+  port: 9090
+
+auth:
+  jwt:
+    secret: ${JWT_SECRET}
+    access_expire: 7200
+    refresh_expire: 604800
+  password:
+    min_length: 8
+    require_uppercase: true
+    require_lowercase: true
+    require_digit: true
+  login:
+    max_attempts: 5
+    lock_duration: 1800

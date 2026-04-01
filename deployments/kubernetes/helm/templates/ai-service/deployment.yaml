@@ -1,0 +1,123 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "new-energy-monitoring.fullname" . }}-ai-service
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "new-energy-monitoring.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ai-service
+spec:
+  replicas: {{ .Values.aiService.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "new-energy-monitoring.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: ai-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        {{- include "new-energy-monitoring.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: ai-service
+        {{- with .Values.aiService.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- with .Values.aiService.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "{{ .Values.aiService.service.port }}"
+        prometheus.io/path: "/metrics"
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "new-energy-monitoring.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: ai-service
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.global.imageRegistry }}{{ .Values.aiService.image.repository }}:{{ .Values.aiService.image.tag }}"
+          imagePullPolicy: {{ .Values.aiService.image.pullPolicy | default .Values.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.aiService.service.targetPort }}
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+          env:
+            {{- with .Values.aiService.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.aiService.configFrom.configMapRef | default (printf "%s-config" (include "new-energy-monitoring.fullname" .)) }}
+            - secretRef:
+                name: {{ .Values.aiService.configFrom.secretRef | default (printf "%s-secrets" (include "new-energy-monitoring.fullname" .)) }}
+          {{- if .Values.aiService.healthCheck.liveness.enabled }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.aiService.healthCheck.liveness.path }}
+              port: {{ .Values.aiService.healthCheck.liveness.port }}
+            initialDelaySeconds: {{ .Values.aiService.healthCheck.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.aiService.healthCheck.liveness.periodSeconds }}
+            timeoutSeconds: {{ .Values.aiService.healthCheck.liveness.timeoutSeconds | default 10 }}
+            failureThreshold: {{ .Values.aiService.healthCheck.liveness.failureThreshold | default 3 }}
+          {{- end }}
+          {{- if .Values.aiService.healthCheck.readiness.enabled }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.aiService.healthCheck.readiness.path }}
+              port: {{ .Values.aiService.healthCheck.readiness.port }}
+            initialDelaySeconds: {{ .Values.aiService.healthCheck.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.aiService.healthCheck.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.aiService.healthCheck.readiness.timeoutSeconds | default 5 }}
+            failureThreshold: {{ .Values.aiService.healthCheck.readiness.failureThreshold | default 3 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.aiService.resources | nindent 12 }}
+          {{- with .Values.aiService.volumes }}
+          volumeMounts:
+            {{- range . }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath | default "/app/models" }}
+            {{- end }}
+          {{- end }}
+      {{- with .Values.aiService.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.aiService.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.aiService.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.aiService.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds | default 60 }}
+      priorityClassName: {{ .Values.priorityClassName | default "" }}

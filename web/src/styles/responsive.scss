@@ -1,0 +1,92 @@
+// 响应式断点系统
+@import './variables.scss';
+
+// 断点映射
+$breakpoints: (
+  'xs': $breakpoint-xs,
+  'sm': $breakpoint-sm,
+  'md': $breakpoint-md,
+  'lg': $breakpoint-lg,
+  'xl': $breakpoint-xl,
+  'xxl': $breakpoint-xxl
+);
+
+// 媒体查询mixin - max-width
+@mixin respond-to($breakpoint) {
+  @if map-has-key($breakpoints, $breakpoint) {
+    @media (max-width: map-get($breakpoints, $breakpoint)) {
+      @content;
+    }
+  } @else {
+    @warn "Breakpoint `#{$breakpoint}` not found in $breakpoints";
+  }
+}
+
+// 媒体查询mixin - min-width
+@mixin respond-from($breakpoint) {
+  @if map-has-key($breakpoints, $breakpoint) {
+    @media (min-width: map-get($breakpoints, $breakpoint) + 1) {
+      @content;
+    }
+  } @else {
+    @warn "Breakpoint `#{$breakpoint}` not found in $breakpoints";
+  }
+}
+
+// 移动端样式
+@mixin mobile {
+  @include respond-to('md') {
+    @content;
+  }
+}
+
+// 平板样式
+@mixin tablet {
+  @media (min-width: $breakpoint-md + 1) and (max-width: $breakpoint-lg) {
+    @content;
+  }
+}
+
+// 桌面样式
+@mixin desktop {
+  @include respond-from('lg') {
+    @content;
+  }
+}
+
+// 触摸设备优化
+@mixin touch-friendly {
+  min-width: 44px;
+  min-height: 44px;
+
+  @include mobile {
+    -webkit-tap-highlight-color: rgba(64, 158, 255, 0.1);
+
+    &:active {
+      transform: scale(0.98);
+      opacity: 0.8;
+    }
+  }
+}
+
+// 安全区域底部适配
+@mixin safe-area-bottom {
+  padding-bottom: $safe-area-inset-bottom;
+}
+
+// 隐藏滚动条但保持滚动功能
+@mixin hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+// 平滑滚动
+@mixin smooth-scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  @include hide-scrollbar;
+}

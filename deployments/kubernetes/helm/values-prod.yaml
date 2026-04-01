@@ -1,0 +1,444 @@
+# 生产环境配置
+# 继承values.yaml的基础配置，覆盖生产环境特定的值
+
+global:
+  imageRegistry: ""
+  imagePullSecrets:
+    - name: registry-secret
+  storageClass: "standard"
+  namespace: new-energy-monitoring
+
+namespace:
+  create: true
+  name: new-energy-monitoring
+
+# API服务器 - 生产环境配置
+apiServer:
+  replicaCount: 3
+  image:
+    repository: nem/api-server
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+  
+  service:
+    type: ClusterIP
+    port: 8080
+    annotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "8080"
+      prometheus.io/path: "/metrics"
+  
+  resources:
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+    requests:
+      cpu: 1000m
+      memory: 2Gi
+  
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 20
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 75
+  
+  healthCheck:
+    liveness:
+      enabled: true
+      path: /health/live
+      port: 8080
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    readiness:
+      enabled: true
+      path: /health/ready
+      port: 8080
+      initialDelaySeconds: 10
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 3
+  
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  
+  env:
+    - name: LOG_LEVEL
+      value: "info"
+    - name: GIN_MODE
+      value: "release"
+  
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+  
+  nodeSelector:
+    node-role.kubernetes.io/app: "true"
+  
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                    - api-server
+            topologyKey: kubernetes.io/hostname
+
+# 数据采集器 - 生产环境配置
+collector:
+  replicaCount: 3
+  image:
+    repository: nem/collector
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+  
+  resources:
+    limits:
+      cpu: 4000m
+      memory: 4Gi
+    requests:
+      cpu: 2000m
+      memory: 2Gi
+  
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 30
+    targetCPUUtilizationPercentage: 65
+  
+  healthCheck:
+    liveness:
+      enabled: true
+      path: /health/live
+      port: 8081
+      initialDelaySeconds: 30
+      periodSeconds: 10
+    readiness:
+      enabled: true
+      path: /health/ready
+      port: 8081
+      initialDelaySeconds: 10
+      periodSeconds: 5
+  
+  env:
+    - name: LOG_LEVEL
+      value: "info"
+  
+  nodeSelector:
+    node-role.kubernetes.io/collector: "true"
+  
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                    - collector
+            topologyKey: kubernetes.io/hostname
+
+# 告警服务 - 生产环境配置
+alarmService:
+  replicaCount: 3
+  image:
+    repository: nem/alarm-service
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+  
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 15
+    targetCPUUtilizationPercentage: 70
+  
+  env:
+    - name: LOG_LEVEL
+      value: "info"
+  
+  nodeSelector:
+    node-role.kubernetes.io/app: "true"
+
+# 计算服务 - 生产环境配置
+computeService:
+  replicaCount: 3
+  image:
+    repository: nem/compute-service
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+  
+  resources:
+    limits:
+      cpu: 4000m
+      memory: 4Gi
+    requests:
+      cpu: 2000m
+      memory: 2Gi
+  
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 15
+    targetCPUUtilizationPercentage: 70
+  
+  env:
+    - name: LOG_LEVEL
+      value: "info"
+  
+  nodeSelector:
+    node-role.kubernetes.io/app: "true"
+
+# AI服务 - 生产环境配置
+aiService:
+  replicaCount: 2
+  image:
+    repository: nem/ai-service
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+  
+  resources:
+    limits:
+      cpu: 8000m
+      memory: 16Gi
+      nvidia.com/gpu: 1
+    requests:
+      cpu: 4000m
+      memory: 8Gi
+  
+  autoscaling:
+    enabled: false
+  
+  healthCheck:
+    liveness:
+      enabled: true
+      path: /health/live
+      port: 8084
+      initialDelaySeconds: 90
+      periodSeconds: 15
+    readiness:
+      enabled: true
+      path: /health/ready
+      port: 8084
+      initialDelaySeconds: 60
+      periodSeconds: 10
+  
+  env:
+    - name: LOG_LEVEL
+      value: "info"
+    - name: AI_MODEL_PATH
+      value: "/app/models"
+  
+  nodeSelector:
+    accelerator: nvidia
+    node-role.kubernetes.io/ai: "true"
+  
+  tolerations:
+    - key: nvidia.com/gpu
+      operator: Exists
+      effect: NoSchedule
+
+# 调度服务 - 生产环境配置
+scheduler:
+  replicaCount: 2
+  image:
+    repository: nem/scheduler
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+  
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  
+  env:
+    - name: LOG_LEVEL
+      value: "info"
+  
+  nodeSelector:
+    node-role.kubernetes.io/app: "true"
+
+# PostgreSQL - 生产环境配置
+postgresql:
+  enabled: true
+  auth:
+    postgresPassword: CHANGE_ME_IN_PRODUCTION
+    username: nem
+    password: CHANGE_ME_IN_PRODUCTION
+    database: nem_system
+  primary:
+    persistence:
+      enabled: true
+      storageClass: "standard"
+      size: 500Gi
+    resources:
+      limits:
+        cpu: 8000m
+        memory: 16Gi
+      requests:
+        cpu: 4000m
+        memory: 8Gi
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                    - postgresql
+            topologyKey: kubernetes.io/hostname
+
+# Redis - 生产环境配置
+redis:
+  enabled: true
+  auth:
+    enabled: true
+    password: CHANGE_ME_IN_PRODUCTION
+  master:
+    persistence:
+      enabled: true
+      storageClass: "standard"
+      size: 50Gi
+    resources:
+      limits:
+        cpu: 4000m
+        memory: 8Gi
+      requests:
+        cpu: 2000m
+        memory: 4Gi
+  replica:
+    replicaCount: 3
+    persistence:
+      enabled: true
+      storageClass: "standard"
+      size: 50Gi
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 4Gi
+      requests:
+        cpu: 1000m
+        memory: 2Gi
+
+# Kafka - 生产环境配置
+kafka:
+  enabled: true
+  replicaCount: 5
+  persistence:
+    enabled: true
+    storageClass: "standard"
+    size: 200Gi
+  resources:
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+    requests:
+      cpu: 2000m
+      memory: 4Gi
+  zookeeper:
+    enabled: true
+    replicaCount: 3
+    persistence:
+      enabled: true
+      storageClass: "standard"
+      size: 20Gi
+
+# Ingress - 生产环境配置
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+  hosts:
+    - host: nem.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service: api-server
+          port: 8080
+    - host: api.nem.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service: api-server
+          port: 8080
+  tls:
+    - secretName: nem-tls
+      hosts:
+        - nem.example.com
+        - api.nem.example.com
+
+# 监控 - 生产环境配置
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 15s
+    scrapeTimeout: 10s
+    labels:
+      release: prometheus
+  prometheusRule:
+    enabled: true
+    additionalLabels:
+      release: prometheus
+  grafana:
+    enabled: true
+    dashboards:
+      enabled: true
+
+# 日志 - 生产环境配置
+logging:
+  enabled: true
+  level: info
+  format: json
+
+# 安全配置 - 生产环境
+podSecurityContext:
+  fsGroup: 1000
+  runAsNonRoot: true
+  runAsUser: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+
+# 优先级类
+priorityClassName: "high-priority"
+
+# 终止宽限期
+terminationGracePeriodSeconds: 60

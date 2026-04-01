@@ -1,0 +1,84 @@
+server:
+  name: api-server
+  port: 8080
+  mode: debug
+
+database:
+  type: postgres
+  host: ${DB_HOST:localhost}
+  port: ${DB_PORT:5432}
+  user: ${DB_USER:postgres}
+  password: ${DB_PASSWORD:postgres}
+  dbname: ${DB_NAME:nem_system_dev}
+  sslmode: disable
+  max_open_conns: 50
+  max_idle_conns: 10
+  conn_max_lifetime: 3600
+
+redis:
+  addrs:
+    - ${REDIS_HOST:localhost}:${REDIS_PORT:6379}
+  password: ${REDIS_PASSWORD:}
+  db: 0
+  pool_size: 50
+
+kafka:
+  brokers:
+    - ${KAFKA_HOST:localhost}:${KAFKA_PORT:9092}
+  topic_prefix: nem_dev
+
+timeseries:
+  type: doris
+  host: ${DORIS_HOST:localhost}
+  port: ${DORIS_PORT:9030}
+  user: root
+  password: ""
+  database: nem_ts_dev
+
+nacos:
+  enabled: false
+  server_addr: ${NACOS_SERVER_ADDR:}
+  namespace: ${NACOS_NAMESPACE:dev}
+  group: DEFAULT_GROUP
+  service_name: nem-api-server
+  weight: 1
+  metadata:
+    version: 1.0.0
+    env: dev
+
+config_center:
+  enabled: false
+  provider: nacos
+  server_addr: ${NACOS_SERVER_ADDR:}
+  namespace: ${NACOS_NAMESPACE:dev}
+  group: DEFAULT_GROUP
+  data_id: nem-api-server.yaml
+  refresh_interval: 30
+
+logging:
+  level: debug
+  format: console
+  output: stdout
+
+tracing:
+  enabled: false
+  endpoint: ${OTEL_ENDPOINT:localhost:4317}
+  sampler_ratio: 1.0
+
+metrics:
+  enabled: true
+  port: 9090
+
+auth:
+  jwt:
+    secret: ${JWT_SECRET:dev-jwt-secret-key}
+    access_expire: 7200
+    refresh_expire: 604800
+  password:
+    min_length: 8
+    require_uppercase: true
+    require_lowercase: true
+    require_digit: true
+  login:
+    max_attempts: 10
+    lock_duration: 1800

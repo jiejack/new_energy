@@ -1,0 +1,79 @@
+// 主题色
+$primary-color: #409eff;
+$success-color: #67c23a;
+$warning-color: #e6a23c;
+$danger-color: #f56c6c;
+$info-color: #909399;
+
+// 文字颜色
+$text-primary: #303133;
+$text-regular: #606266;
+$text-secondary: #909399;
+$text-placeholder: #c0c4cc;
+
+// 边框颜色
+$border-base: #dcdfe6;
+$border-light: #e4e7ed;
+$border-lighter: #ebeef5;
+$border-extra-light: #f2f6fc;
+
+// 背景颜色
+$bg-white: #ffffff;
+$bg-page: #f5f7fa;
+$bg-base: #f5f7fa;
+
+// 阴影
+$shadow-base: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
+$shadow-light: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+
+// 圆角
+$border-radius-base: 4px;
+$border-radius-small: 2px;
+$border-radius-large: 8px;
+
+// 字体大小
+$font-size-extra-small: 12px;
+$font-size-small: 13px;
+$font-size-base: 14px;
+$font-size-medium: 16px;
+$font-size-large: 18px;
+$font-size-extra-large: 20px;
+
+// 间距
+$spacing-mini: 4px;
+$spacing-small: 8px;
+$spacing-base: 16px;
+$spacing-large: 24px;
+
+// 布局尺寸
+$sidebar-width: 210px;
+$sidebar-collapsed-width: 64px;
+$navbar-height: 50px;
+$tagsview-height: 34px;
+$footer-height: 30px;
+
+// 过渡动画
+$transition-duration: 0.3s;
+$transition-timing-function: ease-in-out;
+
+// z-index层级
+$z-index-sidebar: 1001;
+$z-index-navbar: 1002;
+$z-index-tagsview: 1003;
+$z-index-dropdown: 2000;
+$z-index-modal: 3000;
+$z-index-message: 4000;
+
+// 响应式断点
+$breakpoint-xs: 375px;
+$breakpoint-sm: 576px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 992px;
+$breakpoint-xl: 1200px;
+$breakpoint-xxl: 1600px;
+
+// 移动端导航高度
+$mobile-nav-height: 60px;
+
+// 安全区域
+$safe-area-inset-bottom: env(safe-area-inset-bottom);

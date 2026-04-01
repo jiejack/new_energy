@@ -1,0 +1,40 @@
+apiVersion: v2
+name: new-energy-monitoring
+description: 新能源在线监控系统
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+maintainers:
+  - name: NEM Team
+    email: nem@example.com
+
+keywords:
+  - new-energy
+  - monitoring
+  - scada
+  - iec104
+  - modbus
+  - iec61850
+  - kubernetes
+
+home: https://github.com/new-energy-monitoring
+sources:
+  - https://github.com/new-energy-monitoring
+
+dependencies:
+  - name: postgresql
+    version: "12.x.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+    alias: postgresql
+  - name: redis
+    version: "17.x.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+    alias: redis
+  - name: kafka
+    version: "21.x.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: kafka.enabled
+    alias: kafka

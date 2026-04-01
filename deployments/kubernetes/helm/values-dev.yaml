@@ -1,0 +1,262 @@
+# 开发环境配置
+# 继承values.yaml的基础配置，覆盖开发环境特定的值
+
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+  namespace: new-energy-monitoring-dev
+
+namespace:
+  create: true
+  name: new-energy-monitoring-dev
+
+# API服务器 - 开发环境配置
+apiServer:
+  replicaCount: 1
+  image:
+    repository: nem/api-server
+    tag: "dev"
+    pullPolicy: Always
+  
+  service:
+    type: NodePort
+    port: 8080
+    nodePort: 30080
+  
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+  
+  autoscaling:
+    enabled: false
+  
+  healthCheck:
+    liveness:
+      enabled: true
+      path: /health/live
+      port: 8080
+      initialDelaySeconds: 15
+      periodSeconds: 10
+    readiness:
+      enabled: true
+      path: /health/ready
+      port: 8080
+      initialDelaySeconds: 5
+      periodSeconds: 5
+  
+  env:
+    - name: LOG_LEVEL
+      value: "debug"
+    - name: GIN_MODE
+      value: "debug"
+    - name: ENABLE_PPROF
+      value: "true"
+
+# 数据采集器 - 开发环境配置
+collector:
+  replicaCount: 1
+  image:
+    repository: nem/collector
+    tag: "dev"
+    pullPolicy: Always
+  
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+  
+  autoscaling:
+    enabled: false
+  
+  env:
+    - name: LOG_LEVEL
+      value: "debug"
+
+# 告警服务 - 开发环境配置
+alarmService:
+  replicaCount: 1
+  image:
+    repository: nem/alarm-service
+    tag: "dev"
+    pullPolicy: Always
+  
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  
+  autoscaling:
+    enabled: false
+  
+  env:
+    - name: LOG_LEVEL
+      value: "debug"
+
+# 计算服务 - 开发环境配置
+computeService:
+  replicaCount: 1
+  image:
+    repository: nem/compute-service
+    tag: "dev"
+    pullPolicy: Always
+  
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+  
+  autoscaling:
+    enabled: false
+  
+  env:
+    - name: LOG_LEVEL
+      value: "debug"
+
+# AI服务 - 开发环境配置
+aiService:
+  replicaCount: 1
+  image:
+    repository: nem/ai-service
+    tag: "dev"
+    pullPolicy: Always
+  
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+  
+  env:
+    - name: LOG_LEVEL
+      value: "debug"
+    - name: AI_MODEL_PATH
+      value: "/app/models"
+
+# 调度服务 - 开发环境配置
+scheduler:
+  replicaCount: 1
+  image:
+    repository: nem/scheduler
+    tag: "dev"
+    pullPolicy: Always
+  
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  
+  env:
+    - name: LOG_LEVEL
+      value: "debug"
+
+# PostgreSQL - 开发环境配置
+postgresql:
+  enabled: true
+  auth:
+    postgresPassword: postgres
+    username: nem
+    password: nem123456
+    database: nem_system_dev
+  primary:
+    persistence:
+      enabled: true
+      size: 20Gi
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
+
+# Redis - 开发环境配置
+redis:
+  enabled: true
+  auth:
+    enabled: false
+  master:
+    persistence:
+      enabled: true
+      size: 5Gi
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 200m
+        memory: 512Mi
+  replica:
+    replicaCount: 0
+
+# Kafka - 开发环境配置
+kafka:
+  enabled: true
+  replicaCount: 1
+  persistence:
+    enabled: true
+    size: 10Gi
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+  zookeeper:
+    enabled: true
+    replicaCount: 1
+    persistence:
+      enabled: true
+      size: 5Gi
+
+# Ingress - 开发环境配置
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+  hosts:
+    - host: nem-dev.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service: api-server
+          port: 8080
+  tls: []
+
+# 监控 - 开发环境配置
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+  prometheusRule:
+    enabled: true
+  grafana:
+    enabled: false
+
+# 日志 - 开发环境配置
+logging:
+  enabled: true
+  level: debug
+  format: console

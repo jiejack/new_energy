@@ -1,0 +1,84 @@
+server:
+  name: api-server
+  port: 8080
+  mode: release
+
+database:
+  type: postgres
+  host: localhost
+  port: 5432
+  user: postgres
+  password: postgres
+  dbname: nem_system
+  sslmode: disable
+  max_open_conns: 20
+  max_idle_conns: 5
+  conn_max_lifetime: 3600
+
+redis:
+  addrs:
+    - localhost:6379
+  password: ""
+  db: 0
+  pool_size: 20
+
+kafka:
+  brokers:
+    - localhost:9092
+  topic_prefix: nem
+
+timeseries:
+  type: doris
+  host: localhost
+  port: 9030
+  user: root
+  password: ""
+  database: nem_ts
+
+nacos:
+  enabled: false
+  server_addr: ""
+  namespace: ""
+  group: DEFAULT_GROUP
+  service_name: nem-api-server
+  weight: 1
+  metadata:
+    version: 1.0.0
+    env: standalone
+
+config_center:
+  enabled: false
+  provider: nacos
+  server_addr: ""
+  namespace: ""
+  group: DEFAULT_GROUP
+  data_id: nem-api-server.yaml
+  refresh_interval: 30
+
+logging:
+  level: info
+  format: console
+  output: stdout
+
+tracing:
+  enabled: false
+  endpoint: localhost:4317
+  sampler_ratio: 1.0
+
+metrics:
+  enabled: true
+  port: 9090
+
+auth:
+  jwt:
+    secret: standalone-jwt-secret-key-change-me
+    access_expire: 86400
+    refresh_expire: 604800
+  password:
+    min_length: 8
+    require_uppercase: false
+    require_lowercase: false
+    require_digit: false
+  login:
+    max_attempts: 10
+    lock_duration: 1800

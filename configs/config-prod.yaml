@@ -1,0 +1,91 @@
+server:
+  name: api-server
+  port: 8080
+  mode: release
+
+database:
+  type: postgres
+  host: ${DB_HOST:postgres-master}
+  port: ${DB_PORT:5432}
+  user: ${DB_USER}
+  password: ${DB_PASSWORD}
+  dbname: ${DB_NAME:nem_system}
+  sslmode: require
+  max_open_conns: 200
+  max_idle_conns: 50
+  conn_max_lifetime: 1800
+
+redis:
+  addrs:
+    - ${REDIS_HOST:redis-master}:${REDIS_PORT:6379}
+    - ${REDIS_HOST:redis-replica-1}:${REDIS_PORT:6379}
+    - ${REDIS_HOST:redis-replica-2}:${REDIS_PORT:6379}
+  password: ${REDIS_PASSWORD}
+  db: 0
+  pool_size: 200
+  read_only: true
+
+kafka:
+  brokers:
+    - ${KAFKA_HOST:kafka-1}:${KAFKA_PORT:9092}
+    - ${KAFKA_HOST:kafka-2}:${KAFKA_PORT:9092}
+    - ${KAFKA_HOST:kafka-3}:${KAFKA_PORT:9092}
+  topic_prefix: nem
+
+timeseries:
+  type: doris
+  host: ${DORIS_HOST:doris-fe}
+  port: ${DORIS_PORT:9030}
+  user: ${DORIS_USER}
+  password: ${DORIS_PASSWORD}
+  database: nem_ts
+
+nacos:
+  enabled: true
+  server_addr: ${NACOS_SERVER_ADDR:nacos-1:8848,nacos-2:8848,nacos-3:8848}
+  namespace: ${NACOS_NAMESPACE:prod}
+  group: DEFAULT_GROUP
+  service_name: nem-api-server
+  weight: 1
+  metadata:
+    version: 1.0.0
+    env: prod
+  cluster_name: DEFAULT
+
+config_center:
+  enabled: true
+  provider: nacos
+  server_addr: ${NACOS_SERVER_ADDR:nacos-1:8848,nacos-2:8848,nacos-3:8848}
+  namespace: ${NACOS_NAMESPACE:prod}
+  group: DEFAULT_GROUP
+  data_id: nem-api-server.yaml
+  refresh_interval: 30
+
+logging:
+  level: info
+  format: json
+  output: stdout
+
+tracing:
+  enabled: true
+  endpoint: ${OTEL_ENDPOINT:otel-collector:4317}
+  sampler_ratio: 0.1
+
+metrics:
+  enabled: true
+  port: 9090
+
+auth:
+  jwt:
+    secret: ${JWT_SECRET}
+    access_expire: 3600
+    refresh_expire: 86400
+  password:
+    min_length: 12
+    require_uppercase: true
+    require_lowercase: true
+    require_digit: true
+    require_special: true
+  login:
+    max_attempts: 3
+    lock_duration: 3600

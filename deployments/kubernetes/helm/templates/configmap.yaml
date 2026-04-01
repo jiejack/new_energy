@@ -1,0 +1,104 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "new-energy-monitoring.fullname" . }}-config
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "new-energy-monitoring.labels" . | nindent 4 }}
+data:
+  # 应用配置
+  APP_NAME: "new-energy-monitoring"
+  APP_ENV: {{ .Values.global.namespace | default "production" }}
+  
+  # 日志配置
+  LOG_LEVEL: {{ .Values.logging.level | default "info" }}
+  LOG_FORMAT: {{ .Values.logging.format | default "json" }}
+  
+  # 数据库配置
+  DB_HOST: "{{ .Release.Name }}-postgresql"
+  DB_PORT: "5432"
+  DB_NAME: {{ .Values.postgresql.auth.database | default "nem_system" }}
+  DB_USER: {{ .Values.postgresql.auth.username | default "nem" }}
+  DB_SSL_MODE: "disable"
+  DB_MAX_OPEN_CONNS: "100"
+  DB_MAX_IDLE_CONNS: "20"
+  DB_CONN_MAX_LIFETIME: "3600"
+  
+  # Redis配置
+  REDIS_HOST: "{{ .Release.Name }}-redis-master"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+  REDIS_POOL_SIZE: "100"
+  REDIS_MIN_IDLE_CONNS: "20"
+  
+  # Kafka配置
+  KAFKA_BROKERS: "{{ .Release.Name }}-kafka:9092"
+  KAFKA_TOPIC_PREFIX: "nem"
+  KAFKA_CONSUMER_GROUP: "nem-group"
+  
+  # 服务端口配置
+  API_SERVER_PORT: "{{ .Values.apiServer.service.port | default 8080 }}"
+  COLLECTOR_PORT: "{{ .Values.collector.service.port | default 8081 }}"
+  ALARM_SERVICE_PORT: "{{ .Values.alarmService.service.port | default 8082 }}"
+  COMPUTE_SERVICE_PORT: "{{ .Values.computeService.service.port | default 8083 }}"
+  AI_SERVICE_PORT: "{{ .Values.aiService.service.port | default 8084 }}"
+  SCHEDULER_PORT: "{{ .Values.scheduler.service.port | default 8085 }}"
+  
+  # 监控配置
+  METRICS_ENABLED: "true"
+  METRICS_PORT: "9090"
+  TRACING_ENABLED: {{ .Values.monitoring.enabled | default true | quote }}
+  
+  # 健康检查配置
+  HEALTH_CHECK_PATH: "/health"
+  HEALTH_CHECK_PORT: "{{ .Values.apiServer.service.port | default 8080 }}"
+  
+  # 服务发现配置
+  SERVICE_DISCOVERY_ENABLED: "true"
+  
+  # 采集器配置
+  COLLECTOR_BUFFER_SIZE: "10000"
+  COLLECTOR_BATCH_SIZE: "1000"
+  COLLECTOR_FLUSH_INTERVAL: "5s"
+  
+  # 告警配置
+  ALARM_ENABLED: "true"
+  ALARM_DEDUP_WINDOW: "300s"
+  ALARM_MAX_RETRIES: "3"
+  
+  # 计算服务配置
+  COMPUTE_WORKERS: "10"
+  COMPUTE_QUEUE_SIZE: "10000"
+  
+  # AI服务配置
+  AI_MODEL_PATH: "/app/models"
+  AI_INFERENCE_TIMEOUT: "30s"
+  
+  # 调度器配置
+  SCHEDULER_LOCK_KEY: "nem-scheduler-lock"
+  SCHEDULER_LOCK_TTL: "60s"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "new-energy-monitoring.fullname" . }}-protocols-config
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "new-energy-monitoring.labels" . | nindent 4 }}
+data:
+  # IEC104协议配置
+  IEC104_DEFAULT_PORT: "2404"
+  IEC104_TIMEOUT: "30s"
+  IEC104_MAX_CONNECTIONS: "100"
+  IEC104_BUFFER_SIZE: "4096"
+  
+  # Modbus协议配置
+  MODBUS_DEFAULT_PORT: "502"
+  MODBUS_TIMEOUT: "10s"
+  MODBUS_MAX_CONNECTIONS: "100"
+  
+  # IEC61850协议配置
+  IEC61850_DEFAULT_PORT: "102"
+  IEC61850_TIMEOUT: "30s"
+  IEC61850_MAX_CONNECTIONS: "50"

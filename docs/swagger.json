@@ -1,0 +1,3659 @@
+{
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "新能源监控系统RESTful API接口文档，提供区域管理、厂站管理、设备管理、采集点管理、告警管理、数据查询等功能。",
+        "title": "新能源监控系统 API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "API支持团队",
+            "url": "http://www.new-energy-monitoring.com/support",
+            "email": "support@new-energy-monitoring.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/api/v1",
+    "paths": {
+        "/ai/config/suggest": {
+            "post": {
+                "description": "智能配置建议服务",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI服务"
+                ],
+                "summary": "AI配置建议",
+                "parameters": [
+                    {
+                        "description": "配置建议请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AIConfigSuggestRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.AIConfigSuggestResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/ai/qa": {
+            "post": {
+                "description": "智能问答服务",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI服务"
+                ],
+                "summary": "AI问答",
+                "parameters": [
+                    {
+                        "description": "问答请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AIQARequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.AIQAResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/alarms": {
+            "get": {
+                "description": "获取所有告警的列表，支持分页和过滤",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "告警管理"
+                ],
+                "summary": "获取告警列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "厂站ID",
+                        "name": "station_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "设备ID",
+                        "name": "device_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "告警级别",
+                        "name": "level",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "告警类型",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "开始时间戳",
+                        "name": "start_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "结束时间戳",
+                        "name": "end_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "每页数量",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.PagedResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.AlarmResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/alarms/statistics": {
+            "get": {
+                "description": "获取告警统计数据",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "告警管理"
+                ],
+                "summary": "获取告警统计",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.AlarmStatisticsResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/alarms/{id}": {
+            "get": {
+                "description": "根据ID获取告警详细信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "告警管理"
+                ],
+                "summary": "获取告警详情",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "告警ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.AlarmResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/alarms/{id}/ack": {
+            "put": {
+                "description": "确认指定告警",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "告警管理"
+                ],
+                "summary": "确认告警",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "告警ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "确认信息",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AckAlarmRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.AlarmResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/alarms/{id}/clear": {
+            "put": {
+                "description": "清除指定告警",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "告警管理"
+                ],
+                "summary": "清除告警",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "告警ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "清除信息",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ClearAlarmRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.AlarmResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "description": "用户登录认证",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户管理"
+                ],
+                "summary": "用户登录",
+                "parameters": [
+                    {
+                        "description": "登录信息",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.LoginResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "description": "用户登出",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户管理"
+                ],
+                "summary": "用户登出",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/control/operate": {
+            "post": {
+                "description": "执行遥控操作",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "控制操作"
+                ],
+                "summary": "遥控操作",
+                "parameters": [
+                    {
+                        "description": "遥控操作信息",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ControlOperateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/control/setpoint": {
+            "post": {
+                "description": "执行参数设置操作",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "控制操作"
+                ],
+                "summary": "参数设置",
+                "parameters": [
+                    {
+                        "description": "参数设置信息",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SetPointRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/history": {
+            "get": {
+                "description": "获取指定采集点的历史数据",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "数据查询"
+                ],
+                "summary": "获取历史数据",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "采集点ID",
+                        "name": "point_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "开始时间戳",
+                        "name": "start_time",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "结束时间戳",
+                        "name": "end_time",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "采样间隔(秒)",
+                        "name": "interval",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.HistoryDataResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/realtime": {
+            "get": {
+                "description": "获取指定采集点的实时数据",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "数据查询"
+                ],
+                "summary": "获取实时数据",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "采集点ID列表，逗号分隔",
+                        "name": "point_ids",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.RealtimeDataResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/statistics": {
+            "get": {
+                "description": "获取统计数据",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "数据查询"
+                ],
+                "summary": "获取统计数据",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "厂站ID",
+                        "name": "station_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "统计类型",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "开始时间戳",
+                        "name": "start_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "结束时间戳",
+                        "name": "end_time",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.StatisticsResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/devices": {
+            "get": {
+                "description": "获取所有设备的列表，支持分页和过滤",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "设备管理"
+                ],
+                "summary": "获取设备列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "厂站ID",
+                        "name": "station_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "设备类型",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "每页数量",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.PagedResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.DeviceResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "创建新的设备",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "设备管理"
+                ],
+                "summary": "创建设备",
+                "parameters": [
+                    {
+                        "description": "设备信息",
+                        "name": "device",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateDeviceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.DeviceResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/devices/{id}": {
+            "get": {
+                "description": "根据ID获取设备详细信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "设备管理"
+                ],
+                "summary": "获取设备详情",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "设备ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.DeviceResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "更新设备信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "设备管理"
+                ],
+                "summary": "更新设备",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "设备ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "设备信息",
+                        "name": "device",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateDeviceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.DeviceResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "删除指定设备",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "设备管理"
+                ],
+                "summary": "删除设备",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "设备ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "description": "检查服务是否健康运行",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统"
+                ],
+                "summary": "健康检查",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/points": {
+            "get": {
+                "description": "获取所有采集点的列表，支持分页和过滤",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "采集点管理"
+                ],
+                "summary": "获取采集点列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "设备ID",
+                        "name": "device_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "点类型",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "每页数量",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.PagedResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.PointResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "创建新的采集点",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "采集点管理"
+                ],
+                "summary": "创建采集点",
+                "parameters": [
+                    {
+                        "description": "采集点信息",
+                        "name": "point",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreatePointRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.PointResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/points/{id}": {
+            "get": {
+                "description": "根据ID获取采集点详细信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "采集点管理"
+                ],
+                "summary": "获取采集点详情",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "采集点ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.PointResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "更新采集点信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "采集点管理"
+                ],
+                "summary": "更新采集点",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "采集点ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "采集点信息",
+                        "name": "point",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdatePointRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.PointResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "删除指定采集点",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "采集点管理"
+                ],
+                "summary": "删除采集点",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "采集点ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/ready": {
+            "get": {
+                "description": "检查服务是否就绪",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统"
+                ],
+                "summary": "就绪检查",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/regions": {
+            "get": {
+                "description": "获取所有区域的列表，支持按父区域ID过滤",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "区域管理"
+                ],
+                "summary": "获取区域列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "父区域ID",
+                        "name": "parent_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.RegionResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "创建新的区域",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "区域管理"
+                ],
+                "summary": "创建区域",
+                "parameters": [
+                    {
+                        "description": "区域信息",
+                        "name": "region",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateRegionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.RegionResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/regions/{id}": {
+            "get": {
+                "description": "根据ID获取区域详细信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "区域管理"
+                ],
+                "summary": "获取区域详情",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "区域ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.RegionResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "更新区域信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "区域管理"
+                ],
+                "summary": "更新区域",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "区域ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "区域信息",
+                        "name": "region",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateRegionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.RegionResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "删除指定区域",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "区域管理"
+                ],
+                "summary": "删除区域",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "区域ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/stations": {
+            "get": {
+                "description": "获取所有厂站的列表，支持分页和过滤",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "厂站管理"
+                ],
+                "summary": "获取厂站列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "子区域ID",
+                        "name": "sub_region_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "厂站类型",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "每页数量",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.PagedResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.StationResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "创建新的厂站",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "厂站管理"
+                ],
+                "summary": "创建厂站",
+                "parameters": [
+                    {
+                        "description": "厂站信息",
+                        "name": "station",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateStationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.StationResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/stations/{id}": {
+            "get": {
+                "description": "根据ID获取厂站详细信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "厂站管理"
+                ],
+                "summary": "获取厂站详情",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "厂站ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.StationResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "更新厂站信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "厂站管理"
+                ],
+                "summary": "更新厂站",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "厂站ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "厂站信息",
+                        "name": "station",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateStationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.StationResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "删除指定厂站",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "厂站管理"
+                ],
+                "summary": "删除厂站",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "厂站ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users": {
+            "get": {
+                "description": "获取所有用户的列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户管理"
+                ],
+                "summary": "获取用户列表",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.UserResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "创建新用户",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户管理"
+                ],
+                "summary": "创建用户",
+                "parameters": [
+                    {
+                        "description": "用户信息",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.UserResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{id}": {
+            "get": {
+                "description": "根据ID获取用户详细信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户管理"
+                ],
+                "summary": "获取用户详情",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.UserResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "更新用户信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户管理"
+                ],
+                "summary": "更新用户",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "用户信息",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.UserResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "删除指定用户",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户管理"
+                ],
+                "summary": "删除用户",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{id}/password": {
+            "put": {
+                "description": "修改用户密码",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户管理"
+                ],
+                "summary": "修改密码",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "密码信息",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ChangePasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "dto.AIConfigSuggestRequest": {
+            "type": "object",
+            "required": [
+                "device_id"
+            ],
+            "properties": {
+                "context": {
+                    "type": "string",
+                    "example": "设备温度过高"
+                },
+                "device_id": {
+                    "type": "string",
+                    "example": "device-001"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "alarm"
+                }
+            }
+        },
+        "dto.AIConfigSuggestResponse": {
+            "type": "object",
+            "properties": {
+                "suggestions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.ConfigSuggestion"
+                    }
+                }
+            }
+        },
+        "dto.AIQARequest": {
+            "type": "object",
+            "required": [
+                "question"
+            ],
+            "properties": {
+                "context": {
+                    "type": "string",
+                    "example": "逆变器温度过高"
+                },
+                "question": {
+                    "type": "string",
+                    "example": "1号逆变器为什么报警？"
+                },
+                "session_id": {
+                    "type": "string",
+                    "example": "session-001"
+                }
+            }
+        },
+        "dto.AIQAResponse": {
+            "type": "object",
+            "properties": {
+                "answer": {
+                    "type": "string",
+                    "example": "1号逆变器温度为87.5°C，已超过85°C阈值。"
+                },
+                "confidence": {
+                    "type": "number",
+                    "example": 0.95
+                },
+                "session_id": {
+                    "type": "string",
+                    "example": "session-001"
+                }
+            }
+        },
+        "dto.AckAlarmRequest": {
+            "type": "object",
+            "required": [
+                "operator"
+            ],
+            "properties": {
+                "comment": {
+                    "type": "string",
+                    "example": "已确认，正在处理"
+                },
+                "operator": {
+                    "type": "string",
+                    "example": "admin"
+                }
+            }
+        },
+        "dto.AlarmResponse": {
+            "type": "object",
+            "properties": {
+                "acknowledged_at": {
+                    "type": "string"
+                },
+                "acknowledged_by": {
+                    "type": "string",
+                    "example": "admin"
+                },
+                "cleared_at": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "device_id": {
+                    "type": "string",
+                    "example": "device-001"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "alarm-001"
+                },
+                "level": {
+                    "type": "integer",
+                    "example": 3
+                },
+                "message": {
+                    "type": "string",
+                    "example": "逆变器温度为87.5°C，已超过85°C阈值"
+                },
+                "point_id": {
+                    "type": "string",
+                    "example": "point-001"
+                },
+                "station_id": {
+                    "type": "string",
+                    "example": "station-001"
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "threshold": {
+                    "type": "number",
+                    "example": 85
+                },
+                "title": {
+                    "type": "string",
+                    "example": "逆变器温度过高"
+                },
+                "triggered_at": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "limit"
+                },
+                "value": {
+                    "type": "number",
+                    "example": 87.5
+                }
+            }
+        },
+        "dto.AlarmStatisticsResponse": {
+            "type": "object",
+            "properties": {
+                "acknowledged": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "active": {
+                    "type": "integer",
+                    "example": 15
+                },
+                "by_level": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "by_type": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "cleared": {
+                    "type": "integer",
+                    "example": 65
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 100
+                }
+            }
+        },
+        "dto.ChangePasswordRequest": {
+            "type": "object",
+            "required": [
+                "new_password",
+                "old_password"
+            ],
+            "properties": {
+                "new_password": {
+                    "type": "string",
+                    "example": "newpass123"
+                },
+                "old_password": {
+                    "type": "string",
+                    "example": "oldpass123"
+                }
+            }
+        },
+        "dto.ClearAlarmRequest": {
+            "type": "object",
+            "required": [
+                "operator"
+            ],
+            "properties": {
+                "comment": {
+                    "type": "string",
+                    "example": "问题已解决"
+                },
+                "operator": {
+                    "type": "string",
+                    "example": "admin"
+                }
+            }
+        },
+        "dto.ConfigSuggestion": {
+            "type": "object",
+            "properties": {
+                "current_value": {},
+                "name": {
+                    "type": "string",
+                    "example": "温度告警阈值"
+                },
+                "priority": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "reason": {
+                    "type": "string",
+                    "example": "根据历史数据分析，建议提高阈值以减少误报"
+                },
+                "suggested_value": {},
+                "type": {
+                    "type": "string",
+                    "example": "alarm_threshold"
+                }
+            }
+        },
+        "dto.ControlOperateRequest": {
+            "type": "object",
+            "required": [
+                "operator",
+                "point_id",
+                "value"
+            ],
+            "properties": {
+                "operator": {
+                    "type": "string",
+                    "example": "admin"
+                },
+                "point_id": {
+                    "type": "string",
+                    "example": "point-001"
+                },
+                "reason": {
+                    "type": "string",
+                    "example": "设备检修"
+                },
+                "value": {}
+            }
+        },
+        "dto.CreateDeviceRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "name",
+                "station_id",
+                "type"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "INV_001"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "逆变器设备"
+                },
+                "install_date": {
+                    "type": "string",
+                    "example": "2024-01-01"
+                },
+                "ip_address": {
+                    "type": "string",
+                    "example": "192.168.1.101"
+                },
+                "manufacturer": {
+                    "type": "string",
+                    "example": "华为"
+                },
+                "model": {
+                    "type": "string",
+                    "example": "SUN2000-100KTL"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "1号逆变器"
+                },
+                "port": {
+                    "type": "integer",
+                    "example": 502
+                },
+                "protocol": {
+                    "type": "string",
+                    "example": "modbus"
+                },
+                "rated_current": {
+                    "type": "number",
+                    "example": 150
+                },
+                "rated_power": {
+                    "type": "number",
+                    "example": 100
+                },
+                "rated_voltage": {
+                    "type": "number",
+                    "example": 380
+                },
+                "serial_number": {
+                    "type": "string",
+                    "example": "SN123456"
+                },
+                "slave_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "station_id": {
+                    "type": "string",
+                    "example": "station-001"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "inverter"
+                },
+                "warranty_date": {
+                    "type": "string",
+                    "example": "2025-01-01"
+                }
+            }
+        },
+        "dto.CreatePointRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "name",
+                "type"
+            ],
+            "properties": {
+                "address": {
+                    "type": "integer",
+                    "example": 40001
+                },
+                "alarm_high": {
+                    "type": "number",
+                    "example": 95
+                },
+                "alarm_low": {
+                    "type": "number",
+                    "example": 0
+                },
+                "code": {
+                    "type": "string",
+                    "example": "INV_001_P"
+                },
+                "data_format": {
+                    "type": "string",
+                    "example": "float32"
+                },
+                "deadband": {
+                    "type": "number",
+                    "example": 0.1
+                },
+                "description": {
+                    "type": "string",
+                    "example": "有功功率采集点"
+                },
+                "device_id": {
+                    "type": "string",
+                    "example": "device-001"
+                },
+                "is_alarm": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "max_value": {
+                    "type": "number",
+                    "example": 100
+                },
+                "min_value": {
+                    "type": "number",
+                    "example": 0
+                },
+                "name": {
+                    "type": "string",
+                    "example": "有功功率"
+                },
+                "precision": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "protocol": {
+                    "type": "string",
+                    "example": "modbus"
+                },
+                "scan_interval": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "station_id": {
+                    "type": "string",
+                    "example": "station-001"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "yaoc"
+                },
+                "unit": {
+                    "type": "string",
+                    "example": "kW"
+                }
+            }
+        },
+        "dto.CreateRegionRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "name"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "EAST_SH"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "上海子区域"
+                },
+                "level": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "name": {
+                    "type": "string",
+                    "example": "上海子区域"
+                },
+                "parent_id": {
+                    "type": "string",
+                    "example": "region-001"
+                },
+                "sort_order": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "dto.CreateStationRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "name",
+                "sub_region_id",
+                "type"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "上海市浦东新区"
+                },
+                "capacity": {
+                    "type": "number",
+                    "example": 100
+                },
+                "code": {
+                    "type": "string",
+                    "example": "PV_SH_002"
+                },
+                "commission_date": {
+                    "type": "string",
+                    "example": "2024-01-01"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "光伏电站"
+                },
+                "latitude": {
+                    "type": "number",
+                    "example": 31.2304
+                },
+                "longitude": {
+                    "type": "number",
+                    "example": 121.4737
+                },
+                "name": {
+                    "type": "string",
+                    "example": "上海光伏电站2号"
+                },
+                "sub_region_id": {
+                    "type": "string",
+                    "example": "region-002"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "pv"
+                },
+                "voltage_level": {
+                    "type": "string",
+                    "example": "35kV"
+                }
+            }
+        },
+        "dto.CreateUserRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "user@example.com"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "password123"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "13800138000"
+                },
+                "real_name": {
+                    "type": "string",
+                    "example": "张三"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "user001"
+                }
+            }
+        },
+        "dto.DeviceBrief": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "INV_001"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "device-001"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "1号逆变器"
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "type": {
+                    "type": "string",
+                    "example": "inverter"
+                }
+            }
+        },
+        "dto.DeviceResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "INV_001"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "逆变器设备"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "device-001"
+                },
+                "install_date": {
+                    "type": "string"
+                },
+                "ip_address": {
+                    "type": "string",
+                    "example": "192.168.1.101"
+                },
+                "last_online": {
+                    "type": "string"
+                },
+                "manufacturer": {
+                    "type": "string",
+                    "example": "华为"
+                },
+                "model": {
+                    "type": "string",
+                    "example": "SUN2000-100KTL"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "1号逆变器"
+                },
+                "points": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.PointBrief"
+                    }
+                },
+                "port": {
+                    "type": "integer",
+                    "example": 502
+                },
+                "protocol": {
+                    "type": "string",
+                    "example": "modbus"
+                },
+                "rated_current": {
+                    "type": "number",
+                    "example": 150
+                },
+                "rated_power": {
+                    "type": "number",
+                    "example": 100
+                },
+                "rated_voltage": {
+                    "type": "number",
+                    "example": 380
+                },
+                "serial_number": {
+                    "type": "string",
+                    "example": "SN123456"
+                },
+                "slave_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "station_id": {
+                    "type": "string",
+                    "example": "station-001"
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "type": {
+                    "type": "string",
+                    "example": "inverter"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "warranty_date": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 400
+                },
+                "message": {
+                    "type": "string",
+                    "example": "请求参数错误"
+                },
+                "timestamp": {
+                    "type": "integer",
+                    "example": 1709500800000
+                }
+            }
+        },
+        "dto.HistoryDataResponse": {
+            "type": "object",
+            "properties": {
+                "point_id": {
+                    "type": "string",
+                    "example": "point-001"
+                },
+                "quality": {
+                    "type": "integer",
+                    "example": 192
+                },
+                "timestamp": {
+                    "type": "integer",
+                    "example": 1709500800000
+                },
+                "value": {
+                    "type": "number",
+                    "example": 85.6
+                }
+            }
+        },
+        "dto.LoginRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string",
+                    "example": "password123"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "admin"
+                }
+            }
+        },
+        "dto.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "expires_at": {
+                    "type": "integer",
+                    "example": 1709587200000
+                },
+                "token": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                },
+                "user": {
+                    "$ref": "#/definitions/dto.UserResponse"
+                }
+            }
+        },
+        "dto.PagedResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "data": {},
+                "message": {
+                    "type": "string",
+                    "example": "success"
+                },
+                "page": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "page_size": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "timestamp": {
+                    "type": "integer",
+                    "example": 1709500800000
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 100
+                }
+            }
+        },
+        "dto.PointBrief": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "INV_001_P"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "point-001"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "有功功率"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "yaoc"
+                }
+            }
+        },
+        "dto.PointResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "integer",
+                    "example": 40001
+                },
+                "alarm_high": {
+                    "type": "number",
+                    "example": 95
+                },
+                "alarm_low": {
+                    "type": "number",
+                    "example": 0
+                },
+                "code": {
+                    "type": "string",
+                    "example": "INV_001_P"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "data_format": {
+                    "type": "string",
+                    "example": "float32"
+                },
+                "deadband": {
+                    "type": "number",
+                    "example": 0.1
+                },
+                "description": {
+                    "type": "string",
+                    "example": "有功功率采集点"
+                },
+                "device_id": {
+                    "type": "string",
+                    "example": "device-001"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "point-001"
+                },
+                "is_alarm": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "max_value": {
+                    "type": "number",
+                    "example": 100
+                },
+                "min_value": {
+                    "type": "number",
+                    "example": 0
+                },
+                "name": {
+                    "type": "string",
+                    "example": "有功功率"
+                },
+                "precision": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "protocol": {
+                    "type": "string",
+                    "example": "modbus"
+                },
+                "scan_interval": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "station_id": {
+                    "type": "string",
+                    "example": "station-001"
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "type": {
+                    "type": "string",
+                    "example": "yaoc"
+                },
+                "unit": {
+                    "type": "string",
+                    "example": "kW"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RealtimeDataResponse": {
+            "type": "object",
+            "properties": {
+                "point_id": {
+                    "type": "string",
+                    "example": "point-001"
+                },
+                "quality": {
+                    "type": "integer",
+                    "example": 192
+                },
+                "timestamp": {
+                    "type": "integer",
+                    "example": 1709500800000
+                },
+                "value": {
+                    "type": "number",
+                    "example": 85.6
+                }
+            }
+        },
+        "dto.RegionResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "EAST"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "华东区域"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "region-001"
+                },
+                "level": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "华东区域"
+                },
+                "parent_id": {
+                    "type": "string",
+                    "example": "region-000"
+                },
+                "sort_order": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "sub_regions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.RegionResponse"
+                    }
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.Response": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "data": {},
+                "message": {
+                    "type": "string",
+                    "example": "success"
+                },
+                "timestamp": {
+                    "type": "integer",
+                    "example": 1709500800000
+                }
+            }
+        },
+        "dto.SetPointRequest": {
+            "type": "object",
+            "required": [
+                "operator",
+                "point_id",
+                "value"
+            ],
+            "properties": {
+                "operator": {
+                    "type": "string",
+                    "example": "admin"
+                },
+                "point_id": {
+                    "type": "string",
+                    "example": "point-001"
+                },
+                "reason": {
+                    "type": "string",
+                    "example": "调整参数"
+                },
+                "value": {
+                    "type": "number",
+                    "example": 50
+                }
+            }
+        },
+        "dto.StationResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "上海市浦东新区"
+                },
+                "capacity": {
+                    "type": "number",
+                    "example": 50
+                },
+                "code": {
+                    "type": "string",
+                    "example": "PV_SH_001"
+                },
+                "commission_date": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "光伏电站"
+                },
+                "devices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.DeviceBrief"
+                    }
+                },
+                "id": {
+                    "type": "string",
+                    "example": "station-001"
+                },
+                "latitude": {
+                    "type": "number",
+                    "example": 31.2304
+                },
+                "longitude": {
+                    "type": "number",
+                    "example": 121.4737
+                },
+                "name": {
+                    "type": "string",
+                    "example": "上海光伏电站1号"
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "sub_region_id": {
+                    "type": "string",
+                    "example": "region-002"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "pv"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "voltage_level": {
+                    "type": "string",
+                    "example": "35kV"
+                }
+            }
+        },
+        "dto.StatisticsResponse": {
+            "type": "object",
+            "properties": {
+                "availability": {
+                    "type": "number",
+                    "example": 0.98
+                },
+                "daily_energy": {
+                    "type": "number",
+                    "example": 850.3
+                },
+                "date": {
+                    "type": "string",
+                    "example": "2024-03-01"
+                },
+                "monthly_energy": {
+                    "type": "number",
+                    "example": 25600.8
+                },
+                "pr": {
+                    "type": "number",
+                    "example": 0.85
+                },
+                "station_id": {
+                    "type": "string",
+                    "example": "station-001"
+                },
+                "total_power": {
+                    "type": "number",
+                    "example": 1250.5
+                }
+            }
+        },
+        "dto.UpdateDeviceRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "逆变器设备"
+                },
+                "ip_address": {
+                    "type": "string",
+                    "example": "192.168.1.101"
+                },
+                "manufacturer": {
+                    "type": "string",
+                    "example": "华为"
+                },
+                "model": {
+                    "type": "string",
+                    "example": "SUN2000-100KTL"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "1号逆变器"
+                },
+                "port": {
+                    "type": "integer",
+                    "example": 502
+                },
+                "protocol": {
+                    "type": "string",
+                    "example": "modbus"
+                },
+                "rated_current": {
+                    "type": "number",
+                    "example": 150
+                },
+                "rated_power": {
+                    "type": "number",
+                    "example": 100
+                },
+                "rated_voltage": {
+                    "type": "number",
+                    "example": 380
+                },
+                "serial_number": {
+                    "type": "string",
+                    "example": "SN123456"
+                },
+                "slave_id": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "dto.UpdatePointRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "alarm_high": {
+                    "type": "number",
+                    "example": 95
+                },
+                "alarm_low": {
+                    "type": "number",
+                    "example": 0
+                },
+                "deadband": {
+                    "type": "number",
+                    "example": 0.1
+                },
+                "description": {
+                    "type": "string",
+                    "example": "有功功率采集点"
+                },
+                "is_alarm": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "max_value": {
+                    "type": "number",
+                    "example": 100
+                },
+                "min_value": {
+                    "type": "number",
+                    "example": 0
+                },
+                "name": {
+                    "type": "string",
+                    "example": "有功功率"
+                },
+                "precision": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "scan_interval": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "unit": {
+                    "type": "string",
+                    "example": "kW"
+                }
+            }
+        },
+        "dto.UpdateRegionRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "上海子区域"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "上海子区域"
+                },
+                "sort_order": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "dto.UpdateStationRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "上海市浦东新区"
+                },
+                "capacity": {
+                    "type": "number",
+                    "example": 100
+                },
+                "description": {
+                    "type": "string",
+                    "example": "光伏电站"
+                },
+                "latitude": {
+                    "type": "number",
+                    "example": 31.2304
+                },
+                "longitude": {
+                    "type": "number",
+                    "example": 121.4737
+                },
+                "name": {
+                    "type": "string",
+                    "example": "上海光伏电站2号"
+                },
+                "voltage_level": {
+                    "type": "string",
+                    "example": "35kV"
+                }
+            }
+        },
+        "dto.UpdateUserRequest": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "user@example.com"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "13800138000"
+                },
+                "real_name": {
+                    "type": "string",
+                    "example": "张三"
+                }
+            }
+        },
+        "dto.UserResponse": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "admin@example.com"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "user-001"
+                },
+                "last_login": {
+                    "type": "string"
+                },
+                "login_count": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "13800138000"
+                },
+                "real_name": {
+                    "type": "string",
+                    "example": "管理员"
+                },
+                "roles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "admin",
+                        "operator"
+                    ]
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "admin"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "JWT认证令牌，格式: Bearer {token}",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    },
+    "tags": [
+        {
+            "description": "区域的增删改查操作",
+            "name": "区域管理"
+        },
+        {
+            "description": "厂站的增删改查操作",
+            "name": "厂站管理"
+        },
+        {
+            "description": "设备的增删改查操作",
+            "name": "设备管理"
+        },
+        {
+            "description": "采集点的增删改查操作",
+            "name": "采集点管理"
+        },
+        {
+            "description": "告警查询和处理操作",
+            "name": "告警管理"
+        },
+        {
+            "description": "实时数据和历史数据查询",
+            "name": "数据查询"
+        },
+        {
+            "description": "遥控和参数设置操作",
+            "name": "控制操作"
+        },
+        {
+            "description": "智能问答和配置建议",
+            "name": "AI服务"
+        },
+        {
+            "description": "用户认证和管理操作",
+            "name": "用户管理"
+        }
+    ]
+}
