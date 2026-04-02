@@ -1,0 +1,278 @@
+name: Test Coverage
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+env:
+  GO_VERSION: '1.24'
+  NODE_VERSION: '20'
+
+jobs:
+  # 后端覆盖率报告
+  backend-coverage:
+    name: Backend Coverage
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: nem_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Generate coverage report
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_NAME: nem_test
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+        run: |
+          go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+          go tool cover -html=coverage.out -o coverage.html
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.out
+          flags: backend
+          name: backend-coverage
+          fail_ci_if_error: false
+          verbose: true
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage-report
+          path: |
+            coverage.out
+            coverage.html
+          retention-days: 30
+
+      - name: Coverage threshold check
+        run: |
+          COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+          echo "Total coverage: ${COVERAGE}%"
+          if (( $(echo "$COVERAGE < 60" | bc -l) )); then
+            echo "Coverage is below 60%"
+            exit 1
+          fi
+
+  # 前端覆盖率报告
+  frontend-coverage:
+    name: Frontend Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./web
+        run: npm ci
+
+      - name: Generate coverage report
+        working-directory: ./web
+        run: npm run test:coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./web/coverage/lcov.info
+          flags: frontend
+          name: frontend-coverage
+          fail_ci_if_error: false
+          verbose: true
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage-report
+          path: web/coverage/
+          retention-days: 30
+
+  # 集成测试覆盖率
+  integration-coverage:
+    name: Integration Test Coverage
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: nem_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: Run integration tests
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_NAME: nem_test
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          INTEGRATION_TEST: true
+        run: |
+          go test -v -race -coverprofile=integration-coverage.out -covermode=atomic ./tests/integration/...
+
+      - name: Upload integration coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./integration-coverage.out
+          flags: integration
+          name: integration-coverage
+          fail_ci_if_error: false
+          verbose: true
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-coverage-report
+          path: integration-coverage.out
+          retention-days: 30
+
+  # 覆盖率汇总报告
+  coverage-summary:
+    name: Coverage Summary
+    runs-on: ubuntu-latest
+    needs: [backend-coverage, frontend-coverage]
+
+    steps:
+      - name: Download backend coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-coverage-report
+          path: backend-coverage
+
+      - name: Download frontend coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-coverage-report
+          path: frontend-coverage
+
+      - name: Generate summary report
+        run: |
+          echo "# Test Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Backend Coverage" >> $GITHUB_STEP_SUMMARY
+          if [ -f backend-coverage/coverage.out ]; then
+            go tool cover -func=backend-coverage/coverage.out | grep total >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Frontend Coverage" >> $GITHUB_STEP_SUMMARY
+          echo "See frontend coverage report artifact for details" >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment PR with coverage
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let backendCoverage = 'N/A';
+            if (fs.existsSync('backend-coverage/coverage.out')) {
+              const output = require('child_process').execSync('go tool cover -func=backend-coverage/coverage.out | grep total').toString();
+              backendCoverage = output.trim();
+            }
+
+            const comment = `## Test Coverage Report
+
+            ### Backend Coverage
+            ${backendCoverage}
+
+            ### Frontend Coverage
+            See artifacts for detailed coverage reports.
+
+            [View detailed reports in Artifacts](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID})`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

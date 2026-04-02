@@ -1,0 +1,77 @@
+# 后端服务 Dockerfile
+# 多阶段构建优化镜像大小
+
+# ================================
+# 阶段1: 构建阶段
+# ================================
+FROM golang:1.24-alpine AS builder
+
+# 设置工作目录
+WORKDIR /build
+
+# 安装构建依赖
+RUN apk add --no-cache git make gcc musl-dev
+
+# 复制 go.mod 和 go.sum 并下载依赖
+COPY go.mod go.sum ./
+RUN go mod download
+
+# 复制源代码
+COPY . .
+
+# 构建所有服务二进制文件
+# 使用 -ldflags="-s -w" 去除调试信息，减小二进制文件大小
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /api-server ./cmd/api-server
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /collector ./cmd/collector
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /alarm ./cmd/alarm
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /compute ./cmd/compute
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /ai-service ./cmd/ai-service
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /scheduler ./cmd/scheduler
+
+# ================================
+# 阶段2: 运行时阶段
+# ================================
+FROM alpine:latest
+
+# 安装运行时依赖
+RUN apk add --no-cache ca-certificates tzdata curl
+
+# 创建非 root 用户
+RUN addgroup -g 1000 -S appgroup && \
+    adduser -u 1000 -S appuser -G appgroup
+
+# 设置工作目录
+WORKDIR /app
+
+# 从构建阶段复制二进制文件
+COPY --from=builder /api-server /app/
+COPY --from=builder /collector /app/
+COPY --from=builder /alarm /app/
+COPY --from=builder /compute /app/
+COPY --from=builder /ai-service /app/
+COPY --from=builder /scheduler /app/
+
+# 复制配置文件
+COPY --from=builder /build/configs /app/configs
+
+# 设置文件权限
+RUN chown -R appuser:appgroup /app
+
+# 切换到非 root 用户
+USER appuser
+
+# 设置环境变量
+ENV TZ=Asia/Shanghai
+ENV GIN_MODE=release
+
+# 暴露端口
+# 8080: API 服务端口
+# 9090: Prometheus 指标端口
+EXPOSE 8080 9090
+
+# 健康检查配置
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+# 默认入口点
+ENTRYPOINT ["/app/api-server"]

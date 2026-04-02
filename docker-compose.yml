@@ -1,0 +1,129 @@
+# Docker Compose 开发环境配置
+# 用于本地开发和测试
+
+version: '3.8'
+
+services:
+  # ================================
+  # 数据库服务
+  # ================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: nem-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: nem_system
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d nem_system"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - nem-network
+
+  # ================================
+  # 缓存服务
+  # ================================
+  redis:
+    image: redis:7-alpine
+    container_name: nem-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - nem-network
+
+  # ================================
+  # 后端服务
+  # ================================
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: nem-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    environment:
+      - GIN_MODE=release
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=nem_system
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    volumes:
+      - ./configs:/app/configs:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - nem-network
+
+  # ================================
+  # 前端服务
+  # ================================
+  frontend:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: nem-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    networks:
+      - nem-network
+
+# ================================
+# 网络配置
+# ================================
+networks:
+  nem-network:
+    driver: bridge
+    name: nem-network
+
+# ================================
+# 数据卷配置
+# ================================
+volumes:
+  postgres_data:
+    name: nem-postgres-data
+  redis_data:
+    name: nem-redis-data

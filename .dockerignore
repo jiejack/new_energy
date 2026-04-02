@@ -1,0 +1,94 @@
+# Git 相关
+.git
+.gitignore
+.gitattributes
+
+# 文档
+*.md
+docs/
+LICENSE
+
+# CI/CD 配置
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# IDE 配置
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# 测试相关
+tests/
+*_test.go
+**/__tests__/
+**/*.test.ts
+**/*.spec.ts
+coverage/
+.coverage
+*.cover
+*.out
+
+# 前端构建产物（后端不需要）
+web/node_modules/
+web/dist/
+web/.vite/
+web/.cache/
+
+# 后端构建产物
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+bin/
+tmp/
+
+# 依赖目录
+vendor/
+node_modules/
+
+# 配置文件（敏感信息）
+.env
+.env.*
+*.env
+configs/config-local.yaml
+configs/config-secret.yaml
+
+# 日志文件
+*.log
+logs/
+
+# 临时文件
+tmp/
+temp/
+*.tmp
+*.temp
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# Docker 相关
+docker-compose.override.yml
+.docker/
+
+# Kubernetes 配置
+deployments/kubernetes/
+
+# 性能测试
+scripts/performance/
+tests/performance/
+
+# E2E 测试
+web/e2e/
+web/playwright-report/
+web/test-results/
+
+# 备份文件
+*.bak
+*.backup

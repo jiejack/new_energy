@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: new-energy-monitoring
+  labels:
+    name: new-energy-monitoring
+    app.kubernetes.io/name: new-energy-monitoring
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: kubectl
+  annotations:
+    description: "New Energy Monitoring System Namespace"
+    owner: "platform-team"

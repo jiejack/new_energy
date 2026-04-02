@@ -1,0 +1,237 @@
+# =============================================================================
+# API Server Service
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: nem-api-server
+  namespace: new-energy-monitoring
+  labels:
+    app.kubernetes.io/name: new-energy-monitoring
+    app.kubernetes.io/component: api-server
+    app.kubernetes.io/version: "1.0.0"
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: new-energy-monitoring
+    app.kubernetes.io/component: api-server
+
+---
+# =============================================================================
+# Collector Service
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: nem-collector
+  namespace: new-energy-monitoring
+  labels:
+    app.kubernetes.io/name: new-energy-monitoring
+    app.kubernetes.io/component: collector
+    app.kubernetes.io/version: "1.0.0"
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8081
+      targetPort: http
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: new-energy-monitoring
+    app.kubernetes.io/component: collector
+
+---
+# =============================================================================
+# Alarm Service Service
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: nem-alarm-service
+  namespace: new-energy-monitoring
+  labels:
+    app.kubernetes.io/name: new-energy-monitoring
+    app.kubernetes.io/component: alarm-service
+    app.kubernetes.io/version: "1.0.0"
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8082
+      targetPort: http
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: new-energy-monitoring
+    app.kubernetes.io/component: alarm-service
+
+---
+# =============================================================================
+# Compute Service Service
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: nem-compute-service
+  namespace: new-energy-monitoring
+  labels:
+    app.kubernetes.io/name: new-energy-monitoring
+    app.kubernetes.io/component: compute-service
+    app.kubernetes.io/version: "1.0.0"
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8083
+      targetPort: http
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: new-energy-monitoring
+    app.kubernetes.io/component: compute-service
+
+---
+# =============================================================================
+# AI Service Service
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: nem-ai-service
+  namespace: new-energy-monitoring
+  labels:
+    app.kubernetes.io/name: new-energy-monitoring
+    app.kubernetes.io/component: ai-service
+    app.kubernetes.io/version: "1.0.0"
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8084
+      targetPort: http
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: new-energy-monitoring
+    app.kubernetes.io/component: ai-service
+
+---
+# =============================================================================
+# Scheduler Service
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: nem-scheduler
+  namespace: new-energy-monitoring
+  labels:
+    app.kubernetes.io/name: new-energy-monitoring
+    app.kubernetes.io/component: scheduler
+    app.kubernetes.io/version: "1.0.0"
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8085
+      targetPort: http
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: new-energy-monitoring
+    app.kubernetes.io/component: scheduler
+
+---
+# =============================================================================
+# Frontend Service
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: nem-frontend
+  namespace: new-energy-monitoring
+  labels:
+    app.kubernetes.io/name: new-energy-monitoring
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/version: "1.0.0"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: new-energy-monitoring
+    app.kubernetes.io/component: frontend
+
+---
+# =============================================================================
+# Headless Service for StatefulSet (if needed)
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: nem-headless
+  namespace: new-energy-monitoring
+  labels:
+    app.kubernetes.io/name: new-energy-monitoring
+    app.kubernetes.io/component: headless
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: new-energy-monitoring

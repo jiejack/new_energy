@@ -1606,9 +1606,340 @@ kubectl create secret generic nem-secrets \
 
 ---
 
-## 9. 附录
+## 9. 发布流程
 
-### 9.1 常用命令速查
+### 9.1 版本管理
+
+#### 版本号规范
+
+采用语义化版本号：`MAJOR.MINOR.PATCH`
+
+- **MAJOR**：不兼容的API变更
+- **MINOR**：向后兼容的功能新增
+- **PATCH**：向后兼容的问题修复
+
+示例：
+- `v1.0.0`：初始版本
+- `v1.1.0`：新增功能
+- `v1.1.1`：Bug修复
+
+#### 分支管理
+
+```
+main (生产分支)
+  ├── develop (开发分支)
+  │   ├── feature/xxx (功能分支)
+  │   ├── bugfix/xxx (修复分支)
+  │   └── release/v1.1.0 (发布分支)
+  └── hotfix/xxx (紧急修复分支)
+```
+
+### 9.2 发布流程
+
+#### 标准发布流程
+
+```
+1. 代码开发
+   ↓
+2. 代码审查
+   ↓
+3. 自动化测试
+   ↓
+4. 构建镜像
+   ↓
+5. 部署到测试环境
+   ↓
+6. 测试验证
+   ↓
+7. 部署到预发布环境
+   ↓
+8. 生产环境发布
+   ↓
+9. 发布后验证
+   ↓
+10. 监控观察
+```
+
+#### CI/CD流程
+
+**GitHub Actions配置示例**
+
+```yaml
+# .github/workflows/cd.yml
+name: CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - release/*
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Run tests
+      run: |
+        go test -v -race -coverprofile=coverage.out ./...
+
+    - name: Build Docker image
+      run: |
+        docker build -t ${{ secrets.REGISTRY }}/nem-api-server:${{ github.sha }} \
+          -f deployments/docker/Dockerfile \
+          --build-arg SERVICE=api-server .
+
+    - name: Push to registry
+      run: |
+        echo ${{ secrets.REGISTRY_PASSWORD }} | docker login -u ${{ secrets.REGISTRY_USER }} --password-stdin ${{ secrets.REGISTRY }}
+        docker push ${{ secrets.REGISTRY }}/nem-api-server:${{ github.sha }}
+
+    - name: Deploy to staging
+      if: github.ref == 'refs/heads/develop'
+      run: |
+        kubectl set image deployment/api-server \
+          api-server=${{ secrets.REGISTRY }}/nem-api-server:${{ github.sha }} \
+          -n nem-staging
+
+    - name: Deploy to production
+      if: github.ref == 'refs/heads/main'
+      run: |
+        kubectl set image deployment/api-server \
+          api-server=${{ secrets.REGISTRY }}/nem-api-server:${{ github.sha }} \
+          -n nem-system
+```
+
+### 9.3 发布策略
+
+#### 滚动发布
+
+```bash
+# Kubernetes默认使用滚动更新
+kubectl set image deployment/api-server \
+  api-server=nem-api-server:v1.1.0 \
+  -n nem-system
+
+# 查看更新状态
+kubectl rollout status deployment/api-server -n nem-system
+
+# 查看更新历史
+kubectl rollout history deployment/api-server -n nem-system
+```
+
+**滚动更新配置**
+
+```yaml
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1          # 最多可以超出期望副本数的数量
+      maxUnavailable: 0    # 最多不可用的副本数
+```
+
+#### 蓝绿发布
+
+```bash
+# 1. 部署新版本（绿色环境）
+kubectl apply -f deployment-api-server-green.yaml -n nem-system
+
+# 2. 验证新版本
+kubectl exec -it api-server-green-pod -n nem-system -- curl http://localhost:8080/health
+
+# 3. 切换流量到新版本
+kubectl patch service api-server -n nem-system -p '{"spec":{"selector":{"version":"green"}}}'
+
+# 4. 观察一段时间后删除旧版本
+kubectl delete deployment api-server-blue -n nem-system
+```
+
+#### 金丝雀发布
+
+```bash
+# 1. 部署金丝雀版本（10%流量）
+kubectl apply -f deployment-api-server-canary.yaml -n nem-system
+
+# 2. 逐步增加流量
+# 10% -> 25% -> 50% -> 100%
+kubectl scale deployment api-server-canary --replicas=1 -n nem-system
+kubectl scale deployment api-server --replicas=9 -n nem-system
+
+# 3. 监控指标
+# 观察错误率、响应时间等指标
+
+# 4. 完成发布
+kubectl scale deployment api-server --replicas=10 -n nem-system
+kubectl delete deployment api-server-canary -n nem-system
+```
+
+### 9.4 发布检查清单
+
+#### 发布前检查
+
+- [ ] 代码已合并到发布分支
+- [ ] 所有测试通过
+- [ ] 代码审查完成
+- [ ] 变更日志已更新
+- [ ] 数据库迁移脚本已准备
+- [ ] 配置文件已更新
+- [ ] 回滚方案已准备
+- [ ] 相关人员已通知
+
+#### 发布中监控
+
+- [ ] 服务健康检查
+- [ ] 错误率监控
+- [ ] 响应时间监控
+- [ ] 资源使用监控
+- [ ] 业务指标监控
+
+#### 发布后验证
+
+- [ ] 功能验证测试
+- [ ] 性能测试
+- [ ] 日志检查
+- [ ] 告警检查
+- [ ] 用户反馈
+
+### 9.5 回滚操作
+
+#### 快速回滚
+
+```bash
+# 回滚到上一版本
+kubectl rollout undo deployment/api-server -n nem-system
+
+# 回滚到指定版本
+kubectl rollout undo deployment/api-server --to-revision=2 -n nem-system
+
+# 查看回滚状态
+kubectl rollout status deployment/api-server -n nem-system
+```
+
+#### Helm回滚
+
+```bash
+# 查看发布历史
+helm history nem-system -n nem-system
+
+# 回滚到指定版本
+helm rollback nem-system 2 -n nem-system
+
+# 查看回滚状态
+helm status nem-system -n nem-system
+```
+
+#### 数据库回滚
+
+```bash
+# 执行数据库回滚脚本
+kubectl exec -it migrate-pod -n nem-system -- \
+  ./migrate -database "postgres://user:pass@postgres:5432/nem_system?sslmode=disable" \
+  -path /migrations \
+  down 1
+
+# 恢复数据备份（如果需要）
+kubectl exec -it postgres-pod -n nem-system -- \
+  pg_restore -U postgres -d nem_system --clean /backup/pre-release.dump
+```
+
+### 9.6 发布窗口
+
+#### 常规发布
+
+- **时间**：每周二、周四 10:00-18:00
+- **要求**：
+  - 避开业务高峰期
+  - 确保相关人员在线
+  - 提前1天通知
+
+#### 紧急发布
+
+- **条件**：
+  - 修复P0级故障
+  - 安全漏洞修复
+  - 数据丢失风险
+- **流程**：
+  - 立即通知相关人员
+  - 快速评审
+  - 发布并验证
+
+#### 发布冻结期
+
+- **时间**：每月最后3个工作日
+- **原因**：月度结算、报表生成
+- **例外**：紧急修复需CTO审批
+
+### 9.7 发布通知模板
+
+#### 发布前通知
+
+```
+主题：【发布通知】新能源监控系统 v1.1.0 发布计划
+
+各位同事：
+
+我们计划于 YYYY-MM-DD HH:MM 进行系统发布，详情如下：
+
+发布版本：v1.1.0
+发布时间：YYYY-MM-DD HH:MM - HH:MM
+发布内容：
+1. 新增功能A
+2. 优化功能B
+3. 修复问题C
+
+影响范围：
+- API服务将短暂不可用（预计5分钟）
+- 数据查询功能将受影响
+
+注意事项：
+- 请提前保存工作内容
+- 发布期间请勿进行重要操作
+
+联系人：XXX
+联系电话：XXX
+
+运维团队
+YYYY-MM-DD
+```
+
+#### 发布完成通知
+
+```
+主题：【发布完成】新能源监控系统 v1.1.0 发布成功
+
+各位同事：
+
+系统发布已完成，详情如下：
+
+发布版本：v1.1.0
+发布时间：YYYY-MM-DD HH:MM - HH:MM
+发布结果：成功
+
+验证情况：
+- ✓ 服务健康检查通过
+- ✓ 功能验证测试通过
+- ✓ 性能指标正常
+
+如遇问题，请联系：XXX
+
+运维团队
+YYYY-MM-DD
+```
+
+---
+
+## 10. 附录
+
+### 10.1 常用命令速查
 
 ```bash
 # Docker
@@ -1638,7 +1969,7 @@ pg_dump -U postgres nem_system > backup.sql  # 备份
 pg_restore -U postgres -d nem_system backup.dump  # 恢复
 ```
 
-### 9.2 故障排查清单
+### 10.2 故障排查清单
 
 - [ ] 检查服务状态
 - [ ] 检查日志输出
@@ -1649,8 +1980,9 @@ pg_restore -U postgres -d nem_system backup.dump  # 恢复
 - [ ] 检查防火墙规则
 - [ ] 检查证书有效期
 
-### 9.3 变更记录
+### 10.3 变更记录
 
 | 版本 | 日期 | 变更内容 | 变更人 |
 |------|------|----------|--------|
 | v1.0.0 | 2024-03-01 | 初始版本 | 运维团队 |
+| v1.1.0 | 2024-03-15 | 添加发布流程章节 | 运维团队 |
