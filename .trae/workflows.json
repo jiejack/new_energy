@@ -1,0 +1,163 @@
+{
+  "version": "1.0",
+  "name": "new-energy-monitoring-workflows",
+  "description": "新能源监控系统开发工作流配置",
+  
+  "workflows": {
+    "feature-development": {
+      "name": "功能开发工作流",
+      "description": "新功能开发的标准流程",
+      "steps": [
+        {
+          "id": "brainstorm",
+          "skill": "brainstorming",
+          "description": "需求澄清与设计探索",
+          "required": true
+        },
+        {
+          "id": "plan",
+          "skill": "writing-plans",
+          "description": "编写实施计划",
+          "required": true,
+          "depends_on": ["brainstorm"]
+        },
+        {
+          "id": "tdd",
+          "skill": "test-driven-development",
+          "description": "TDD开发",
+          "required": true,
+          "depends_on": ["plan"]
+        },
+        {
+          "id": "review",
+          "skill": "requesting-code-review",
+          "description": "代码审查请求",
+          "required": true,
+          "depends_on": ["tdd"]
+        },
+        {
+          "id": "verify",
+          "skill": "verification-before-completion",
+          "description": "完成前验证",
+          "required": true,
+          "depends_on": ["review"]
+        },
+        {
+          "id": "finish",
+          "skill": "finishing-a-development-branch",
+          "description": "分支收尾",
+          "required": true,
+          "depends_on": ["verify"]
+        }
+      ]
+    },
+    
+    "bug-fix": {
+      "name": "Bug修复工作流",
+      "description": "Bug修复的标准流程",
+      "steps": [
+        {
+          "id": "debug",
+          "skill": "systematic-debugging",
+          "description": "系统化调试",
+          "required": true
+        },
+        {
+          "id": "tdd",
+          "skill": "test-driven-development",
+          "description": "TDD修复",
+          "required": true,
+          "depends_on": ["debug"]
+        },
+        {
+          "id": "verify",
+          "skill": "verification-before-completion",
+          "description": "完成前验证",
+          "required": true,
+          "depends_on": ["tdd"]
+        }
+      ]
+    },
+    
+    "code-review": {
+      "name": "代码审查工作流",
+      "description": "代码审查的标准流程",
+      "steps": [
+        {
+          "id": "review",
+          "skill": "requesting-code-review",
+          "description": "请求代码审查",
+          "required": true
+        },
+        {
+          "id": "receiving",
+          "skill": "receiving-code-review",
+          "description": "处理审查反馈",
+          "required": true,
+          "depends_on": ["review"]
+        }
+      ]
+    },
+    
+    "release": {
+      "name": "发布工作流",
+      "description": "版本发布的标准流程",
+      "steps": [
+        {
+          "id": "verify",
+          "skill": "verification-before-completion",
+          "description": "发布前验证",
+          "required": true
+        },
+        {
+          "id": "finish",
+          "skill": "finishing-a-development-branch",
+          "description": "分支收尾",
+          "required": true,
+          "depends_on": ["verify"]
+        }
+      ]
+    }
+  },
+  
+  "triggers": {
+    "feature-development": [
+      "新增功能",
+      "开发新特性",
+      "实现新模块",
+      "添加新API"
+    ],
+    "bug-fix": [
+      "修复bug",
+      "解决问题",
+      "调试错误",
+      "修复问题"
+    ],
+    "code-review": [
+      "代码审查",
+      "review代码",
+      "检查代码"
+    ],
+    "release": [
+      "发布版本",
+      "部署上线",
+      "创建发布"
+    ]
+  },
+  
+  "quality_gates": {
+    "test_coverage": {
+      "threshold": 80,
+      "enforce": true
+    },
+    "lint_errors": {
+      "threshold": 0,
+      "enforce": true
+    },
+    "security_issues": {
+      "threshold": 0,
+      "enforce": true,
+      "severity": ["high", "critical"]
+    }
+  }
+}

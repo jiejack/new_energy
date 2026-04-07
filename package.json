@@ -1,0 +1,29 @@
+{
+  "name": "new-energy-monitoring",
+  "version": "1.0.0",
+  "description": "[![Build Status](https://img.shields.io/github/actions/workflow/status/jiejack/new_energy/ci.yml?branch=main)](https://github.com/jiejack/new_energy/actions) [![Coverage](https://img.shields.io/badge/coverage-92.5%25-brightgreen)](https://github.com/jiejack/new_energy) [![Go Version](https://img.shields.io/github/go-mod/go-version/jiejack/new_energy)](https://golang.org) [![License](https://img.shields.io/github/license/jiejack/new_energy)](LICENSE) [![GitHub release](https://img.shields.io/github/release/jiejack/new_energy.svg)](https://github.com/jiejack/new_energy/releases)",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jiejack/new_energy.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/jiejack/new_energy/issues"
+  },
+  "homepage": "https://github.com/jiejack/new_energy#readme",
+  "devDependencies": {
+    "@commitlint/cli": "^20.5.0",
+    "@commitlint/config-conventional": "^20.5.0"
+  }
+}

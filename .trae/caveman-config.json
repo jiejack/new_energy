@@ -1,0 +1,88 @@
+{
+  "version": "1.0",
+  "name": "caveman-config",
+  "description": "Caveman高效通信模式配置",
+  
+  "enabled": true,
+  "default_intensity": "full",
+  
+  "auto_trigger": {
+    "enabled": true,
+    "conditions": [
+      {
+        "type": "token_usage",
+        "threshold": 50000,
+        "operator": ">"
+      },
+      {
+        "type": "conversation_length",
+        "threshold": 20,
+        "operator": ">"
+      },
+      {
+        "type": "user_command",
+        "patterns": ["/caveman", "caveman mode", "use caveman", "less tokens", "be brief"]
+      }
+    ]
+  },
+  
+  "intensity_levels": {
+    "lite": {
+      "max_response_lines": 10,
+      "max_code_lines": 50,
+      "code_only": false,
+      "no_explanations": false,
+      "abbreviations": {
+        "because": "b/c",
+        "with": "w/",
+        "without": "w/o",
+        "you": "u",
+        "your": "ur",
+        "are": "r",
+        "for": "4",
+        "to": "2",
+        "the": "da"
+      }
+    },
+    "full": {
+      "max_response_lines": 5,
+      "max_code_lines": 30,
+      "code_only": true,
+      "no_explanations": false,
+      "abbreviations": {
+        "because": "b/c",
+        "with": "w/",
+        "without": "w/o",
+        "you": "u",
+        "your": "ur",
+        "are": "r",
+        "for": "4",
+        "to": "2"
+      }
+    },
+    "ultra": {
+      "max_response_lines": 3,
+      "max_code_lines": 15,
+      "code_only": true,
+      "no_explanations": true,
+      "abbreviations": {
+        "because": "b/c",
+        "with": "w/",
+        "without": "w/o"
+      }
+    }
+  },
+  
+  "context_preservation": {
+    "enabled": true,
+    "max_context_items": 5,
+    "priority_fields": ["error", "file", "function", "line"]
+  },
+  
+  "exit_commands": ["/normal", "/standard", "normal mode", "standard mode"],
+  
+  "metrics": {
+    "track_token_savings": true,
+    "track_response_time": true
+  }
+}
