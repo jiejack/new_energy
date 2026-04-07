@@ -91,7 +91,7 @@ func TestAlarmRuleRepository_Create(t *testing.T) {
 	t.Run("成功创建告警规则", func(t *testing.T) {
 		mockRepo := new(MockAlarmRuleRepository)
 
-		rule := entity.NewAlarmRule("温度过高告警", entity.AlarmRuleTypeLimit, entity.AlarmLevelWarning)
+		rule := entity.NewAlarmRule("温度过高告警", entity.AlarmRuleTypeLimit, entity.AlarmLevelWarning, "value > threshold")
 		rule.Description = "逆变器温度超过阈值"
 		rule.Threshold = 85.0
 		rule.Duration = 60
@@ -107,7 +107,7 @@ func TestAlarmRuleRepository_Create(t *testing.T) {
 	t.Run("创建失败", func(t *testing.T) {
 		mockRepo := new(MockAlarmRuleRepository)
 
-		rule := entity.NewAlarmRule("测试规则", entity.AlarmRuleTypeLimit, entity.AlarmLevelWarning)
+		rule := entity.NewAlarmRule("测试规则", entity.AlarmRuleTypeLimit, entity.AlarmLevelWarning, "value > threshold")
 
 		mockRepo.On("Create", ctx, rule).Return(errors.New("database error"))
 
@@ -124,7 +124,7 @@ func TestAlarmRuleRepository_Update(t *testing.T) {
 	t.Run("成功更新告警规则", func(t *testing.T) {
 		mockRepo := new(MockAlarmRuleRepository)
 
-		rule := entity.NewAlarmRule("测试规则", entity.AlarmRuleTypeLimit, entity.AlarmLevelWarning)
+		rule := entity.NewAlarmRule("测试规则", entity.AlarmRuleTypeLimit, entity.AlarmLevelWarning, "value > threshold")
 		rule.Threshold = 90.0
 
 		mockRepo.On("Update", ctx, rule).Return(nil)
@@ -138,7 +138,7 @@ func TestAlarmRuleRepository_Update(t *testing.T) {
 	t.Run("更新失败", func(t *testing.T) {
 		mockRepo := new(MockAlarmRuleRepository)
 
-		rule := entity.NewAlarmRule("测试规则", entity.AlarmRuleTypeLimit, entity.AlarmLevelWarning)
+		rule := entity.NewAlarmRule("测试规则", entity.AlarmRuleTypeLimit, entity.AlarmLevelWarning, "value > threshold")
 
 		mockRepo.On("Update", ctx, rule).Return(errors.New("database error"))
 
@@ -185,7 +185,7 @@ func TestAlarmRuleRepository_GetByID(t *testing.T) {
 	t.Run("成功获取告警规则", func(t *testing.T) {
 		mockRepo := new(MockAlarmRuleRepository)
 
-		expectedRule := entity.NewAlarmRule("测试规则", entity.AlarmRuleTypeLimit, entity.AlarmLevelWarning)
+		expectedRule := entity.NewAlarmRule("测试规则", entity.AlarmRuleTypeLimit, entity.AlarmLevelWarning, "value > threshold")
 
 		mockRepo.On("GetByID", ctx, expectedRule.ID).Return(expectedRule, nil)
 
@@ -218,15 +218,13 @@ func TestAlarmRuleRepository_List(t *testing.T) {
 		mockRepo := new(MockAlarmRuleRepository)
 
 		expectedRules := []*entity.AlarmRule{
-			entity.NewAlarmRule("规则1", entity.AlarmRuleTypeLimit, entity.AlarmLevelWarning),
-			entity.NewAlarmRule("规则2", entity.AlarmRuleTypeTrend, entity.AlarmLevelMajor),
+			entity.NewAlarmRule("规则1", entity.AlarmRuleTypeLimit, entity.AlarmLevelWarning, "value > threshold"),
+			entity.NewAlarmRule("规则2", entity.AlarmRuleTypeTrend, entity.AlarmLevelMajor, "value < threshold"),
 		}
 
 		query := &repository.AlarmRuleQuery{
 			Page:     1,
 			PageSize: 20,
-			OrderBy:  "created_at",
-			Order:    "desc",
 		}
 
 		mockRepo.On("List", ctx, query).Return(expectedRules, int64(2), nil)
@@ -246,14 +244,12 @@ func TestAlarmRuleRepository_List(t *testing.T) {
 		level := entity.AlarmLevelWarning
 
 		expectedRules := []*entity.AlarmRule{
-			entity.NewAlarmRule("限值告警", entity.AlarmRuleTypeLimit, entity.AlarmLevelWarning),
+			entity.NewAlarmRule("限值告警", entity.AlarmRuleTypeLimit, entity.AlarmLevelWarning, "value > threshold"),
 		}
 
 		query := &repository.AlarmRuleQuery{
 			Page:     1,
 			PageSize: 20,
-			OrderBy:  "created_at",
-			Order:    "desc",
 			Type:     &ruleType,
 			Level:    &level,
 		}
@@ -313,8 +309,8 @@ func TestAlarmRuleRepository_GetEnabledRules(t *testing.T) {
 		mockRepo := new(MockAlarmRuleRepository)
 
 		expectedRules := []*entity.AlarmRule{
-			entity.NewAlarmRule("启用规则1", entity.AlarmRuleTypeLimit, entity.AlarmLevelWarning),
-			entity.NewAlarmRule("启用规则2", entity.AlarmRuleTypeTrend, entity.AlarmLevelMajor),
+			entity.NewAlarmRule("启用规则1", entity.AlarmRuleTypeLimit, entity.AlarmLevelWarning, "value > threshold"),
+			entity.NewAlarmRule("启用规则2", entity.AlarmRuleTypeTrend, entity.AlarmLevelMajor, "value < threshold"),
 		}
 
 		mockRepo.On("GetEnabledRules", ctx).Return(expectedRules, nil)
@@ -360,7 +356,7 @@ func TestAlarmRuleRepository_GetRulesByPointID(t *testing.T) {
 
 		pointID := "point-001"
 		expectedRules := []*entity.AlarmRule{
-			entity.NewAlarmRule("采集点规则", entity.AlarmRuleTypeLimit, entity.AlarmLevelWarning),
+			entity.NewAlarmRule("采集点规则", entity.AlarmRuleTypeLimit, entity.AlarmLevelWarning, "value > threshold"),
 		}
 
 		mockRepo.On("GetRulesByPointID", ctx, pointID).Return(expectedRules, nil)
@@ -396,7 +392,7 @@ func TestAlarmRuleRepository_GetRulesByDeviceID(t *testing.T) {
 
 		deviceID := "device-001"
 		expectedRules := []*entity.AlarmRule{
-			entity.NewAlarmRule("设备规则", entity.AlarmRuleTypeLimit, entity.AlarmLevelWarning),
+			entity.NewAlarmRule("设备规则", entity.AlarmRuleTypeLimit, entity.AlarmLevelWarning, "value > threshold"),
 		}
 
 		mockRepo.On("GetRulesByDeviceID", ctx, deviceID).Return(expectedRules, nil)
@@ -432,7 +428,7 @@ func TestAlarmRuleRepository_GetRulesByStationID(t *testing.T) {
 
 		stationID := "station-001"
 		expectedRules := []*entity.AlarmRule{
-			entity.NewAlarmRule("厂站规则", entity.AlarmRuleTypeLimit, entity.AlarmLevelWarning),
+			entity.NewAlarmRule("厂站规则", entity.AlarmRuleTypeLimit, entity.AlarmLevelWarning, "value > threshold"),
 		}
 
 		mockRepo.On("GetRulesByStationID", ctx, stationID).Return(expectedRules, nil)

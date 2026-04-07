@@ -1,5 +1,5 @@
 import { get, post } from '@/utils/request'
-import type { DataQuery, PointData } from '@/types'
+import type { DataQuery, PointData, PageQuery, PageResult } from '@/types'
 
 /**
  * 查询历史数据
@@ -17,6 +17,21 @@ export function queryRealtimeData(pointIds: number[]): Promise<Record<number, {
   timestamp: number
 }>> {
   return post('/data/realtime', { pointIds })
+}
+
+/**
+ * 获取实时数据列表（分页）
+ */
+export function getRealtimeData(params: PageQuery): Promise<PageResult<{
+  stationName: string
+  deviceName: string
+  pointName: string
+  value: number
+  unit: string
+  updateTime: string
+  status: string
+}>> {
+  return get('/data/realtime-list', params)
 }
 
 /**

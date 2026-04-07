@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"sync"
 	"time"
 )
@@ -372,6 +373,10 @@ func (c *RTUClient) WriteSingleRegister(address uint16, value uint16) error {
 
 // WriteMultipleCoils 写多个线圈（功能码 0x0F）
 func (c *RTUClient) WriteMultipleCoils(address uint16, values []byte) error {
+	// 安全转换：确保长度不会导致溢出
+	if len(values) > math.MaxUint16/8 {
+		return fmt.Errorf("values length too large")
+	}
 	quantity := uint16(len(values) * 8)
 	if quantity < 1 || quantity > MaxCoilsWriteQuantity {
 		return fmt.Errorf("quantity must be between 1 and %d", MaxCoilsWriteQuantity)

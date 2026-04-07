@@ -195,8 +195,8 @@ func (ts *TextSplitter) splitBySentence(text string) []*TextChunk {
 			currentSize += sentenceSize
 		} else {
 			// 保存当前块
+			content := currentChunk.String()
 			if currentSize >= ts.config.MinChunkSize {
-				content := currentChunk.String()
 				chunks = append(chunks, &TextChunk{
 					Content:  content,
 					StartPos: startPos,

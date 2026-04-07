@@ -13,7 +13,7 @@
         </el-form-item>
         <el-form-item label="操作类型">
           <el-input
-            v-model="queryParams.operation"
+            v-model="queryParams.action"
             placeholder="请输入操作类型"
             clearable
             @keyup.enter="handleQuery"
@@ -152,7 +152,7 @@
         </el-descriptions-item>
         <el-descriptions-item label="请求参数" :span="2">
           <el-input
-            v-model="currentLog?.params"
+            :model-value="currentLog?.params"
             type="textarea"
             :rows="5"
             readonly
@@ -174,39 +174,66 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getLogList, batchDeleteLogs, clearLogs, exportLogs } from '@/api/log'
-import type { OperationLog, PageQuery } from '@/types'
+import {
+  getOperationLogs,
+  batchDeleteOperationLogs,
+  clearOperationLogs,
+  exportOperationLogs,
+  type OperationLog as ApiOperationLog,
+  type OperationLogQuery,
+} from '@/api/operation-log'
+
+interface OperationLog {
+  id: string
+  username: string
+  operation: string
+  method: string
+  ip: string
+  location: string
+  status: number
+  duration: number
+  createdAt: string
+  userAgent?: string
+  params?: string
+  errorMsg?: string
+}
 
 const loading = ref(false)
 const logList = ref<OperationLog[]>([])
 const total = ref(0)
-const selectedIds = ref<number[]>([])
+const selectedIds = ref<string[]>([])
 const detailVisible = ref(false)
 const currentLog = ref<OperationLog | null>(null)
 const dateRange = ref<string[]>([])
 
-const queryParams = reactive<PageQuery & {
-  username?: string
-  operation?: string
-  status?: number
-  startTime?: string
-  endTime?: string
-}>({
+const queryParams = reactive<OperationLogQuery>({
   page: 1,
   pageSize: 10,
   username: '',
-  operation: '',
+  action: '',
   status: undefined,
-  startTime: undefined,
-  endTime: undefined,
+  start_time: undefined,
+  end_time: undefined,
 })
 
 // 获取日志列表
 async function getList() {
   loading.value = true
   try {
-    const result = await getLogList(queryParams)
-    logList.value = result.list
+    const result = await getOperationLogs(queryParams)
+    logList.value = result.list.map((log: ApiOperationLog) => ({
+      id: log.id,
+      username: log.username,
+      operation: log.action,
+      method: log.method,
+      ip: log.request_ip,
+      location: '-',
+      status: log.status,
+      duration: log.duration,
+      createdAt: log.created_at,
+      userAgent: '-',
+      params: '-',
+    }))
     total.value = result.total
   } catch (error) {
     console.error('获取日志列表失败:', error)
@@ -218,11 +245,11 @@ async function getList() {
 // 日期变化
 function handleDateChange(val: string[] | null) {
   if (val && val.length === 2) {
-    queryParams.startTime = val[0] + ' 00:00:00'
-    queryParams.endTime = val[1] + ' 23:59:59'
+    queryParams.start_time = val[0] + ' 00:00:00'
+    queryParams.end_time = val[1] + ' 23:59:59'
   } else {
-    queryParams.startTime = undefined
-    queryParams.endTime = undefined
+    queryParams.start_time = undefined
+    queryParams.end_time = undefined
   }
 }
 
@@ -235,10 +262,10 @@ function handleQuery() {
 // 重置
 function handleReset() {
   queryParams.username = ''
-  queryParams.operation = ''
+  queryParams.action = ''
   queryParams.status = undefined
-  queryParams.startTime = undefined
-  queryParams.endTime = undefined
+  queryParams.start_time = undefined
+  queryParams.end_time = undefined
   dateRange.value = []
   handleQuery()
 }
@@ -257,12 +284,14 @@ function handleDetail(row: OperationLog) {
 // 导出
 async function handleExport() {
   try {
-    await exportLogs({
+    await exportOperationLogs({
+      page: 1,
+      pageSize: 9999,
       username: queryParams.username,
-      operation: queryParams.operation,
+      action: queryParams.action,
       status: queryParams.status,
-      startTime: queryParams.startTime,
-      endTime: queryParams.endTime,
+      start_time: queryParams.start_time,
+      end_time: queryParams.end_time,
     })
     ElMessage.success('导出成功')
   } catch (error) {
@@ -276,7 +305,7 @@ async function handleBatchDelete() {
     await ElMessageBox.confirm(`确认要删除选中的 ${selectedIds.value.length} 条日志吗？`, '提示', {
       type: 'warning',
     })
-    await batchDeleteLogs(selectedIds.value)
+    await batchDeleteOperationLogs(selectedIds.value)
     ElMessage.success('批量删除成功')
     getList()
   } catch (error) {
@@ -292,7 +321,7 @@ async function handleClear() {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
     })
-    await clearLogs()
+    await clearOperationLogs()
     ElMessage.success('清空成功')
     getList()
   } catch (error) {

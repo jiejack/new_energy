@@ -1,8 +1,9 @@
 <template>
   <el-dialog
-    v-model="visible"
+    :model-value="visible"
     title="分配角色"
     width="500px"
+    @update:model-value="emit('update:visible', $event)"
     @close="handleClose"
   >
     <el-form ref="formRef" label-width="80px">

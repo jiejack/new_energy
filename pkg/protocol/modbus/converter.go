@@ -66,6 +66,7 @@ func BytesToUint16(data []byte, order ByteOrder) (uint16, error) {
 
 // Int16ToBytes 将int16转换为字节切片
 func Int16ToBytes(value int16, order ByteOrder) []byte {
+	// 安全转换：int16到uint16的位级转换，保留位模式
 	return Uint16ToBytes(uint16(value), order)
 }
 
@@ -75,6 +76,7 @@ func BytesToInt16(data []byte, order ByteOrder) (int16, error) {
 	if err != nil {
 		return 0, err
 	}
+	// 安全转换：uint16到int16的位级转换
 	return int16(val), nil
 }
 
@@ -120,6 +122,7 @@ func BytesToUint32(data []byte, byteOrder ByteOrder, wordOrder WordOrder) (uint3
 
 // Int32ToBytes 将int32转换为字节切片
 func Int32ToBytes(value int32, byteOrder ByteOrder, wordOrder WordOrder) []byte {
+	// 安全转换：int32到uint32的位级转换，保留位模式
 	return Uint32ToBytes(uint32(value), byteOrder, wordOrder)
 }
 
@@ -128,6 +131,10 @@ func BytesToInt32(data []byte, byteOrder ByteOrder, wordOrder WordOrder) (int32,
 	val, err := BytesToUint32(data, byteOrder, wordOrder)
 	if err != nil {
 		return 0, err
+	}
+	// 检查是否超出int32范围
+	if val > math.MaxInt32 {
+		return 0, fmt.Errorf("value %d overflows int32", val)
 	}
 	return int32(val), nil
 }
@@ -181,6 +188,7 @@ func BytesToUint64(data []byte, byteOrder ByteOrder, wordOrder WordOrder) (uint6
 
 // Int64ToBytes 将int64转换为字节切片
 func Int64ToBytes(value int64, byteOrder ByteOrder, wordOrder WordOrder) []byte {
+	// 安全转换：int64到uint64的位级转换，保留位模式
 	return Uint64ToBytes(uint64(value), byteOrder, wordOrder)
 }
 
@@ -190,6 +198,7 @@ func BytesToInt64(data []byte, byteOrder ByteOrder, wordOrder WordOrder) (int64,
 	if err != nil {
 		return 0, err
 	}
+	// 安全转换：uint64到int64的位级转换
 	return int64(val), nil
 }
 
@@ -360,6 +369,10 @@ func SetBits(data []byte, startBit uint, values []bool) []byte {
 	copy(result, data)
 
 	for i, value := range values {
+		// 安全转换：确保i为非负数后再转换为uint
+		if i < 0 {
+			continue
+		}
 		byteIndex := (startBit + uint(i)) / 8
 		bitIndex := (startBit + uint(i)) % 8
 		if byteIndex < uint(len(result)) {

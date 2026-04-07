@@ -239,12 +239,12 @@ func (m *CacheMiddleware) invalidateCache(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	// 失效相关缓存
-	for _, pattern := range paths {
+	for _, path := range paths {
 		// 构建匹配模式
-		cachePattern := m.config.KeyPrefix + "*"
+		cachePattern := m.config.KeyPrefix + path + "*"
 
 		// 查找所有匹配的键
-		keys, err := m.redis.Keys(ctx, cachePattern)
+		matchingKeys, err := m.redis.Keys(ctx, cachePattern)
 		if err != nil {
 			m.logger.Error("Failed to find cache keys",
 				zap.Error(err),
@@ -253,18 +253,18 @@ func (m *CacheMiddleware) invalidateCache(c *gin.Context) {
 			continue
 		}
 
-		if len(keys) > 0 {
+		if len(matchingKeys) > 0 {
 			// 删除匹配的键
-			if err := m.redis.Del(ctx, keys...); err != nil {
+			if err := m.redis.Del(ctx, matchingKeys...); err != nil {
 				m.logger.Error("Failed to invalidate cache",
 					zap.Error(err),
-					zap.Strings("keys", keys),
+					zap.Strings("keys", matchingKeys),
 				)
 			} else {
 				m.logger.Info("Cache invalidated",
 					zap.String("method", method),
 					zap.String("path", path),
-					zap.Int("count", len(keys)),
+					zap.Int("count", len(matchingKeys)),
 				)
 			}
 		}

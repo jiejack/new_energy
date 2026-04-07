@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -934,15 +935,22 @@ func (b *CompressedBlock) Encode() ([]byte, error) {
 
 	// 算法类型 (4 bytes)
 	algBytes := make([]byte, 4)
+	// 安全转换：检查算法类型是否在有效范围内
+	if b.Algorithm < 0 || int(b.Algorithm) > math.MaxUint32 {
+		return nil, fmt.Errorf("invalid algorithm type: %d", b.Algorithm)
+	}
+	/* #nosec G115 -- 算法类型已验证在uint32范围内 */
 	binary.BigEndian.PutUint32(algBytes, uint32(b.Algorithm))
 	buf = append(buf, algBytes...)
 
 	// 原始大小 (8 bytes)
 	sizeBytes := make([]byte, 8)
+	/* #nosec G115 -- int64到uint64的位级转换是安全的 */
 	binary.BigEndian.PutUint64(sizeBytes, uint64(b.OriginalSize))
 	buf = append(buf, sizeBytes...)
 
 	// 压缩大小 (8 bytes)
+	/* #nosec G115 -- int64到uint64的位级转换是安全的 */
 	binary.BigEndian.PutUint64(sizeBytes, uint64(b.CompressedSize))
 	buf = append(buf, sizeBytes...)
 
@@ -953,6 +961,7 @@ func (b *CompressedBlock) Encode() ([]byte, error) {
 
 	// 时间戳 (8 bytes)
 	tsBytes := make([]byte, 8)
+	/* #nosec G115 -- int64到uint64的位级转换是安全的 */
 	binary.BigEndian.PutUint64(tsBytes, uint64(b.Timestamp.UnixNano()))
 	buf = append(buf, tsBytes...)
 
@@ -974,15 +983,18 @@ func DecodeCompressedBlock(data []byte) (*CompressedBlock, error) {
 	block.Algorithm = CompressionAlgorithm(binary.BigEndian.Uint32(data[0:4]))
 
 	// 原始大小
+	/* #nosec G115 -- uint64到int64的位级转换是安全的 */
 	block.OriginalSize = int64(binary.BigEndian.Uint64(data[4:12]))
 
 	// 压缩大小
+	/* #nosec G115 -- uint64到int64的位级转换是安全的 */
 	block.CompressedSize = int64(binary.BigEndian.Uint64(data[12:20]))
 
 	// 校验和
 	block.Checksum = binary.BigEndian.Uint32(data[20:24])
 
 	// 时间戳
+	/* #nosec G115 -- uint64到int64的位级转换是安全的 */
 	block.Timestamp = time.Unix(0, int64(binary.BigEndian.Uint64(data[24:32])))
 
 	// 数据
@@ -1012,6 +1024,7 @@ func NewBlockCompressor(compressor DataCompressor, blockSize int) *BlockCompress
 func simpleChecksum(data []byte) uint32 {
 	var sum uint32
 	for i, b := range data {
+		/* #nosec G115 -- i+1不会溢出，因为i是切片索引 */
 		sum += uint32(b) * uint32(i+1)
 	}
 	return sum

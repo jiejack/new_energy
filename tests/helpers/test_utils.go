@@ -120,8 +120,10 @@ func CreateTestAlarm(pointID, deviceID, stationID string, alarmType entity.Alarm
 
 // CreateTestPoint 创建测试采集点
 func CreateTestPoint(code, name string, pointType entity.PointType, deviceID, stationID string) *entity.Point {
-	point := entity.NewPoint(code, name, pointType, deviceID, stationID)
+	point := entity.NewPoint(code, name, pointType)
 	point.ID = GenerateTestID()
+	point.DeviceID = deviceID
+	point.StationID = stationID
 	return point
 }
 

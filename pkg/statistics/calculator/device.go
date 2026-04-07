@@ -258,10 +258,6 @@ func (c *DeviceCalculator) CalculateDeviceTypeStatistics(ctx context.Context, de
 	
 	// 统计各状态设备数量
 	var totalRatedPower float64
-	var totalPowerOutput float64
-	var totalEfficiency float64
-	var efficiencyCount int
-	var peakPower float64
 	
 	for _, device := range devices {
 		switch device.Status {
@@ -333,7 +329,7 @@ func (c *DeviceCalculator) calculateTypePerformance(ctx context.Context, devices
 	
 	for _, device := range devices {
 		// 获取功率采集点
-		points, err := c.config.DataProvider.GetPoints(device.StationID, "power")
+		points, err := c.config.DataProvider.GetPoints(ctx, device.StationID, "power")
 		if err != nil {
 			continue
 		}
@@ -566,8 +562,8 @@ func (c *DeviceCalculator) CalculateDevicePerformance(ctx context.Context, devic
 	}
 	
 	// 获取功率采集点
-	points, err := c.config.DataProvider.GetPoints(targetDevice.StationID, "power")
-	if err != nil {
+	points, err := c.config.DataProvider.GetPoints(ctx, targetDevice.StationID, "power")
+		if err != nil {
 		return stats, nil
 	}
 	
@@ -649,7 +645,7 @@ func (c *DeviceCalculator) CalculateDevicePerformance(ctx context.Context, devic
 	}
 	
 	// 获取效率数据
-	effPoints, err := c.config.DataProvider.GetPoints(targetDevice.StationID, "efficiency")
+	effPoints, err := c.config.DataProvider.GetPoints(ctx, targetDevice.StationID, "efficiency")
 	if err == nil {
 		var effPointIDs []string
 		for _, p := range effPoints {

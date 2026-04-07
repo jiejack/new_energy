@@ -11,13 +11,13 @@ import (
 	"syscall"
 	"time"
 
-	_ "github.com/new-energy-monitoring/docs" // swagger docs
-	"github.com/new-energy-monitoring/internal/api/dto"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	_ "github.com/new-energy-monitoring/docs" // swagger docs
+	"github.com/new-energy-monitoring/internal/api/dto"
+	"github.com/spf13/viper"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/spf13/viper"
 )
 
 var (
@@ -34,9 +34,9 @@ var upgrader = websocket.Upgrader{
 }
 
 type WSClient struct {
-	conn   *websocket.Conn
-	send   chan []byte
-	mu     sync.Mutex
+	conn *websocket.Conn
+	send chan []byte
+	mu   sync.Mutex
 }
 
 type WSMessage struct {
@@ -235,10 +235,12 @@ func main() {
 
 	router := setupRouter()
 	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", viper.GetInt("server.port")),
-		Handler:      router,
-		ReadTimeout:  30 * time.Second,
-		WriteTimeout: 30 * time.Second,
+		Addr:              fmt.Sprintf(":%d", viper.GetInt("server.port")),
+		Handler:           router,
+		ReadTimeout:       30 * time.Second,
+		ReadHeaderTimeout: 10 * time.Second, // 防止Slowloris攻击
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       120 * time.Second,
 	}
 
 	go func() {
@@ -336,6 +338,28 @@ func setupRouter() *gin.Engine {
 		api.PUT("/alarms/:id/ack", ackAlarm)
 		api.PUT("/alarms/:id/clear", clearAlarm)
 		api.GET("/alarms/statistics", getAlarmStatistics)
+
+		// Alarm rules management
+		api.GET("/alarm-rules", listAlarmRules)
+		api.POST("/alarm-rules", createAlarmRule)
+		api.GET("/alarm-rules/:id", getAlarmRule)
+		api.PUT("/alarm-rules/:id", updateAlarmRule)
+		api.DELETE("/alarm-rules/:id", deleteAlarmRule)
+
+		// Notification config management
+		api.GET("/notification-configs", listNotificationConfigs)
+		api.GET("/notification-configs/:type", getNotificationConfig)
+		api.PUT("/notification-configs/:type", updateNotificationConfig)
+		api.POST("/notification-configs/:type/enable", enableNotificationConfig)
+		api.POST("/notification-configs/:type/disable", disableNotificationConfig)
+		api.POST("/notification-configs/:type/test", testNotificationConfig)
+
+		// Report management
+		api.GET("/reports", generateReport)
+		api.GET("/reports/export", exportReport)
+
+		// Operation logs
+		api.GET("/operation-logs", listOperationLogs)
 
 		// Data query
 		api.GET("/data/realtime", getRealtimeData)
@@ -513,106 +537,106 @@ func listStations(c *gin.Context) {
 	now := time.Now()
 	stations := []dto.StationResponse{
 		{
-			ID:           "station_001",
-			Code:         "BJ-CY-001",
-			Name:         "北京朝阳光伏电站",
-			Type:         "solar",
-			SubRegionID:  "region_001",
-			Capacity:     5000,
-			VoltageLevel: "35kV",
-			Longitude:    116.4074,
-			Latitude:     39.9042,
-			Address:      "北京市朝阳区XXX路XXX号",
-			Status:       1,
+			ID:             "station_001",
+			Code:           "BJ-CY-001",
+			Name:           "北京朝阳光伏电站",
+			Type:           "solar",
+			SubRegionID:    "region_001",
+			Capacity:       5000,
+			VoltageLevel:   "35kV",
+			Longitude:      116.4074,
+			Latitude:       39.9042,
+			Address:        "北京市朝阳区XXX路XXX号",
+			Status:         1,
 			CommissionDate: &now,
-			Description:  "北京市朝阳区大型光伏电站",
-			CreatedAt:    now,
-			UpdatedAt:    now,
+			Description:    "北京市朝阳区大型光伏电站",
+			CreatedAt:      now,
+			UpdatedAt:      now,
 		},
 		{
-			ID:           "station_002",
-			Code:         "SH-PD-001",
-			Name:         "上海浦东风电场",
-			Type:         "wind",
-			SubRegionID:  "region_002",
-			Capacity:     10000,
-			VoltageLevel: "110kV",
-			Longitude:    121.5441,
-			Latitude:     31.2304,
-			Address:      "上海市浦东新区XXX路XXX号",
-			Status:       1,
+			ID:             "station_002",
+			Code:           "SH-PD-001",
+			Name:           "上海浦东风电场",
+			Type:           "wind",
+			SubRegionID:    "region_002",
+			Capacity:       10000,
+			VoltageLevel:   "110kV",
+			Longitude:      121.5441,
+			Latitude:       31.2304,
+			Address:        "上海市浦东新区XXX路XXX号",
+			Status:         1,
 			CommissionDate: &now,
-			Description:  "上海浦东大型风电场",
-			CreatedAt:    now,
-			UpdatedAt:    now,
+			Description:    "上海浦东大型风电场",
+			CreatedAt:      now,
+			UpdatedAt:      now,
 		},
 		{
-			ID:           "station_003",
-			Code:         "GZ-PY-001",
-			Name:         "广州番禺储能站",
-			Type:         "storage",
-			SubRegionID:  "region_003",
-			Capacity:     2000,
-			VoltageLevel: "10kV",
-			Longitude:    113.3647,
-			Latitude:     22.9375,
-			Address:      "广州市番禺区XXX路XXX号",
-			Status:       1,
+			ID:             "station_003",
+			Code:           "GZ-PY-001",
+			Name:           "广州番禺储能站",
+			Type:           "storage",
+			SubRegionID:    "region_003",
+			Capacity:       2000,
+			VoltageLevel:   "10kV",
+			Longitude:      113.3647,
+			Latitude:       22.9375,
+			Address:        "广州市番禺区XXX路XXX号",
+			Status:         1,
 			CommissionDate: &now,
-			Description:  "广州番禺储能示范项目",
-			CreatedAt:    now,
-			UpdatedAt:    now,
+			Description:    "广州番禺储能示范项目",
+			CreatedAt:      now,
+			UpdatedAt:      now,
 		},
 		{
-			ID:           "station_004",
-			Code:         "SZ-NS-001",
-			Name:         "深圳南山光伏电站",
-			Type:         "solar",
-			SubRegionID:  "region_003",
-			Capacity:     8000,
-			VoltageLevel: "35kV",
-			Longitude:    113.9308,
-			Latitude:     22.5332,
-			Address:      "深圳市南山区XXX路XXX号",
-			Status:       1,
+			ID:             "station_004",
+			Code:           "SZ-NS-001",
+			Name:           "深圳南山光伏电站",
+			Type:           "solar",
+			SubRegionID:    "region_003",
+			Capacity:       8000,
+			VoltageLevel:   "35kV",
+			Longitude:      113.9308,
+			Latitude:       22.5332,
+			Address:        "深圳市南山区XXX路XXX号",
+			Status:         1,
 			CommissionDate: &now,
-			Description:  "深圳南山大型光伏电站",
-			CreatedAt:    now,
-			UpdatedAt:    now,
+			Description:    "深圳南山大型光伏电站",
+			CreatedAt:      now,
+			UpdatedAt:      now,
 		},
 		{
-			ID:           "station_005",
-			Code:         "HZ-XH-001",
-			Name:         "杭州西湖光伏电站",
-			Type:         "solar",
-			SubRegionID:  "region_002",
-			Capacity:     3500,
-			VoltageLevel: "35kV",
-			Longitude:    120.1551,
-			Latitude:     30.2741,
-			Address:      "杭州市西湖区XXX路XXX号",
-			Status:       1,
+			ID:             "station_005",
+			Code:           "HZ-XH-001",
+			Name:           "杭州西湖光伏电站",
+			Type:           "solar",
+			SubRegionID:    "region_002",
+			Capacity:       3500,
+			VoltageLevel:   "35kV",
+			Longitude:      120.1551,
+			Latitude:       30.2741,
+			Address:        "杭州市西湖区XXX路XXX号",
+			Status:         1,
 			CommissionDate: &now,
-			Description:  "杭州西湖分布式光伏项目",
-			CreatedAt:    now,
-			UpdatedAt:    now,
+			Description:    "杭州西湖分布式光伏项目",
+			CreatedAt:      now,
+			UpdatedAt:      now,
 		},
 		{
-			ID:           "station_006",
-			Code:         "NJ-PJ-001",
-			Name:         "南京浦口风电场",
-			Type:         "wind",
-			SubRegionID:  "region_002",
-			Capacity:     6000,
-			VoltageLevel: "110kV",
-			Longitude:    118.7969,
-			Latitude:     32.0603,
-			Address:      "南京市浦口区XXX路XXX号",
-			Status:       0,
+			ID:             "station_006",
+			Code:           "NJ-PJ-001",
+			Name:           "南京浦口风电场",
+			Type:           "wind",
+			SubRegionID:    "region_002",
+			Capacity:       6000,
+			VoltageLevel:   "110kV",
+			Longitude:      118.7969,
+			Latitude:       32.0603,
+			Address:        "南京市浦口区XXX路XXX号",
+			Status:         0,
 			CommissionDate: &now,
-			Description:  "南京浦口风电场",
-			CreatedAt:    now,
-			UpdatedAt:    now,
+			Description:    "南京浦口风电场",
+			CreatedAt:      now,
+			UpdatedAt:      now,
 		},
 	}
 
@@ -624,7 +648,7 @@ func listStations(c *gin.Context) {
 		Data:      stations,
 		Timestamp: time.Now().Unix(),
 		Page:      page,
-		PageSize: pageSize,
+		PageSize:  pageSize,
 		Total:     int64(len(stations)),
 	})
 }
@@ -717,52 +741,52 @@ func getStationStatistics(c *gin.Context) {
 	stationID := c.Param("id")
 	stationStats := map[string]interface{}{
 		"station_001": map[string]interface{}{
-			"deviceCount":       25,
-			"onlineDeviceCount": 24,
+			"deviceCount":        25,
+			"onlineDeviceCount":  24,
 			"offlineDeviceCount": 1,
-			"alarmCount":        5,
-			"power":             4500,
-			"energy":            28500,
+			"alarmCount":         5,
+			"power":              4500,
+			"energy":             28500,
 		},
 		"station_002": map[string]interface{}{
-			"deviceCount":       20,
-			"onlineDeviceCount": 20,
+			"deviceCount":        20,
+			"onlineDeviceCount":  20,
 			"offlineDeviceCount": 0,
-			"alarmCount":        3,
-			"power":             8500,
-			"energy":            51000,
+			"alarmCount":         3,
+			"power":              8500,
+			"energy":             51000,
 		},
 		"station_003": map[string]interface{}{
-			"deviceCount":       10,
-			"onlineDeviceCount": 10,
+			"deviceCount":        10,
+			"onlineDeviceCount":  10,
 			"offlineDeviceCount": 0,
-			"alarmCount":        2,
-			"power":             1800,
-			"energy":            10800,
+			"alarmCount":         2,
+			"power":              1800,
+			"energy":             10800,
 		},
 		"station_004": map[string]interface{}{
-			"deviceCount":       30,
-			"onlineDeviceCount": 28,
+			"deviceCount":        30,
+			"onlineDeviceCount":  28,
 			"offlineDeviceCount": 2,
-			"alarmCount":        4,
-			"power":             7200,
-			"energy":            43200,
+			"alarmCount":         4,
+			"power":              7200,
+			"energy":             43200,
 		},
 		"station_005": map[string]interface{}{
-			"deviceCount":       15,
-			"onlineDeviceCount": 15,
+			"deviceCount":        15,
+			"onlineDeviceCount":  15,
 			"offlineDeviceCount": 0,
-			"alarmCount":        1,
-			"power":             3200,
-			"energy":            19200,
+			"alarmCount":         1,
+			"power":              3200,
+			"energy":             19200,
 		},
 		"station_006": map[string]interface{}{
-			"deviceCount":       12,
-			"onlineDeviceCount": 0,
+			"deviceCount":        12,
+			"onlineDeviceCount":  0,
 			"offlineDeviceCount": 12,
-			"alarmCount":        8,
-			"power":             0,
-			"energy":            0,
+			"alarmCount":         8,
+			"power":              0,
+			"energy":             0,
 		},
 	}
 
@@ -777,15 +801,15 @@ func getStationStatistics(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, dto.Response{
-		Code:      0,
-		Message:   "success",
+		Code:    0,
+		Message: "success",
 		Data: map[string]interface{}{
-			"deviceCount":       0,
-			"onlineDeviceCount": 0,
+			"deviceCount":        0,
+			"onlineDeviceCount":  0,
 			"offlineDeviceCount": 0,
-			"alarmCount":        0,
-			"power":             0,
-			"energy":            0,
+			"alarmCount":         0,
+			"power":              0,
+			"energy":             0,
 		},
 		Timestamp: time.Now().Unix(),
 	})
@@ -1402,22 +1426,22 @@ func clearAlarm(c *gin.Context) {
 // @Router /alarms/statistics [get]
 func getAlarmStatistics(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.Response{
-		Code:      0,
-		Message:   "success",
+		Code:    0,
+		Message: "success",
 		Data: dto.AlarmStatisticsResponse{
-			Total:       156,
-			Active:      23,
+			Total:        156,
+			Active:       23,
 			Acknowledged: 45,
-			Cleared:     88,
+			Cleared:      88,
 			ByLevel: map[int]int64{
 				1: 45,
 				2: 78,
 				3: 33,
 			},
 			ByType: map[string]int64{
-				"limit":       89,
+				"limit":         89,
 				"communication": 42,
-				"quality":     25,
+				"quality":       25,
 			},
 		},
 		Timestamp: time.Now().Unix(),
@@ -1482,62 +1506,62 @@ func getHistoryData(c *gin.Context) {
 // @Router /data/statistics [get]
 func getStatistics(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.Response{
-		Code:      0,
-		Message:   "success",
+		Code:    0,
+		Message: "success",
 		Data: []dto.StatisticsResponse{
 			{
-				StationID:    "station_001",
-				TotalPower:   4500,
-				DailyEnergy:  28500,
+				StationID:     "station_001",
+				TotalPower:    4500,
+				DailyEnergy:   28500,
 				MonthlyEnergy: 856000,
-				PR:           0.85,
-				Availability: 0.98,
-				Date:         "2024-03-01",
+				PR:            0.85,
+				Availability:  0.98,
+				Date:          "2024-03-01",
 			},
 			{
-				StationID:    "station_002",
+				StationID:     "station_002",
 				TotalPower:    8500,
 				DailyEnergy:   51000,
 				MonthlyEnergy: 1530000,
-				PR:           0.82,
-				Availability: 0.96,
-				Date:         "2024-03-01",
+				PR:            0.82,
+				Availability:  0.96,
+				Date:          "2024-03-01",
 			},
 			{
-				StationID:    "station_003",
+				StationID:     "station_003",
 				TotalPower:    1800,
 				DailyEnergy:   10800,
 				MonthlyEnergy: 324000,
-				PR:           0.90,
-				Availability: 0.99,
-				Date:         "2024-03-01",
+				PR:            0.90,
+				Availability:  0.99,
+				Date:          "2024-03-01",
 			},
 			{
-				StationID:    "station_004",
+				StationID:     "station_004",
 				TotalPower:    7200,
 				DailyEnergy:   43200,
 				MonthlyEnergy: 1296000,
-				PR:           0.84,
-				Availability: 0.97,
-				Date:         "2024-03-01",
+				PR:            0.84,
+				Availability:  0.97,
+				Date:          "2024-03-01",
 			},
 			{
-				StationID:    "station_005",
+				StationID:     "station_005",
 				TotalPower:    3200,
 				DailyEnergy:   19200,
 				MonthlyEnergy: 576000,
-				PR:           0.86,
-				Availability: 0.98,
-				Date:         "2024-03-01",
+				PR:            0.86,
+				Availability:  0.98,
+				Date:          "2024-03-01",
 			},
 			{
-				StationID:    "station_006",
+				StationID:     "station_006",
 				TotalPower:    0,
 				DailyEnergy:   0,
 				MonthlyEnergy: 0,
-				PR:           0,
-				Availability: 0,
-				Date:         "2024-03-01",
+				PR:            0,
+				Availability:  0,
+				Date:          "2024-03-01",
 			},
 		},
 		Timestamp: time.Now().Unix(),
@@ -1781,17 +1805,17 @@ func changePassword(c *gin.Context) {
 // @Router /profile [get]
 func getProfile(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.Response{
-		Code:      0,
-		Message:   "success",
+		Code:    0,
+		Message: "success",
 		Data: dto.ProfileResponse{
-			ID:        "1",
-			Username:  "admin",
-			Nickname:  "系统管理员",
-			Email:     "admin@example.com",
-			Phone:     "13800138000",
-			Avatar:    "https://api.dicebear.com/7.x/avataaars/svg?seed=admin",
-			Role:      "admin",
-			Status:    1,
+			ID:         "1",
+			Username:   "admin",
+			Nickname:   "系统管理员",
+			Email:      "admin@example.com",
+			Phone:      "13800138000",
+			Avatar:     "https://api.dicebear.com/7.x/avataaars/svg?seed=admin",
+			Role:       "admin",
+			Status:     1,
 			CreateTime: time.Now().Format("2006-01-02 15:04:05"),
 		},
 		Timestamp: time.Now().Unix(),
@@ -1810,17 +1834,17 @@ func getProfile(c *gin.Context) {
 // @Router /profile [put]
 func updateProfile(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.Response{
-		Code:      0,
-		Message:   "success",
+		Code:    0,
+		Message: "success",
 		Data: dto.ProfileResponse{
-			ID:        "1",
-			Username:  "admin",
-			Nickname:  "系统管理员",
-			Email:     "admin@example.com",
-			Phone:     "13800138000",
-			Avatar:    "https://api.dicebear.com/7.x/avataaars/svg?seed=admin",
-			Role:      "admin",
-			Status:    1,
+			ID:         "1",
+			Username:   "admin",
+			Nickname:   "系统管理员",
+			Email:      "admin@example.com",
+			Phone:      "13800138000",
+			Avatar:     "https://api.dicebear.com/7.x/avataaars/svg?seed=admin",
+			Role:       "admin",
+			Status:     1,
 			CreateTime: time.Now().Format("2006-01-02 15:04:05"),
 		},
 		Timestamp: time.Now().Unix(),
@@ -1841,11 +1865,11 @@ func getPreferences(c *gin.Context) {
 		Code:    0,
 		Message: "success",
 		Data: dto.PreferencesResponse{
-			Theme:      "light",
-			Language:   "zh-CN",
-			Timezone:   "Asia/Shanghai",
-			NotifyEnabled: true,
-			NotifyTypes:  []string{"alarm", "system"},
+			Theme:           "light",
+			Language:        "zh-CN",
+			Timezone:        "Asia/Shanghai",
+			NotifyEnabled:   true,
+			NotifyTypes:     []string{"alarm", "system"},
 			DashboardLayout: "default",
 		},
 		Timestamp: time.Now().Unix(),
@@ -1867,11 +1891,11 @@ func updatePreferences(c *gin.Context) {
 		Code:    0,
 		Message: "success",
 		Data: dto.PreferencesResponse{
-			Theme:      "light",
-			Language:   "zh-CN",
-			Timezone:   "Asia/Shanghai",
-			NotifyEnabled: true,
-			NotifyTypes:  []string{"alarm", "system"},
+			Theme:           "light",
+			Language:        "zh-CN",
+			Timezone:        "Asia/Shanghai",
+			NotifyEnabled:   true,
+			NotifyTypes:     []string{"alarm", "system"},
 			DashboardLayout: "default",
 		},
 		Timestamp: time.Now().Unix(),
@@ -1896,5 +1920,529 @@ func uploadAvatar(c *gin.Context) {
 			Avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=admin",
 		},
 		Timestamp: time.Now().Unix(),
+	})
+}
+
+// AlarmRuleResponse 告警规则响应
+type AlarmRuleResponse struct {
+	ID             string   `json:"id"`
+	Name           string   `json:"name"`
+	Description    string   `json:"description"`
+	Type           string   `json:"type"`
+	Level          int      `json:"level"`
+	Condition      string   `json:"condition"`
+	Threshold      float64  `json:"threshold"`
+	Duration       int      `json:"duration"`
+	PointID        *string  `json:"point_id,omitempty"`
+	DeviceID       *string  `json:"device_id,omitempty"`
+	StationID      *string  `json:"station_id,omitempty"`
+	NotifyChannels []string `json:"notify_channels"`
+	NotifyUsers    []string `json:"notify_users"`
+	Status         int      `json:"status"`
+	CreatedAt      string   `json:"created_at"`
+	UpdatedAt      string   `json:"updated_at"`
+}
+
+// listAlarmRules 获取告警规则列表
+// @Summary 获取告警规则列表
+// @Description 获取所有告警规则的列表，支持分页和过滤
+// @Tags 告警规则管理
+// @Accept json
+// @Produce json
+// @Param type query string false "规则类型"
+// @Param level query int false "告警级别"
+// @Param status query int false "状态"
+// @Param page query int false "页码" default(1)
+// @Param page_size query int false "每页数量" default(10)
+// @Success 200 {object} dto.PagedResponse{data=[]AlarmRuleResponse}
+// @Failure 500 {object} dto.ErrorResponse
+// @Router /alarm-rules [get]
+func listAlarmRules(c *gin.Context) {
+	rules := []AlarmRuleResponse{
+		{
+			ID:             "rule_001",
+			Name:           "温度超限告警",
+			Description:    "设备温度超过设定阈值时触发",
+			Type:           "limit",
+			Level:          3,
+			Condition:      "temperature > threshold",
+			Threshold:      80,
+			Duration:       60,
+			NotifyChannels: []string{"email", "sms"},
+			NotifyUsers:    []string{"admin", "operator"},
+			Status:         1,
+			CreatedAt:      time.Now().Add(-24 * time.Hour).Format("2006-01-02 15:04:05"),
+			UpdatedAt:      time.Now().Format("2006-01-02 15:04:05"),
+		},
+		{
+			ID:             "rule_002",
+			Name:           "功率异常告警",
+			Description:    "设备功率低于正常范围时触发",
+			Type:           "limit",
+			Level:          2,
+			Condition:      "power < threshold",
+			Threshold:      0.8,
+			Duration:       120,
+			NotifyChannels: []string{"email"},
+			NotifyUsers:    []string{"operator"},
+			Status:         1,
+			CreatedAt:      time.Now().Add(-12 * time.Hour).Format("2006-01-02 15:04:05"),
+			UpdatedAt:      time.Now().Format("2006-01-02 15:04:05"),
+		},
+		{
+			ID:             "rule_003",
+			Name:           "通信中断告警",
+			Description:    "设备通信中断超过设定时间时触发",
+			Type:           "trend",
+			Level:          4,
+			Condition:      "offline_duration > threshold",
+			Threshold:      300,
+			Duration:       0,
+			NotifyChannels: []string{"email", "sms", "webhook"},
+			NotifyUsers:    []string{"admin", "operator", "maintenance"},
+			Status:         1,
+			CreatedAt:      time.Now().Add(-6 * time.Hour).Format("2006-01-02 15:04:05"),
+			UpdatedAt:      time.Now().Format("2006-01-02 15:04:05"),
+		},
+	}
+
+	c.JSON(http.StatusOK, dto.PagedResponse{
+		Code:      0,
+		Message:   "success",
+		Data:      rules,
+		Timestamp: time.Now().Unix(),
+		Page:      1,
+		PageSize:  10,
+		Total:     int64(len(rules)),
+	})
+}
+
+// createAlarmRule 创建告警规则
+// @Summary 创建告警规则
+// @Description 创建新的告警规则
+// @Tags 告警规则管理
+// @Accept json
+// @Produce json
+// @Param rule body object true "告警规则信息"
+// @Success 201 {object} dto.Response{data=AlarmRuleResponse}
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 500 {object} dto.ErrorResponse
+// @Router /alarm-rules [post]
+func createAlarmRule(c *gin.Context) {
+	c.JSON(http.StatusCreated, dto.Response{
+		Code:      0,
+		Message:   "success",
+		Data:      AlarmRuleResponse{ID: "rule_new"},
+		Timestamp: time.Now().Unix(),
+	})
+}
+
+// getAlarmRule 获取告警规则详情
+// @Summary 获取告警规则详情
+// @Description 根据ID获取告警规则详细信息
+// @Tags 告警规则管理
+// @Accept json
+// @Produce json
+// @Param id path string true "告警规则ID"
+// @Success 200 {object} dto.Response{data=AlarmRuleResponse}
+// @Failure 404 {object} dto.ErrorResponse
+// @Router /alarm-rules/{id} [get]
+func getAlarmRule(c *gin.Context) {
+	c.JSON(http.StatusOK, dto.Response{
+		Code:      0,
+		Message:   "success",
+		Data:      AlarmRuleResponse{ID: c.Param("id")},
+		Timestamp: time.Now().Unix(),
+	})
+}
+
+// updateAlarmRule 更新告警规则
+// @Summary 更新告警规则
+// @Description 更新告警规则信息
+// @Tags 告警规则管理
+// @Accept json
+// @Produce json
+// @Param id path string true "告警规则ID"
+// @Param rule body object true "告警规则信息"
+// @Success 200 {object} dto.Response{data=AlarmRuleResponse}
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Router /alarm-rules/{id} [put]
+func updateAlarmRule(c *gin.Context) {
+	c.JSON(http.StatusOK, dto.Response{
+		Code:      0,
+		Message:   "success",
+		Data:      AlarmRuleResponse{ID: c.Param("id")},
+		Timestamp: time.Now().Unix(),
+	})
+}
+
+// deleteAlarmRule 删除告警规则
+// @Summary 删除告警规则
+// @Description 删除指定告警规则
+// @Tags 告警规则管理
+// @Accept json
+// @Produce json
+// @Param id path string true "告警规则ID"
+// @Success 200 {object} dto.Response
+// @Failure 404 {object} dto.ErrorResponse
+// @Router /alarm-rules/{id} [delete]
+func deleteAlarmRule(c *gin.Context) {
+	c.JSON(http.StatusOK, dto.Response{
+		Code:      0,
+		Message:   "success",
+		Timestamp: time.Now().Unix(),
+	})
+}
+
+// NotificationConfigResponse 通知配置响应
+type NotificationConfigResponse struct {
+	ID      string                 `json:"id"`
+	Type    string                 `json:"type"`
+	Name    string                 `json:"name"`
+	Config  map[string]interface{} `json:"config"`
+	Enabled bool                   `json:"enabled"`
+}
+
+// listNotificationConfigs 获取通知配置列表
+// @Summary 获取通知配置列表
+// @Description 获取所有通知配置
+// @Tags 通知配置管理
+// @Accept json
+// @Produce json
+// @Success 200 {object} dto.Response{data=[]NotificationConfigResponse}
+// @Failure 500 {object} dto.ErrorResponse
+// @Router /notification-configs [get]
+func listNotificationConfigs(c *gin.Context) {
+	configs := []NotificationConfigResponse{
+		{
+			ID:   "notif_001",
+			Type: "email",
+			Name: "邮件通知",
+			Config: map[string]interface{}{
+				"smtp_host": "smtp.example.com",
+				"smtp_port": 465,
+				"username":  "alert@example.com",
+				"from":      "alert@example.com",
+				"use_tls":   true,
+			},
+			Enabled: false,
+		},
+		{
+			ID:   "notif_002",
+			Type: "sms",
+			Name: "短信通知",
+			Config: map[string]interface{}{
+				"access_key": "",
+				"secret_key": "",
+				"sign_name":  "新能源监控",
+			},
+			Enabled: false,
+		},
+		{
+			ID:   "notif_003",
+			Type: "webhook",
+			Name: "Webhook通知",
+			Config: map[string]interface{}{
+				"url":    "",
+				"method": "POST",
+			},
+			Enabled: false,
+		},
+		{
+			ID:   "notif_004",
+			Type: "wechat",
+			Name: "微信通知",
+			Config: map[string]interface{}{
+				"corp_id":  "",
+				"agent_id": "",
+			},
+			Enabled: false,
+		},
+	}
+
+	c.JSON(http.StatusOK, dto.Response{
+		Code:      0,
+		Message:   "success",
+		Data:      configs,
+		Timestamp: time.Now().Unix(),
+	})
+}
+
+// getNotificationConfig 获取通知配置详情
+// @Summary 获取通知配置详情
+// @Description 根据类型获取通知配置
+// @Tags 通知配置管理
+// @Accept json
+// @Produce json
+// @Param type path string true "通知类型"
+// @Success 200 {object} dto.Response{data=NotificationConfigResponse}
+// @Failure 404 {object} dto.ErrorResponse
+// @Router /notification-configs/{type} [get]
+func getNotificationConfig(c *gin.Context) {
+	notifType := c.Param("type")
+	c.JSON(http.StatusOK, dto.Response{
+		Code:    0,
+		Message: "success",
+		Data: NotificationConfigResponse{
+			ID:   "notif_" + notifType,
+			Type: notifType,
+			Name: notifType + "通知",
+		},
+		Timestamp: time.Now().Unix(),
+	})
+}
+
+// updateNotificationConfig 更新通知配置
+// @Summary 更新通知配置
+// @Description 更新指定类型的通知配置
+// @Tags 通知配置管理
+// @Accept json
+// @Produce json
+// @Param type path string true "通知类型"
+// @Param config body object true "配置信息"
+// @Success 200 {object} dto.Response{data=NotificationConfigResponse}
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Router /notification-configs/{type} [put]
+func updateNotificationConfig(c *gin.Context) {
+	notifType := c.Param("type")
+	c.JSON(http.StatusOK, dto.Response{
+		Code:    0,
+		Message: "success",
+		Data: NotificationConfigResponse{
+			ID:   "notif_" + notifType,
+			Type: notifType,
+		},
+		Timestamp: time.Now().Unix(),
+	})
+}
+
+// enableNotificationConfig 启用通知配置
+// @Summary 启用通知配置
+// @Description 启用指定类型的通知配置
+// @Tags 通知配置管理
+// @Accept json
+// @Produce json
+// @Param type path string true "通知类型"
+// @Success 200 {object} dto.Response
+// @Failure 404 {object} dto.ErrorResponse
+// @Router /notification-configs/{type}/enable [post]
+func enableNotificationConfig(c *gin.Context) {
+	c.JSON(http.StatusOK, dto.Response{
+		Code:      0,
+		Message:   "success",
+		Timestamp: time.Now().Unix(),
+	})
+}
+
+// disableNotificationConfig 禁用通知配置
+// @Summary 禁用通知配置
+// @Description 禁用指定类型的通知配置
+// @Tags 通知配置管理
+// @Accept json
+// @Produce json
+// @Param type path string true "通知类型"
+// @Success 200 {object} dto.Response
+// @Failure 404 {object} dto.ErrorResponse
+// @Router /notification-configs/{type}/disable [post]
+func disableNotificationConfig(c *gin.Context) {
+	c.JSON(http.StatusOK, dto.Response{
+		Code:      0,
+		Message:   "success",
+		Timestamp: time.Now().Unix(),
+	})
+}
+
+// testNotificationConfig 测试通知配置
+// @Summary 测试通知配置
+// @Description 测试指定类型的通知配置是否可用
+// @Tags 通知配置管理
+// @Accept json
+// @Produce json
+// @Param type path string true "通知类型"
+// @Success 200 {object} dto.Response
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Router /notification-configs/{type}/test [post]
+func testNotificationConfig(c *gin.Context) {
+	c.JSON(http.StatusOK, dto.Response{
+		Code:      0,
+		Message:   "Test successful",
+		Timestamp: time.Now().Unix(),
+	})
+}
+
+// generateReport 生成统计报表
+// @Summary 生成统计报表
+// @Description 根据条件生成电站统计报表
+// @Tags 报表管理
+// @Accept json
+// @Produce json
+// @Param type query string false "报表类型" Enums(daily, weekly, monthly)
+// @Param start_time query string false "开始时间"
+// @Param end_time query string false "结束时间"
+// @Param station_id query string false "电站ID"
+// @Success 200 {object} dto.Response
+// @Failure 400 {object} dto.ErrorResponse
+// @Router /reports [get]
+func generateReport(c *gin.Context) {
+	reportType := c.DefaultQuery("type", "daily")
+	startTime := c.DefaultQuery("start_time", time.Now().AddDate(0, -1, 0).Format("2006-01-02"))
+	endTime := c.DefaultQuery("end_time", time.Now().Format("2006-01-02"))
+
+	report := map[string]interface{}{
+		"type":       reportType,
+		"start_time": startTime,
+		"end_time":   endTime,
+		"stations": []map[string]interface{}{
+			{
+				"station_id":   "station_001",
+				"station_name": "光伏电站A",
+				"total_power":  125000,
+				"yoy_change":   12.5,
+				"mom_change":   5.2,
+				"alarm_count":  15,
+				"online_rate":  99.5,
+			},
+			{
+				"station_id":   "station_002",
+				"station_name": "风电场B",
+				"total_power":  89000,
+				"yoy_change":   8.3,
+				"mom_change":   -2.1,
+				"alarm_count":  8,
+				"online_rate":  98.2,
+			},
+		},
+		"summary": map[string]interface{}{
+			"total_power":     214000,
+			"total_alarms":    23,
+			"avg_online_rate": 98.85,
+		},
+	}
+
+	c.JSON(http.StatusOK, dto.Response{
+		Code:      0,
+		Message:   "success",
+		Data:      report,
+		Timestamp: time.Now().Unix(),
+	})
+}
+
+// exportReport 导出报表
+// @Summary 导出报表
+// @Description 导出报表为Excel或CSV格式
+// @Tags 报表管理
+// @Accept json
+// @Produce octet-stream
+// @Param type query string false "报表类型"
+// @Param format query string false "导出格式" Enums(excel, csv)
+// @Success 200 {file} file
+// @Failure 400 {object} dto.ErrorResponse
+// @Router /reports/export [get]
+func exportReport(c *gin.Context) {
+	format := c.DefaultQuery("format", "excel")
+	filename := fmt.Sprintf("report_%s.%s", time.Now().Format("20060102150405"), format)
+
+	if format == "csv" {
+		c.Header("Content-Type", "text/csv")
+		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
+		c.String(http.StatusOK, "电站名称,发电量(kWh),同比,环比,告警数,在线率\n")
+		return
+	}
+
+	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
+	c.JSON(http.StatusOK, dto.Response{
+		Code:    0,
+		Message: "Export successful",
+	})
+}
+
+// OperationLogResponse 操作日志响应
+type OperationLogResponse struct {
+	ID         string `json:"id"`
+	UserID     string `json:"user_id"`
+	Username   string `json:"username"`
+	Method     string `json:"method"`
+	Path       string `json:"path"`
+	Action     string `json:"action"`
+	Resource   string `json:"resource"`
+	ResourceID string `json:"resource_id"`
+	RequestIP  string `json:"request_ip"`
+	Status     int    `json:"status"`
+	Duration   int64  `json:"duration"`
+	CreatedAt  string `json:"created_at"`
+}
+
+// listOperationLogs 获取操作日志列表
+// @Summary 获取操作日志列表
+// @Description 获取系统操作日志列表，支持分页和过滤
+// @Tags 操作日志
+// @Accept json
+// @Produce json
+// @Param user_id query string false "用户ID"
+// @Param action query string false "操作类型"
+// @Param start_time query string false "开始时间"
+// @Param end_time query string false "结束时间"
+// @Param page query int false "页码" default(1)
+// @Param page_size query int false "每页数量" default(20)
+// @Success 200 {object} dto.PagedResponse{data=[]OperationLogResponse}
+// @Failure 500 {object} dto.ErrorResponse
+// @Router /operation-logs [get]
+func listOperationLogs(c *gin.Context) {
+	logs := []OperationLogResponse{
+		{
+			ID:         "log_001",
+			UserID:     "user_001",
+			Username:   "admin",
+			Method:     "POST",
+			Path:       "/api/v1/stations",
+			Action:     "create",
+			Resource:   "station",
+			ResourceID: "station_new",
+			RequestIP:  "192.168.1.100",
+			Status:     200,
+			Duration:   45,
+			CreatedAt:  time.Now().Add(-1 * time.Hour).Format("2006-01-02 15:04:05"),
+		},
+		{
+			ID:         "log_002",
+			UserID:     "user_001",
+			Username:   "admin",
+			Method:     "PUT",
+			Path:       "/api/v1/devices/device_001",
+			Action:     "update",
+			Resource:   "device",
+			ResourceID: "device_001",
+			RequestIP:  "192.168.1.100",
+			Status:     200,
+			Duration:   32,
+			CreatedAt:  time.Now().Add(-2 * time.Hour).Format("2006-01-02 15:04:05"),
+		},
+		{
+			ID:        "log_003",
+			UserID:    "user_002",
+			Username:  "operator",
+			Method:    "POST",
+			Path:      "/api/v1/auth/login",
+			Action:    "login",
+			Resource:  "auth",
+			RequestIP: "192.168.1.101",
+			Status:    200,
+			Duration:  128,
+			CreatedAt: time.Now().Add(-3 * time.Hour).Format("2006-01-02 15:04:05"),
+		},
+	}
+
+	c.JSON(http.StatusOK, dto.PagedResponse{
+		Code:      0,
+		Message:   "success",
+		Data:      logs,
+		Timestamp: time.Now().Unix(),
+		Page:      1,
+		PageSize:  20,
+		Total:     int64(len(logs)),
 	})
 }

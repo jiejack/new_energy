@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
-import type { AppRoute } from '@/types'
 
 /**
  * 公共路由配置
@@ -305,6 +304,7 @@ export function resetRouter() {
     history: createWebHistory(import.meta.env.BASE_URL),
     routes: [...constantRoutes, ...asyncRoutes],
   })
+  // @ts-ignore - matcher is internal API
   router.matcher = newRouter.matcher
 }
 

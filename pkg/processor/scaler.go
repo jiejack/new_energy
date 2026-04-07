@@ -11,12 +11,14 @@ import (
 
 // ScaleResult 量程转换结果
 type ScaleResult struct {
-	Value     float64   `json:"value"`     // 转换后的值
-	RawValue  float64   `json:"raw_value"` // 原始值
-	Quality   QualityCode `json:"quality"` // 质量码
-	Timestamp time.Time `json:"timestamp"` // 时间戳
-	Scaled    bool      `json:"scaled"`    // 是否进行了转换
-	Unit      string    `json:"unit"`      // 单位
+	Value      float64     `json:"value"`       // 转换后的值
+	RawValue   float64     `json:"raw_value"`   // 原始值
+	Quality    QualityCode `json:"quality"`     // 质量码
+	Timestamp  time.Time   `json:"timestamp"`   // 时间戳
+	Scaled     bool        `json:"scaled"`      // 是否进行了转换
+	Unit       string      `json:"unit"`        // 单位
+	InputUnit  string      `json:"input_unit"`  // 输入单位
+	OutputUnit string      `json:"output_unit"` // 输出单位
 }
 
 // Scaler 量程转换器接口

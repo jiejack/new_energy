@@ -16,6 +16,7 @@ export const lazyload: Directive<LazyloadElement, string> = {
           if (entry.isIntersecting) {
             const target = entry.target as LazyloadElement
             if (binding.value) {
+              // @ts-ignore - setting src on img element
               target.src = binding.value
               target._src = binding.value
             }
@@ -45,6 +46,7 @@ export const lazyload: Directive<LazyloadElement, string> = {
             if (entry.isIntersecting) {
               const target = entry.target as LazyloadElement
               if (binding.value) {
+                // @ts-ignore - setting src on img element
                 target.src = binding.value
               }
               target._observer?.unobserve(target)

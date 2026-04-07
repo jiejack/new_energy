@@ -174,20 +174,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search, Folder, Document } from '@element-plus/icons-vue'
 import FormDialog from '@/components/FormDialog/index.vue'
 import {
   getRegionTree,
-  getRegionDetail,
   createRegion,
   updateRegion,
-  deleteRegion,
-  updateRegionStatus
+  deleteRegion
 } from '@/api/region'
 import type { Region } from '@/types'
 import type { FormRules } from 'element-plus'
+import { regionLevelMapper } from '@/utils/enums'
 
 const treeRef = ref()
 const filterText = ref('')
@@ -388,7 +387,7 @@ const handleSubmit = async (data: any) => {
 }
 
 // 拖拽判断
-const allowDrop = (draggingNode: any, dropNode: any, type: string) => {
+const allowDrop = (_draggingNode: any, _dropNode: any, type: string) => {
   // 不允许拖拽到子节点内部
   if (type === 'inner') {
     return false
@@ -439,16 +438,7 @@ const getParentName = (parentId: number | null) => {
   return findParent(regionTree.value) || '未知'
 }
 
-// 获取层级名称
-const getLevelName = (level: number) => {
-  const levelMap: Record<number, string> = {
-    1: '省级',
-    2: '市级',
-    3: '区/县级',
-    4: '乡镇/街道'
-  }
-  return levelMap[level] || '未知'
-}
+const getLevelName = (level: number) => regionLevelMapper.getLabel(level)
 
 onMounted(() => {
   fetchRegionTree()

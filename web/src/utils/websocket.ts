@@ -1,5 +1,5 @@
 import { getToken } from './auth'
-import type { WsMessage, RealtimeData } from '@/types'
+import type { WsMessage } from '@/types'
 
 type MessageHandler = (data: any) => void
 type ConnectionHandler = () => void

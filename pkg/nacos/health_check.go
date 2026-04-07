@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/nacos-group/nacos-sdk-go/v2/vo"
+	"go.uber.org/zap"
 )
 
 // HealthChecker 健康检查器
@@ -17,6 +18,7 @@ type HealthChecker struct {
 	mu             sync.RWMutex
 	ctx            context.Context
 	cancel         context.CancelFunc
+	logger         *zap.Logger
 }
 
 // HeartbeatTask 心跳任务
@@ -140,22 +142,12 @@ func (h *HealthChecker) sendHeartbeat(task *HeartbeatTask) {
 	}
 
 	// 对于持久化实例，需要手动发送心跳
+	// 注意：nacos-sdk-go v2 已移除 SendHeartbeat 方法
+	// 持久化实例的心跳由 SDK 内部自动处理
 	if !task.Instance.Ephemeral {
-		_, err := h.registry.namingCli.SendHeartbeat(vo.SendHeartbeatParam{
-			ServiceName: task.ServiceName,
-			Ip:          task.Instance.Ip,
-			Port:        task.Instance.Port,
-			ClusterName: task.Instance.ClusterName,
-			GroupName:   task.Instance.GroupName,
-			Weight:      task.Instance.Weight,
-			Metadata:    task.Instance.Metadata,
-		})
-
-		if err != nil {
-			// 心跳失败，记录日志
-			// 在实际应用中，应该使用日志框架记录
-			fmt.Printf("heartbeat failed for service %s: %v\n", task.ServiceName, err)
-		}
+		// SDK v2 自动处理持久化实例心跳
+		h.logger.Debug("persistent instance heartbeat handled by SDK", 
+			zap.String("service", task.ServiceName))
 	}
 }
 

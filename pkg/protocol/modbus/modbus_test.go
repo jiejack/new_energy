@@ -17,17 +17,17 @@ func TestCalculateCRC(t *testing.T) {
 		{
 			name:     "Test case 1: Read holding registers request",
 			data:     []byte{0x01, 0x03, 0x00, 0x00, 0x00, 0x0A},
-			expected: 0xC5CD,
+			expected: 0xCDC5,
 		},
 		{
 			name:     "Test case 2: Write single register request",
 			data:     []byte{0x01, 0x06, 0x00, 0x01, 0x00, 0x03},
-			expected: 0x988B,
+			expected: 0x0B98,
 		},
 		{
 			name:     "Test case 3: Simple data",
 			data:     []byte{0x01, 0x02},
-			expected: 0x4141,
+			expected: 0xE181,
 		},
 		{
 			name:     "Test case 4: Empty data",

@@ -14,12 +14,27 @@ vi.mock('../auth', () => ({
   removeRefreshToken: vi.fn()
 }))
 
+// Mock Element Plus
+vi.mock('element-plus', () => ({
+  ElMessage: {
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
+    info: vi.fn()
+  },
+  ElMessageBox: {
+    confirm: vi.fn(),
+    alert: vi.fn(),
+    prompt: vi.fn()
+  }
+}))
+
 describe('request.ts', () => {
   let mockAxiosInstance: any
 
   beforeEach(async () => {
     vi.clearAllMocks()
-    
+
     // 创建 mock axios 实例
     mockAxiosInstance = {
       interceptors: {
@@ -49,15 +64,14 @@ describe('request.ts', () => {
 
   describe('Axios实例创建', () => {
     it('应该创建axios实例', async () => {
-      // 重新导入以触发创建
       await import('../request')
-      
+
       expect(axios.create).toHaveBeenCalled()
     })
 
     it('应该配置正确的参数', async () => {
       await import('../request')
-      
+
       expect(axios.create).toHaveBeenCalledWith(
         expect.objectContaining({
           timeout: 30000,
@@ -72,7 +86,7 @@ describe('request.ts', () => {
   describe('请求拦截器', () => {
     it('应该注册请求拦截器', async () => {
       await import('../request')
-      
+
       expect(mockAxiosInstance.interceptors.request.use).toHaveBeenCalled()
     })
   })
@@ -80,7 +94,7 @@ describe('request.ts', () => {
   describe('响应拦截器', () => {
     it('应该注册响应拦截器', async () => {
       await import('../request')
-      
+
       expect(mockAxiosInstance.interceptors.response.use).toHaveBeenCalled()
     })
   })
@@ -128,6 +142,28 @@ describe('request.ts', () => {
       await del('/test/1')
 
       expect(mockAxiosInstance.delete).toHaveBeenCalledWith('/test/1', { params: undefined })
+    })
+  })
+
+  describe('文件上传', () => {
+    it('应该成功上传文件', async () => {
+      const mockResponse = { url: 'http://example.com/file.pdf' }
+      mockAxiosInstance.post.mockResolvedValue(mockResponse)
+
+      const { upload } = await import('../request')
+      const file = new File(['test'], 'test.txt', { type: 'text/plain' })
+      const result = await upload('/upload', file)
+
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        '/upload',
+        expect.any(FormData),
+        expect.objectContaining({
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        })
+      )
+      expect(result).toEqual(mockResponse)
     })
   })
 })

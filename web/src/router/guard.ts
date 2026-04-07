@@ -14,7 +14,7 @@ const whiteList = ['/login', '/404']
 /**
  * 路由前置守卫
  */
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _from, next) => {
   // 开始进度条
   NProgress.start()
 
@@ -37,7 +37,7 @@ router.beforeEach(async (to, from, next) => {
       } else {
         try {
           // 获取用户信息
-          const { roles } = await userStore.getUserInfo()
+          const { roles } = await userStore.getUserInfoAction()
 
           // 根据角色生成可访问路由
           const permissionStore = usePermissionStore()
@@ -52,7 +52,7 @@ router.beforeEach(async (to, from, next) => {
           next({ ...to, replace: true })
         } catch (error) {
           // 获取用户信息失败，清除token并跳转到登录页
-          await userStore.logout()
+          await userStore.logoutAction()
           next(`/login?redirect=${to.path}`)
           NProgress.done()
         }

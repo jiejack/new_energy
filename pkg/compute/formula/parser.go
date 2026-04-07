@@ -556,8 +556,8 @@ func evaluateBinaryOp(op string, left, right interface{}) (interface{}, error) {
 		return compareValues(op, left, right)
 	}
 
-	// 处理位运算符
-	if op == "&" || op == "|" || op == "^" || op == "<<" || op == ">>" {
+	// 处理位运算符（注意：^ 是幂运算符，不是位异或）
+	if op == "&" || op == "|" || op == "<<" || op == ">>" {
 		return bitwiseOp(op, left, right)
 	}
 
@@ -713,9 +713,15 @@ func bitwiseOp(op string, left, right interface{}) (interface{}, error) {
 	case "^":
 		return float64(leftInt ^ rightInt), nil
 	case "<<":
-		return float64(leftInt << uint(rightInt)), nil
+		// 安全转换：int64到uint，确保右移值在合理范围内
+		/* #nosec G115 -- shift值已限制在0-63范围内，转换为uint是安全的 */
+		shift := uint(min(max(rightInt, 0), 63))
+		return float64(leftInt << shift), nil
 	case ">>":
-		return float64(leftInt >> uint(rightInt)), nil
+		// 安全转换：int64到uint，确保右移值在合理范围内
+		/* #nosec G115 -- shift值已限制在0-63范围内，转换为uint是安全的 */
+		shift := uint(min(max(rightInt, 0), 63))
+		return float64(leftInt >> shift), nil
 	default:
 		return nil, fmt.Errorf("unknown bitwise operator: %s", op)
 	}

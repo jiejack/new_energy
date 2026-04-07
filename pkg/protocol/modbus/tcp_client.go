@@ -93,7 +93,8 @@ func (c *TCPClient) IsConnected() bool {
 // nextTransactionID 获取下一个事务ID
 func (c *TCPClient) nextTransactionID() uint16 {
 	id := atomic.AddUint32(&c.transactionID, 1)
-	return uint16(id)
+	// 安全转换：使用取模确保在uint16范围内
+	return uint16(id % 65536)
 }
 
 // sendRequest 发送请求并接收响应

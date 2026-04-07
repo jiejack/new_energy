@@ -1,0 +1,33 @@
+{
+	"Golang errors": {
+		"./cmd/api-server/main.go": [
+			{
+				"line": 0,
+				"column": 0,
+				"error": "importing dir \"./cmd/api-server/main.go\": cannot find package \".\" in:\n\tcmd\\api-server\\main.go"
+			}
+		],
+		"./pkg/ai/service/adapter.go": [
+			{
+				"line": 0,
+				"column": 0,
+				"error": "importing dir \"./pkg/ai/service/adapter.go\": cannot find package \".\" in:\n\tpkg\\ai\\service\\adapter.go"
+			}
+		],
+		"./pkg/storage/timeseries/doris.go": [
+			{
+				"line": 0,
+				"column": 0,
+				"error": "importing dir \"./pkg/storage/timeseries/doris.go\": cannot find package \".\" in:\n\tpkg\\storage\\timeseries\\doris.go"
+			}
+		]
+	},
+	"Issues": [],
+	"Stats": {
+		"files": 0,
+		"lines": 0,
+		"nosec": 0,
+		"found": 0
+	},
+	"GosecVersion": "dev"
+}

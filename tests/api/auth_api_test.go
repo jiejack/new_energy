@@ -10,7 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/new-energy-monitoring/internal/api/dto"
 	"github.com/new-energy-monitoring/internal/application/service"
-	"github.com/new-energy-monitoring/internal/domain/entity"
 	"github.com/new-energy-monitoring/pkg/auth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

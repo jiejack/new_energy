@@ -47,7 +47,7 @@ service.interceptors.request.use(
  * 响应拦截器
  */
 service.interceptors.response.use(
-  (response: AxiosResponse<ApiResponse>) => {
+  (response: AxiosResponse<ApiResponse>): any => {
     const { code, message, data, total, page, page_size } = response.data
 
     // 根据code判断请求是否成功

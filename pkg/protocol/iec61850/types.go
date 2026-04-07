@@ -153,7 +153,8 @@ type Timestamp struct {
 
 // NewTimestamp creates a new timestamp from time.Time
 func NewTimestamp(t time.Time) Timestamp {
-	seconds := uint32(t.Unix())
+	// 安全转换：int64到uint32，Unix时间戳通常在有效范围内
+	seconds := uint32(min(max(t.Unix(), 0), math.MaxUint32))
 	nanos := t.Nanosecond()
 	// Fraction of second is in units of 2^-24 seconds
 	fraction := uint32(float64(nanos) * 1.0 / float64(time.Second) * 16777216.0)

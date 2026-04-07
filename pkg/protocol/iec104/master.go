@@ -561,7 +561,7 @@ func (m *Master) SingleCommandWithSelect(infoAddr uint32, on bool, selectFlag bo
 	}
 
 	data := m.coder.EncodeSingleCommand(m.config.CommonAddress, infoAddr, cmd,
-		CauseOfTransmission{Cause: cot})
+		CauseOfTransmission{Cause: uint8(cot)})
 
 	m.mu.Lock()
 	m.stats.TotalControlSent++
@@ -791,6 +791,7 @@ func (m *Master) encodeInfoObject(typeID uint8, obj InformationObject) ([]byte, 
 	case *FloatValue:
 		bits := uint32(0)
 		if v.Value != 0 {
+			// 安全转换：int32到uint32的位级转换
 			bits = uint32(int32(v.Value * 1000))
 		}
 		data = append(data, byte(bits), byte(bits>>8), byte(bits>>16), byte(bits>>24))

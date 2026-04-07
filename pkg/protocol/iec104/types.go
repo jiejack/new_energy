@@ -3,6 +3,7 @@ package iec104
 import (
 	"encoding/binary"
 	"fmt"
+	"math"
 	"time"
 )
 
@@ -430,7 +431,8 @@ type CP56Time2a struct {
 func EncodeCP24Time2a(t time.Time) []byte {
 	data := make([]byte, 3)
 	
-	ms := uint16(t.Nanosecond()/1000000) + uint16(t.Second())*1000
+	// 安全转换：确保毫秒值在uint16范围内
+	ms := uint16(min(t.Nanosecond()/1000000+int(t.Second())*1000, math.MaxUint16))
 	binary.LittleEndian.PutUint16(data[0:2], ms)
 	
 	data[2] = uint8(t.Minute()) & 0x3F
@@ -459,7 +461,8 @@ func DecodeCP24Time2a(data []byte) CP24Time2a {
 func EncodeCP56Time2a(t time.Time) []byte {
 	data := make([]byte, 7)
 	
-	ms := uint16(t.Nanosecond()/1000000) + uint16(t.Second())*1000
+	// 安全转换：确保毫秒值在uint16范围内
+	ms := uint16(min(t.Nanosecond()/1000000+int(t.Second())*1000, math.MaxUint16))
 	binary.LittleEndian.PutUint16(data[0:2], ms)
 	
 	data[2] = uint8(t.Minute()) & 0x3F
@@ -510,7 +513,7 @@ func (cp CP56Time2a) ToTime() time.Time {
 	}
 	
 	sec := int(cp.Milliseconds / 1000)
-	nsec := int((cp.Milliseconds % 1000) * 1000000)
+	nsec := (int(cp.Milliseconds) % 1000) * 1000000
 	
 	return time.Date(year, time.Month(cp.Month), int(cp.DayOfMonth),
 		int(cp.Hours), int(cp.Minutes), sec, nsec, time.Local)

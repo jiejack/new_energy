@@ -362,8 +362,6 @@ func (api *AlertAPI) getAlert(w http.ResponseWriter, r *http.Request, alertID st
 
 // deleteAlert 删除告警
 func (api *AlertAPI) deleteAlert(w http.ResponseWriter, r *http.Request, alertID string) {
-	ctx := r.Context()
-
 	// 这里应该实现删除逻辑
 	// 为了示例，我们返回成功
 	api.writeSuccess(w, map[string]string{

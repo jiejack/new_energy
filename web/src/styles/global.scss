@@ -1,45 +1,68 @@
-/* 全局样式 */
+/* ============================================
+   新能源监控系统 - 全局样式
+   ============================================ */
 @use './variables.scss' as *;
 @use './reset.scss';
 
+/* 全局字体设置 */
+body {
+  font-family: $font-family-base;
+  background-color: $bg-page;
+  color: $text-primary;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 /* 页面容器 */
 .page-container {
-  padding: 20px;
-  background-color: $bg-page;
+  padding: $spacing-large;
+  background: $gradient-dark;
   min-height: calc(100vh - #{$navbar-height} - #{$tagsview-height});
 }
 
-/* 卡片容器 */
+/* 卡片容器 - 深色主题 */
 .card-container {
-  background-color: $bg-white;
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.9) 0%, rgba(13, 17, 23, 0.95) 100%);
+  border: 1px solid rgba(0, 212, 170, 0.2);
   border-radius: $border-radius-base;
   box-shadow: $shadow-light;
-  padding: 20px;
-  margin-bottom: 20px;
-}
+  padding: $spacing-large;
+  margin-bottom: $spacing-large;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
 
-/* 搜索表单 */
-.search-form {
-  margin-bottom: 20px;
-  padding: 20px;
-  background-color: $bg-white;
-  border-radius: $border-radius-base;
-  box-shadow: $shadow-light;
-
-  .el-form-item {
-    margin-bottom: 10px;
+  &:hover {
+    border-color: rgba(0, 212, 170, 0.4);
+    box-shadow: $shadow-glow;
   }
 }
 
-/* 表格容器 */
-.table-container {
-  background-color: $bg-white;
+/* 搜索表单 - 深色主题 */
+.search-form {
+  margin-bottom: $spacing-large;
+  padding: $spacing-large;
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.9) 0%, rgba(13, 17, 23, 0.95) 100%);
+  border: 1px solid rgba(0, 212, 170, 0.2);
   border-radius: $border-radius-base;
   box-shadow: $shadow-light;
-  padding: 20px;
+  backdrop-filter: blur(10px);
+
+  .el-form-item {
+    margin-bottom: $spacing-small;
+  }
+}
+
+/* 表格容器 - 深色主题 */
+.table-container {
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.9) 0%, rgba(13, 17, 23, 0.95) 100%);
+  border: 1px solid rgba(0, 212, 170, 0.2);
+  border-radius: $border-radius-base;
+  box-shadow: $shadow-light;
+  padding: $spacing-large;
+  backdrop-filter: blur(10px);
 
   .el-table {
-    margin-bottom: 20px;
+    margin-bottom: $spacing-large;
   }
 }
 
@@ -55,80 +78,230 @@
   margin-bottom: 20px;
 }
 
-/* 状态标签 */
+/* 状态标签 - 新能源设备状态 */
 .status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: $border-radius-small;
+  font-size: $font-size-small;
+  font-weight: 500;
+
+  &::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
   &.online {
-    color: $success-color;
+    color: $status-online;
+    background: rgba(0, 212, 170, 0.1);
+    
+    &::before {
+      background: $status-online;
+      box-shadow: 0 0 8px $status-online;
+    }
   }
 
   &.offline {
-    color: $danger-color;
+    color: $status-offline;
+    background: rgba(99, 110, 114, 0.1);
+    
+    &::before {
+      background: $status-offline;
+    }
   }
 
   &.maintenance {
-    color: $warning-color;
+    color: $status-maintenance;
+    background: rgba(253, 203, 110, 0.1);
+    
+    &::before {
+      background: $status-maintenance;
+      box-shadow: 0 0 8px $status-maintenance;
+    }
   }
 
   &.fault {
-    color: $danger-color;
+    color: $status-fault;
+    background: rgba(255, 118, 117, 0.1);
+    
+    &::before {
+      background: $status-fault;
+      box-shadow: 0 0 8px $status-fault;
+      animation: pulse-danger 1s ease-in-out infinite;
+    }
   }
 }
 
-/* 告警级别 */
+/* 告警级别 - 电力行业标准 */
 .alarm-level {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: $border-radius-small;
+  font-size: $font-size-small;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+
+  &::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
   &.critical {
-    color: $danger-color;
+    color: #fff;
+    background: linear-gradient(135deg, #d63031 0%, #ff7675 100%);
+    
+    &::before {
+      background: #fff;
+      box-shadow: 0 0 12px #fff;
+      animation: pulse-danger 0.8s ease-in-out infinite;
+    }
   }
 
   &.major {
-    color: $warning-color;
+    color: #fff;
+    background: linear-gradient(135deg, #e17055 0%, #fdcb6e 100%);
+    
+    &::before {
+      background: #fff;
+      box-shadow: 0 0 10px #fff;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
   }
 
   &.minor {
-    color: $info-color;
+    color: $warning-color;
+    background: rgba(253, 203, 110, 0.15);
+    border: 1px solid rgba(253, 203, 110, 0.3);
+    
+    &::before {
+      background: $warning-color;
+    }
   }
 
   &.warning {
-    color: $primary-color;
+    color: $info-color;
+    background: rgba(116, 185, 255, 0.15);
+    border: 1px solid rgba(116, 185, 255, 0.3);
+    
+    &::before {
+      background: $info-color;
+    }
   }
 }
 
-/* 图表容器 */
+/* 脉冲动画 */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes pulse-danger {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.5);
+  }
+}
+
+/* 图表容器 - 数据可视化优化 */
 .chart-container {
   width: 100%;
   height: 400px;
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.5) 0%, rgba(13, 17, 23, 0.7) 100%);
+  border-radius: $border-radius-base;
+  padding: $spacing-base;
+  border: 1px solid rgba(0, 212, 170, 0.1);
 }
 
-/* 统计卡片 */
+/* 统计卡片 - 新能源监控专用 */
 .stat-card {
-  background-color: $bg-white;
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.9) 0%, rgba(13, 17, 23, 0.95) 100%);
+  border: 1px solid rgba(0, 212, 170, 0.2);
   border-radius: $border-radius-base;
   box-shadow: $shadow-light;
-  padding: 20px;
-  margin-bottom: 20px;
+  padding: $spacing-large;
+  margin-bottom: $spacing-large;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: $gradient-primary;
+  }
+
+  &:hover {
+    border-color: rgba(0, 212, 170, 0.4);
+    box-shadow: $shadow-glow;
+    transform: translateY(-2px);
+  }
 
   .stat-title {
     font-size: $font-size-base;
     color: $text-secondary;
-    margin-bottom: 10px;
+    margin-bottom: $spacing-small;
+    font-weight: 500;
   }
 
   .stat-value {
-    font-size: $font-size-extra-large;
+    font-size: $font-size-display;
     font-weight: bold;
     color: $text-primary;
+    font-family: $font-family-number;
+    background: $gradient-primary;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 1px;
   }
 
   .stat-trend {
-    margin-top: 10px;
+    margin-top: $spacing-small;
     font-size: $font-size-small;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 
     &.up {
       color: $success-color;
+      
+      &::before {
+        content: '↑';
+        font-weight: bold;
+      }
     }
 
     &.down {
       color: $danger-color;
+      
+      &::before {
+        content: '↓';
+        font-weight: bold;
+      }
     }
   }
 }
@@ -199,69 +372,247 @@
   min-height: 200px;
 }
 
-/* Element Plus 样式覆盖 */
+/* Element Plus 样式覆盖 - 深色主题 */
 .el-dialog {
   border-radius: $border-radius-large;
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.98) 0%, rgba(13, 17, 23, 0.99) 100%);
+  border: 1px solid rgba(0, 212, 170, 0.3);
+  box-shadow: $shadow-dark;
+  backdrop-filter: blur(20px);
 }
 
 .el-message-box {
   border-radius: $border-radius-large;
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.98) 0%, rgba(13, 17, 23, 0.99) 100%);
+  border: 1px solid rgba(0, 212, 170, 0.3);
+  box-shadow: $shadow-dark;
+  backdrop-filter: blur(20px);
 }
 
 .el-card {
   border-radius: $border-radius-base;
-  border: none;
+  border: 1px solid rgba(0, 212, 170, 0.2);
   box-shadow: $shadow-light;
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.9) 0%, rgba(13, 17, 23, 0.95) 100%);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: rgba(0, 212, 170, 0.4);
+    box-shadow: $shadow-glow;
+  }
 }
 
 .el-button {
   border-radius: $border-radius-base;
+  transition: all 0.3s ease;
+
+  &.el-button--primary {
+    background: $gradient-primary;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 212, 170, 0.3);
+
+    &:hover {
+      box-shadow: 0 6px 16px rgba(0, 212, 170, 0.5);
+      transform: translateY(-1px);
+    }
+  }
 }
 
 .el-input__wrapper {
   border-radius: $border-radius-base;
+  background: rgba(26, 31, 46, 0.6);
+  border: 1px solid rgba(0, 212, 170, 0.2);
+  box-shadow: none;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: rgba(0, 212, 170, 0.4);
+  }
+
+  &.is-focus {
+    border-color: $primary-color;
+    box-shadow: 0 0 0 2px rgba(0, 212, 170, 0.2);
+  }
 }
 
 .el-select__wrapper {
   border-radius: $border-radius-base;
+  background: rgba(26, 31, 46, 0.6);
+  border: 1px solid rgba(0, 212, 170, 0.2);
+  box-shadow: none;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: rgba(0, 212, 170, 0.4);
+  }
+
+  &.is-focus {
+    border-color: $primary-color;
+    box-shadow: 0 0 0 2px rgba(0, 212, 170, 0.2);
+  }
 }
 
 .el-table {
   border-radius: $border-radius-base;
+  background: transparent;
 
   th.el-table__cell {
-    background-color: $bg-base;
+    background: rgba(0, 212, 170, 0.1);
     color: $text-primary;
-    font-weight: bold;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(0, 212, 170, 0.2);
+  }
+
+  td.el-table__cell {
+    border-bottom: 1px solid rgba(0, 212, 170, 0.1);
+  }
+
+  tr {
+    background: transparent;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: rgba(0, 212, 170, 0.05);
+    }
   }
 }
 
 .el-pagination {
   .el-pager li {
     border-radius: $border-radius-base;
+    background: rgba(26, 31, 46, 0.6);
+    border: 1px solid rgba(0, 212, 170, 0.2);
+    color: $text-primary;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: rgba(0, 212, 170, 0.2);
+      border-color: rgba(0, 212, 170, 0.4);
+    }
+
+    &.is-active {
+      background: $gradient-primary;
+      border-color: transparent;
+      color: #fff;
+    }
   }
 }
 
-/* 响应式布局 */
+/* 响应式布局 - 移动端优化 */
 @media screen and (max-width: 768px) {
   .page-container {
-    padding: 10px;
+    padding: $spacing-base;
   }
 
   .card-container {
-    padding: 15px;
-    margin-bottom: 10px;
+    padding: $spacing-base;
+    margin-bottom: $spacing-base;
+    border-radius: $border-radius-small;
   }
 
   .search-form {
-    padding: 15px;
+    padding: $spacing-base;
+    border-radius: $border-radius-small;
   }
 
   .table-container {
-    padding: 15px;
+    padding: $spacing-base;
+    border-radius: $border-radius-small;
+    
+    /* 移动端表格横向滚动 */
+    .el-table {
+      font-size: $font-size-small;
+      
+      th.el-table__cell,
+      td.el-table__cell {
+        padding: 8px 4px;
+      }
+    }
   }
 
   .chart-container {
-    height: 300px;
+    height: 280px;
+    padding: $spacing-small;
+    border-radius: $border-radius-small;
+  }
+
+  .stat-card {
+    padding: $spacing-base;
+    margin-bottom: $spacing-base;
+    border-radius: $border-radius-small;
+
+    .stat-value {
+      font-size: $font-size-extra-large;
+    }
+
+    .stat-title {
+      font-size: $font-size-small;
+    }
+  }
+
+  /* 移动端按钮优化 */
+  .el-button {
+    padding: 8px 16px;
+    font-size: $font-size-small;
+  }
+
+  /* 移动端输入框优化 */
+  .el-input__wrapper {
+    padding: 8px 12px;
+  }
+
+  /* 移动端表格优化 */
+  .el-table {
+    font-size: $font-size-small;
+    
+    /* 隐藏不重要的列 */
+    .hide-on-mobile {
+      display: none;
+    }
+  }
+
+  /* 移动端分页优化 */
+  .el-pagination {
+    .el-pagination__sizes,
+    .el-pagination__jump {
+      display: none;
+    }
+  }
+}
+
+/* 平板优化 */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  .page-container {
+    padding: $spacing-large;
+  }
+
+  .card-container {
+    padding: $spacing-large;
+  }
+
+  .chart-container {
+    height: 350px;
+  }
+}
+
+/* 大屏幕优化 */
+@media screen and (min-width: 1600px) {
+  .page-container {
+    padding: $spacing-extra-large;
+  }
+
+  .card-container {
+    padding: $spacing-extra-large;
+  }
+
+  .stat-card {
+    .stat-value {
+      font-size: $font-size-title;
+    }
+  }
+
+  .chart-container {
+    height: 450px;
   }
 }

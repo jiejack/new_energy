@@ -1,0 +1,300 @@
+# 告警规则配置
+# 新能源监控系统
+
+groups:
+  # API 服务告警规则
+  - name: api-server-alerts
+    rules:
+      - alert: APIHighLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{service="api-server"}[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+          service: api-server
+        annotations:
+          summary: "API 服务高延迟"
+          description: "API 服务 95 分位延迟超过 1 秒，当前值: {{ $value }}秒"
+
+      - alert: APIHighErrorRate
+        expr: rate(http_requests_total{service="api-server",status=~"5.."}[5m]) / rate(http_requests_total{service="api-server"}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          service: api-server
+        annotations:
+          summary: "API 服务高错误率"
+          description: "API 服务 5xx 错误率超过 5%，当前值: {{ $value | humanizePercentage }}"
+
+      - alert: APIServiceDown
+        expr: up{job="api-server"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: api-server
+        annotations:
+          summary: "API 服务不可用"
+          description: "API 服务已经宕机超过 1 分钟"
+
+  # 数据采集服务告警规则
+  - name: collector-alerts
+    rules:
+      - alert: CollectorHighErrorRate
+        expr: rate(collector_errors_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          service: collector
+        annotations:
+          summary: "数据采集服务错误率过高"
+          description: "数据采集服务每分钟错误数超过 10，当前值: {{ $value }}"
+
+      - alert: CollectorQueueBacklog
+        expr: collector_queue_size > 10000
+        for: 5m
+        labels:
+          severity: warning
+          service: collector
+        annotations:
+          summary: "数据采集队列积压"
+          description: "数据采集队列积压超过 10000，当前值: {{ $value }}"
+
+      - alert: CollectorServiceDown
+        expr: up{job="collector"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: collector
+        annotations:
+          summary: "数据采集服务不可用"
+          description: "数据采集服务已经宕机超过 1 分钟"
+
+  # 计算服务告警规则
+  - name: compute-alerts
+    rules:
+      - alert: ComputeHighLatency
+        expr: histogram_quantile(0.95, rate(compute_duration_seconds_bucket[5m])) > 5
+        for: 5m
+        labels:
+          severity: warning
+          service: compute-service
+        annotations:
+          summary: "计算服务高延迟"
+          description: "计算服务 95 分位延迟超过 5 秒，当前值: {{ $value }}秒"
+
+      - alert: ComputeServiceDown
+        expr: up{job="compute-service"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: compute-service
+        annotations:
+          summary: "计算服务不可用"
+          description: "计算服务已经宕机超过 1 分钟"
+
+  # 告警服务告警规则
+  - name: alarm-alerts
+    rules:
+      - alert: AlarmNotificationFailed
+        expr: rate(alarm_notification_failed_total[5m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+          service: alarm-service
+        annotations:
+          summary: "告警通知失败率过高"
+          description: "告警通知每分钟失败数超过 5，当前值: {{ $value }}"
+
+      - alert: AlarmServiceDown
+        expr: up{job="alarm-service"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: alarm-service
+        annotations:
+          summary: "告警服务不可用"
+          description: "告警服务已经宕机超过 1 分钟"
+
+  # AI 服务告警规则
+  - name: ai-service-alerts
+    rules:
+      - alert: AIServiceHighLatency
+        expr: histogram_quantile(0.95, rate(ai_request_duration_seconds_bucket[5m])) > 10
+        for: 5m
+        labels:
+          severity: warning
+          service: ai-service
+        annotations:
+          summary: "AI 服务高延迟"
+          description: "AI 服务 95 分位延迟超过 10 秒，当前值: {{ $value }}秒"
+
+      - alert: AIServiceDown
+        expr: up{job="ai-service"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: ai-service
+        annotations:
+          summary: "AI 服务不可用"
+          description: "AI 服务已经宕机超过 1 分钟"
+
+  # 数据库告警规则
+  - name: database-alerts
+    rules:
+      - alert: PostgreSQLHighConnections
+        expr: pg_stat_activity_count / pg_settings_max_connections > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: postgresql
+        annotations:
+          summary: "PostgreSQL 连接数过高"
+          description: "PostgreSQL 连接数使用率超过 80%，当前值: {{ $value | humanizePercentage }}"
+
+      - alert: PostgreSQLDown
+        expr: up{job="postgresql"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: postgresql
+        annotations:
+          summary: "PostgreSQL 数据库不可用"
+          description: "PostgreSQL 数据库已经宕机超过 1 分钟"
+
+      - alert: PostgreSQLReplicationLag
+        expr: pg_replication_lag_seconds > 30
+        for: 5m
+        labels:
+          severity: warning
+          service: postgresql
+        annotations:
+          summary: "PostgreSQL 复制延迟过高"
+          description: "PostgreSQL 复制延迟超过 30 秒，当前值: {{ $value }}秒"
+
+  # Redis 告警规则
+  - name: redis-alerts
+    rules:
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "Redis 内存使用率过高"
+          description: "Redis 内存使用率超过 90%，当前值: {{ $value | humanizePercentage }}"
+
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: redis
+        annotations:
+          summary: "Redis 缓存不可用"
+          description: "Redis 缓存已经宕机超过 1 分钟"
+
+      - alert: RedisHighConnectionCount
+        expr: redis_connected_clients > 1000
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "Redis 连接数过高"
+          description: "Redis 连接数超过 1000，当前值: {{ $value }}"
+
+  # Kafka 告警规则
+  - name: kafka-alerts
+    rules:
+      - alert: KafkaHighConsumerLag
+        expr: kafka_consumer_lag_messages > 10000
+        for: 5m
+        labels:
+          severity: warning
+          service: kafka
+        annotations:
+          summary: "Kafka 消费者延迟过高"
+          description: "Kafka 消费者延迟消息数超过 10000，当前值: {{ $value }}"
+
+      - alert: KafkaDown
+        expr: up{job="kafka"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: kafka
+        annotations:
+          summary: "Kafka 消息队列不可用"
+          description: "Kafka 消息队列已经宕机超过 1 分钟"
+
+  # 系统资源告警规则
+  - name: system-alerts
+    rules:
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "CPU 使用率过高"
+          description: "CPU 使用率超过 80%，当前值: {{ $value }}%"
+
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "内存使用率过高"
+          description: "内存使用率超过 85%，当前值: {{ $value }}%"
+
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"}) * 100 < 15
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "磁盘空间不足"
+          description: "磁盘可用空间低于 15%，当前值: {{ $value }}%"
+
+      - alert: DiskSpaceCritical
+        expr: (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"}) * 100 < 5
+        for: 1m
+        labels:
+          severity: critical
+          component: system
+        annotations:
+          summary: "磁盘空间严重不足"
+          description: "磁盘可用空间低于 5%，当前值: {{ $value }}%"
+
+  # Go 应用运行时告警规则
+  - name: go-runtime-alerts
+    rules:
+      - alert: GoHighGoroutineCount
+        expr: go_goroutines > 10000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Goroutine 数量过高"
+          description: "Goroutine 数量超过 10000，可能存在泄漏，当前值: {{ $value }}"
+
+      - alert: GoHighGC Duration
+        expr: go_gc_duration_seconds{quantile="1"} > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "GC 停顿时间过长"
+          description: "GC 最大停顿时间超过 100ms，当前值: {{ $value }}秒"
+
+      - alert: GoHighHeapUsage
+        expr: go_memstats_heap_inuse_bytes / go_memstats_heap_sys_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Go 堆内存使用率过高"
+          description: "Go 堆内存使用率超过 90%，当前值: {{ $value | humanizePercentage }}"

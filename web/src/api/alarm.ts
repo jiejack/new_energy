@@ -1,4 +1,4 @@
-import { get, post, put, del } from '@/utils/request'
+import { get, post, put } from '@/utils/request'
 import type { Alarm, PageQuery, PageResult, AlarmLevel, AlarmStatus } from '@/types'
 
 /**
@@ -90,32 +90,4 @@ export function getAlarmDistribution(params: {
   count: number
 }>> {
   return get('/alarms/distribution', params)
-}
-
-/**
- * 创建告警规则
- */
-export function createAlarmRule(data: any): Promise<any> {
-  return post('/alarm-rules', data)
-}
-
-/**
- * 更新告警规则
- */
-export function updateAlarmRule(id: number, data: any): Promise<any> {
-  return put(`/alarm-rules/${id}`, data)
-}
-
-/**
- * 删除告警规则
- */
-export function deleteAlarmRule(id: number): Promise<void> {
-  return del(`/alarm-rules/${id}`)
-}
-
-/**
- * 获取告警规则列表
- */
-export function getAlarmRuleList(params: PageQuery): Promise<PageResult<any>> {
-  return get('/alarm-rules', params)
 }

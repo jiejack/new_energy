@@ -1,6 +1,7 @@
 package iec104
 
 import (
+	"math"
 	"testing"
 	"time"
 )
@@ -137,7 +138,8 @@ func TestCP24Time2aEncodeDecode(t *testing.T) {
 	decoded := DecodeCP24Time2a(encoded)
 
 	// 验证毫秒和分钟
-	expectedMs := uint16(now.Nanosecond()/1000000) + uint16(now.Second())*1000
+	// 安全转换：确保值在uint16范围内
+	expectedMs := uint16(min(now.Nanosecond()/1000000+int(now.Second())*1000, math.MaxUint16))
 	if decoded.Milliseconds != expectedMs {
 		t.Errorf("Milliseconds mismatch: got %d, want %d", decoded.Milliseconds, expectedMs)
 	}
@@ -894,7 +896,8 @@ func BenchmarkEncodeSinglePointInfo(b *testing.B) {
 	objects := make([]InformationObject, 100)
 	for i := range objects {
 		objects[i] = InformationObject{
-			Address: uint32(1000 + i),
+			// 安全转换：确保地址在uint32范围内
+			Address: uint32(min(1000+i, math.MaxUint32)),
 			Value:   &SinglePointInfo{Value: i%2 == 0, Quality: Quality{}},
 		}
 	}

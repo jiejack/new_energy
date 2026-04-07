@@ -296,9 +296,9 @@ func (c *ConfigClient) SearchConfig(dataId, group string, pageNo, pageSize int) 
 	}
 
 	return &ConfigSearchResult{
-		TotalCount:     result.TotalCount,
-		PageNumber:     result.PageNumber,
-		PagesAvailable: result.PagesAvailable,
+		TotalCount:     int64(result.TotalCount),
+		PageNumber:     int32(result.PageNumber),
+		PagesAvailable: int32(result.PagesAvailable),
 		PageItems:      items,
 	}, nil
 }

@@ -51,7 +51,7 @@ export const useUserStore = defineStore('user', () => {
       const response = await getUserInfo()
       const { roles: userRoles, permissions: userPermissions, ...info } = response
 
-      userInfo.value = info
+      userInfo.value = { ...info, roles: userRoles || [], permissions: userPermissions || [] }
       roles.value = userRoles || []
       permissions.value = userPermissions || []
 

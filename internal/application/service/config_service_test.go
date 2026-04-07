@@ -658,8 +658,3 @@ func TestConfigService_GetConfigAsJSON_Success(t *testing.T) {
 
 	mockConfigRepo.AssertExpectations(t)
 }
-
-// 辅助函数
-func strPtr(s string) *string {
-	return &s
-}

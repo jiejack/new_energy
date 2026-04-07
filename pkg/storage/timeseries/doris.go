@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -12,19 +13,38 @@ import (
 	"go.uber.org/zap"
 )
 
+// validIdentifier 验证SQL标识符(数据库名、表名、列名)是否安全
+// 只允许字母、数字、下划线,且不能以数字开头
+var validIdentifierRegex = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`)
+
+// validateIdentifier 验证SQL标识符是否安全
+func validateIdentifier(identifier, identifierType string) error {
+	if identifier == "" {
+		return fmt.Errorf("%s cannot be empty", identifierType)
+	}
+	if !validIdentifierRegex.MatchString(identifier) {
+		return fmt.Errorf("invalid %s '%s': must contain only letters, numbers, and underscores, and cannot start with a number", identifierType, identifier)
+	}
+	// 检查长度
+	if len(identifier) > 64 {
+		return fmt.Errorf("%s '%s' is too long (max 64 characters)", identifierType, identifier)
+	}
+	return nil
+}
+
 // DorisConfig Doris配置
 type DorisConfig struct {
-	Hosts        []string      `json:"hosts" mapstructure:"hosts"`               // FE节点地址列表
-	Port         int           `json:"port" mapstructure:"port"`                 // MySQL协议端口
-	Database     string        `json:"database" mapstructure:"database"`         // 默认数据库
-	User         string        `json:"user" mapstructure:"user"`                 // 用户名
-	Password     string        `json:"password" mapstructure:"password"`         // 密码
+	Hosts        []string      `json:"hosts" mapstructure:"hosts"`                   // FE节点地址列表
+	Port         int           `json:"port" mapstructure:"port"`                     // MySQL协议端口
+	Database     string        `json:"database" mapstructure:"database"`             // 默认数据库
+	User         string        `json:"user" mapstructure:"user"`                     // 用户名
+	Password     string        `json:"password" mapstructure:"password"`             // 密码
 	MaxOpenConns int           `json:"max_open_conns" mapstructure:"max_open_conns"` // 最大打开连接数
 	MaxIdleConns int           `json:"max_idle_conns" mapstructure:"max_idle_conns"` // 最大空闲连接数
-	ConnTimeout  time.Duration `json:"conn_timeout" mapstructure:"conn_timeout"` // 连接超时
-	WriteTimeout time.Duration `json:"write_timeout" mapstructure:"write_timeout"` // 写入超时
-	QueryTimeout time.Duration `json:"query_timeout" mapstructure:"query_timeout"` // 查询超时
-	BatchSize    int           `json:"batch_size" mapstructure:"batch_size"`     // 批量写入大小
+	ConnTimeout  time.Duration `json:"conn_timeout" mapstructure:"conn_timeout"`     // 连接超时
+	WriteTimeout time.Duration `json:"write_timeout" mapstructure:"write_timeout"`   // 写入超时
+	QueryTimeout time.Duration `json:"query_timeout" mapstructure:"query_timeout"`   // 查询超时
+	BatchSize    int           `json:"batch_size" mapstructure:"batch_size"`         // 批量写入大小
 }
 
 // DefaultDorisConfig 默认Doris配置
@@ -46,11 +66,11 @@ func DefaultDorisConfig() *DorisConfig {
 
 // DorisClient Doris客户端
 type DorisClient struct {
-	db      *sql.DB
-	config  *DorisConfig
-	logger  *zap.Logger
-	mu      sync.RWMutex
-	closed  bool
+	db          *sql.DB
+	config      *DorisConfig
+	logger      *zap.Logger
+	mu          sync.RWMutex
+	closed      bool
 	currentHost int
 }
 
@@ -170,6 +190,14 @@ func (c *DorisClient) WriteWithTable(ctx context.Context, database, table string
 		return nil
 	}
 
+	// 验证数据库和表名
+	if err := validateIdentifier(database, "database"); err != nil {
+		return fmt.Errorf("invalid database name: %w", err)
+	}
+	if err := validateIdentifier(table, "table"); err != nil {
+		return fmt.Errorf("invalid table name: %w", err)
+	}
+
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
@@ -229,15 +257,15 @@ func (c *DorisClient) Query(ctx context.Context, query *Query) (*QueryResult, er
 	defer c.mu.RUnlock()
 
 	// 构建SQL
-	sql, args := c.buildQuerySQL(query)
+	queryStr, args := c.buildQuerySQL(query)
 
 	ctx, cancel := context.WithTimeout(ctx, c.config.QueryTimeout)
 	defer cancel()
 
 	// 执行查询
-	rows, err := c.db.QueryContext(ctx, sql, args...)
+	rows, err := c.db.QueryContext(ctx, queryStr, args...)
 	if err != nil {
-		return nil, NewQueryError(sql, "query failed", err)
+		return nil, NewQueryError(queryStr, "query failed", err)
 	}
 	defer rows.Close()
 
@@ -314,6 +342,11 @@ func (c *DorisClient) QueryLatest(ctx context.Context, pointIds []int64) (map[in
 		return make(map[int64]*DataPoint), nil
 	}
 
+	// 验证数据库名
+	if err := validateIdentifier(c.config.Database, "database"); err != nil {
+		return nil, fmt.Errorf("invalid database name: %w", err)
+	}
+
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
@@ -385,14 +418,14 @@ func (c *DorisClient) Aggregate(ctx context.Context, query *AggregateQuery) (*Ag
 	defer c.mu.RUnlock()
 
 	// 构建聚合SQL
-	sql, args := c.buildAggregateSQL(query)
+	queryStr, args := c.buildAggregateSQL(query)
 
 	ctx, cancel := context.WithTimeout(ctx, c.config.QueryTimeout)
 	defer cancel()
 
-	rows, err := c.db.QueryContext(ctx, sql, args...)
+	rows, err := c.db.QueryContext(ctx, queryStr, args...)
 	if err != nil {
-		return nil, NewQueryError(sql, "aggregate query failed", err)
+		return nil, NewQueryError(queryStr, "aggregate query failed", err)
 	}
 	defer rows.Close()
 
@@ -491,6 +524,11 @@ func (c *DorisClient) CreateDatabase(ctx context.Context, name string) error {
 		return ErrClosed
 	}
 
+	// 验证数据库名
+	if err := validateIdentifier(name, "database"); err != nil {
+		return fmt.Errorf("invalid database name: %w", err)
+	}
+
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
@@ -510,6 +548,11 @@ func (c *DorisClient) DropDatabase(ctx context.Context, name string) error {
 		return ErrClosed
 	}
 
+	// 验证数据库名
+	if err := validateIdentifier(name, "database"); err != nil {
+		return fmt.Errorf("invalid database name: %w", err)
+	}
+
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
@@ -527,6 +570,21 @@ func (c *DorisClient) DropDatabase(ctx context.Context, name string) error {
 func (c *DorisClient) CreateTable(ctx context.Context, database, table string, schema *TableSchema) error {
 	if c.IsClosed() {
 		return ErrClosed
+	}
+
+	// 验证数据库和表名
+	if err := validateIdentifier(database, "database"); err != nil {
+		return fmt.Errorf("invalid database name: %w", err)
+	}
+	if err := validateIdentifier(table, "table"); err != nil {
+		return fmt.Errorf("invalid table name: %w", err)
+	}
+
+	// 验证列名
+	for _, col := range schema.Columns {
+		if err := validateIdentifier(col.Name, "column"); err != nil {
+			return fmt.Errorf("invalid column name: %w", err)
+		}
 	}
 
 	c.mu.RLock()
@@ -585,6 +643,14 @@ func (c *DorisClient) CreateTable(ctx context.Context, database, table string, s
 func (c *DorisClient) DropTable(ctx context.Context, database, table string) error {
 	if c.IsClosed() {
 		return ErrClosed
+	}
+
+	// 验证数据库和表名
+	if err := validateIdentifier(database, "database"); err != nil {
+		return fmt.Errorf("invalid database name: %w", err)
+	}
+	if err := validateIdentifier(table, "table"); err != nil {
+		return fmt.Errorf("invalid table name: %w", err)
 	}
 
 	c.mu.RLock()
@@ -739,7 +805,7 @@ func (c *DorisClient) buildQuerySQL(query *Query) (string, []interface{}) {
 		}
 	}
 
-	sql := fmt.Sprintf(`
+	queryStr := fmt.Sprintf(`
 		SELECT point_id, timestamp, value, quality, tags
 		FROM %s.%s
 		%s
@@ -747,7 +813,7 @@ func (c *DorisClient) buildQuerySQL(query *Query) (string, []interface{}) {
 		%s
 	`, database, table, whereClause, orderBy, limitClause)
 
-	return sql, args
+	return queryStr, args
 }
 
 // buildCountSQL 构建计数SQL
@@ -788,8 +854,8 @@ func (c *DorisClient) buildCountSQL(query *Query) (string, []interface{}) {
 		whereClause = "WHERE " + strings.Join(whereClauses, " AND ")
 	}
 
-	sql := fmt.Sprintf("SELECT COUNT(*) FROM %s.%s %s", database, table, whereClause)
-	return sql, args
+	queryStr := fmt.Sprintf("SELECT COUNT(*) FROM %s.%s %s", database, table, whereClause)
+	return queryStr, args
 }
 
 // buildAggregateSQL 构建聚合SQL
@@ -841,7 +907,7 @@ func (c *DorisClient) buildAggregateSQL(query *AggregateQuery) (string, []interf
 		aggFunc = "AVG"
 	}
 
-	sql := fmt.Sprintf(`
+	queryStr := fmt.Sprintf(`
 		SELECT
 			point_id,
 			DATE_BIN('%s', timestamp, '%s') as time_bucket,
@@ -854,7 +920,7 @@ func (c *DorisClient) buildAggregateSQL(query *AggregateQuery) (string, []interf
 		ORDER BY point_id, time_bucket
 	`, intervalStr, query.StartTime.Format("2006-01-02 15:04:05"), aggFunc, database, table, whereClause)
 
-	return sql, args
+	return queryStr, args
 }
 
 // intervalToSQL 将时间间隔转换为SQL格式

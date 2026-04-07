@@ -251,7 +251,7 @@ func TestDeviceService_DeleteDevice(t *testing.T) {
 		deviceID := "device001"
 
 		mockDeviceRepo.On("GetByID", ctx, deviceID).Return(device, nil)
-		mockPointRepo.On("List", ctx, &deviceID, (*entity.PointType)(nil)).Return([]*entity.Point{}, nil)
+		mockPointRepo.On("List", ctx, mock.AnythingOfType("*string"), (*entity.PointType)(nil)).Return([]*entity.Point{}, nil)
 		mockDeviceRepo.On("Delete", ctx, deviceID).Return(nil)
 
 		err := service.DeleteDevice(ctx, deviceID)
@@ -273,7 +273,7 @@ func TestDeviceService_DeleteDevice(t *testing.T) {
 		}
 
 		mockDeviceRepo.On("GetByID", ctx, deviceID).Return(device, nil)
-		mockPointRepo.On("List", ctx, &deviceID, (*entity.PointType)(nil)).Return(points, nil)
+		mockPointRepo.On("List", ctx, mock.AnythingOfType("*string"), (*entity.PointType)(nil)).Return(points, nil)
 
 		err := service.DeleteDevice(ctx, deviceID)
 

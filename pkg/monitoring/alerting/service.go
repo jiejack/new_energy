@@ -27,6 +27,9 @@ type AlertServiceConfig struct {
 
 	// 通知配置
 	NotificationStore NotificationStore `json:"-"`
+
+	// 告警存储
+	AlertStore AlertStore `json:"-"`
 }
 
 // NewAlertService 创建告警服务
@@ -43,7 +46,7 @@ func NewAlertService(config AlertServiceConfig) *AlertService {
 	notifier := NewAlertNotifier(config.NotificationStore)
 
 	// 创建API
-	api := NewAlertAPI(ruleManager, aggregator, notifier, config.NotificationStore)
+	api := NewAlertAPI(ruleManager, aggregator, notifier, config.AlertStore)
 
 	return &AlertService{
 		ruleManager: ruleManager,

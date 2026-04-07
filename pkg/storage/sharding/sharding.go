@@ -190,7 +190,8 @@ func (hs *HashSharding) GetShard(key *ShardKey) (int, error) {
 		return hs.consistentHash(hash), nil
 	}
 
-	// 简单取模
+	// 简单取模 - 安全转换：确保结果在int范围内
+	/* #nosec G115 -- hash%uint32结果在uint32范围内，转换为int是安全的 */
 	return int(hash % uint32(hs.shardCount)), nil
 }
 

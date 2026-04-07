@@ -356,6 +356,8 @@ func (m *Master) BatchWrite(requests []WriteRequest) error {
 			case []uint16:
 				err = m.WriteMultipleRegisters(req.Address, v)
 			case int16:
+				// 安全转换：int16到uint16的位级转换
+				// 注意：这会保留位模式，负数会变成大于32767的值
 				err = m.WriteSingleRegister(req.Address, uint16(v))
 			case []int16:
 				err = m.WriteMultipleRegistersFromInt16(req.Address, v)
@@ -441,6 +443,7 @@ func (r *RegisterValue) ToFloat32() float32 {
 
 // ToInt16 转换为int16
 func (r *RegisterValue) ToInt16() int16 {
+	// 安全转换：uint16到int16的位级转换
 	return int16(r.Value)
 }
 

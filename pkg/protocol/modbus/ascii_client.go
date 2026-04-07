@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"sync"
-	"time"
 )
 
 // ASCIClient Modbus ASCII客户端
@@ -328,6 +328,10 @@ func (c *ASCIClient) WriteSingleRegister(address uint16, value uint16) error {
 
 // WriteMultipleCoils 写多个线圈（功能码 0x0F）
 func (c *ASCIClient) WriteMultipleCoils(address uint16, values []byte) error {
+	// 安全转换：确保长度不会导致溢出
+	if len(values) > math.MaxUint16/8 {
+		return fmt.Errorf("values length too large")
+	}
 	quantity := uint16(len(values) * 8)
 	if quantity < 1 || quantity > MaxCoilsWriteQuantity {
 		return fmt.Errorf("quantity must be between 1 and %d", MaxCoilsWriteQuantity)
@@ -347,6 +351,10 @@ func (c *ASCIClient) WriteMultipleCoils(address uint16, values []byte) error {
 
 // WriteMultipleRegisters 写多个寄存器（功能码 0x10）
 func (c *ASCIClient) WriteMultipleRegisters(address uint16, values []byte) error {
+	// 安全转换：确保长度不会导致溢出
+	if len(values) > math.MaxUint16*2 {
+		return fmt.Errorf("values length too large")
+	}
 	quantity := uint16(len(values) / 2)
 	if quantity < 1 || quantity > MaxRegistersWriteQuantity {
 		return fmt.Errorf("quantity must be between 1 and %d", MaxRegistersWriteQuantity)

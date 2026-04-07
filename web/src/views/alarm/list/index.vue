@@ -279,6 +279,7 @@ import {
 } from '@/api/alarm'
 import type { Alarm, AlarmLevel, AlarmStatus } from '@/types'
 import dayjs from 'dayjs'
+import { alarmStatusMapper, alarmLevelMapper } from '@/utils/enums'
 
 const loading = ref(false)
 const detailVisible = ref(false)
@@ -323,36 +324,9 @@ const getLevelTagType = (level: AlarmLevel): 'danger' | 'warning' | 'info' | '' 
   return typeMap[level]
 }
 
-// 获取级别文本
-const getLevelText = (level: AlarmLevel): string => {
-  const textMap: Record<AlarmLevel, string> = {
-    critical: '严重',
-    major: '主要',
-    minor: '次要',
-    warning: '警告',
-  }
-  return textMap[level]
-}
-
-// 获取状态标签类型
-const getStatusTagType = (status: AlarmStatus): 'danger' | 'warning' | 'success' => {
-  const typeMap: Record<AlarmStatus, 'danger' | 'warning' | 'success'> = {
-    active: 'danger',
-    acknowledged: 'warning',
-    resolved: 'success',
-  }
-  return typeMap[status]
-}
-
-// 获取状态文本
-const getStatusText = (status: AlarmStatus): string => {
-  const textMap: Record<AlarmStatus, string> = {
-    active: '活动',
-    acknowledged: '已确认',
-    resolved: '已解决',
-  }
-  return textMap[status]
-}
+const getLevelText = (level: AlarmLevel) => alarmLevelMapper.getLabel(level)
+const getStatusTagType = (status: AlarmStatus) => alarmStatusMapper.getTagType(status)
+const getStatusText = (status: AlarmStatus) => alarmStatusMapper.getLabel(status)
 
 // 格式化时间
 const formatTime = (time: string): string => {

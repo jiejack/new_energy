@@ -333,9 +333,9 @@ func (dc *DashboardConfig) AddAnnotation(ann Annotation) *DashboardConfig {
 }
 
 // AddPanel 添加面板
-func (dc *DashboardConfig) AddPanel(panel Panel) *DashboardConfig {
+func (dc *DashboardConfig) AddPanel(panel *Panel) *DashboardConfig {
 	panel.ID = len(dc.dashboard.Panels) + 1
-	dc.dashboard.Panels = append(dc.dashboard.Panels, panel)
+	dc.dashboard.Panels = append(dc.dashboard.Panels, *panel)
 	return dc
 }
 
@@ -404,8 +404,8 @@ func LoadFromFile(filename string) (*Dashboard, error) {
 }
 
 // NewTimeSeriesPanel 创建时间序列面板
-func NewTimeSeriesPanel(title string, x, y, w, h int) Panel {
-	return Panel{
+func NewTimeSeriesPanel(title string, x, y, w, h int) *Panel {
+	return &Panel{
 		Title: title,
 		Type:  "timeseries",
 		GridPos: GridPos{
@@ -453,8 +453,8 @@ func NewTimeSeriesPanel(title string, x, y, w, h int) Panel {
 }
 
 // NewStatPanel 创建统计面板
-func NewStatPanel(title string, x, y, w, h int) Panel {
-	return Panel{
+func NewStatPanel(title string, x, y, w, h int) *Panel {
+	return &Panel{
 		Title: title,
 		Type:  "stat",
 		GridPos: GridPos{
@@ -480,8 +480,8 @@ func NewStatPanel(title string, x, y, w, h int) Panel {
 }
 
 // NewGaugePanel 创建仪表盘面板
-func NewGaugePanel(title string, x, y, w, h int) Panel {
-	return Panel{
+func NewGaugePanel(title string, x, y, w, h int) *Panel {
+	return &Panel{
 		Title: title,
 		Type:  "gauge",
 		GridPos: GridPos{
@@ -505,8 +505,8 @@ func NewGaugePanel(title string, x, y, w, h int) Panel {
 }
 
 // NewTablePanel 创建表格面板
-func NewTablePanel(title string, x, y, w, h int) Panel {
-	return Panel{
+func NewTablePanel(title string, x, y, w, h int) *Panel {
+	return &Panel{
 		Title: title,
 		Type:  "table",
 		GridPos: GridPos{
@@ -528,8 +528,8 @@ func NewTablePanel(title string, x, y, w, h int) Panel {
 }
 
 // NewHeatmapPanel 创建热力图面板
-func NewHeatmapPanel(title string, x, y, w, h int) Panel {
-	return Panel{
+func NewHeatmapPanel(title string, x, y, w, h int) *Panel {
+	return &Panel{
 		Title: title,
 		Type:  "heatmap",
 		GridPos: GridPos{

@@ -160,8 +160,8 @@ func WithMinWorkers(n int) PoolOption {
 	}
 }
 
-// WithTaskQueueSize 设置任务队列大小
-func WithTaskQueueSize(n int) PoolOption {
+// WithPoolTaskQueueSize 设置任务队列大小
+func WithPoolTaskQueueSize(n int) PoolOption {
 	return func(p *WorkerPool) {
 		if n > 0 {
 			p.taskQueueSize = n

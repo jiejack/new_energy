@@ -1,0 +1,4285 @@
+{
+	"Golang errors": {},
+	"Issues": [
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e int64",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\compression\\compression.go",
+			"code": "985: \t// 时间戳\n986: \tblock.Timestamp = time.Unix(0, int64(binary.BigEndian.Uint64(data[24:32])))\n987: \n",
+			"line": "986",
+			"column": "38",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e int64",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\compression\\compression.go",
+			"code": "979: \t// 压缩大小\n980: \tblock.CompressedSize = int64(binary.BigEndian.Uint64(data[12:20]))\n981: \n",
+			"line": "980",
+			"column": "30",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e int64",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\compression\\compression.go",
+			"code": "976: \t// 原始大小\n977: \tblock.OriginalSize = int64(binary.BigEndian.Uint64(data[4:12]))\n978: \n",
+			"line": "977",
+			"column": "28",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e int64",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\converter.go",
+			"code": "192: \t}\n193: \treturn int64(val), nil\n194: }\n",
+			"line": "193",
+			"column": "14",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint32 -\u003e uint16",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\tcp_client.go",
+			"code": "95: \tid := atomic.AddUint32(\u0026c.transactionID, 1)\n96: \treturn uint16(id)\n97: }\n",
+			"line": "96",
+			"column": "15",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint32 -\u003e int32",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\converter.go",
+			"code": "131: \t}\n132: \treturn int32(val), nil\n133: }\n",
+			"line": "132",
+			"column": "14",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint32 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\converter.go",
+			"code": "273: \tresult += uint32(BCDToUint8(byte(bcd \u003e\u003e 8))) * 1000\n274: \tresult += uint32(BCDToUint8(byte(bcd))) * 1\n275: \treturn result\n",
+			"line": "274",
+			"column": "34",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint32 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\converter.go",
+			"code": "272: \tresult += uint32(BCDToUint8(byte(bcd \u003e\u003e 16))) * 100000\n273: \tresult += uint32(BCDToUint8(byte(bcd \u003e\u003e 8))) * 1000\n274: \tresult += uint32(BCDToUint8(byte(bcd))) * 1\n",
+			"line": "273",
+			"column": "34",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint32 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\converter.go",
+			"code": "271: \tresult += uint32(BCDToUint8(byte(bcd \u003e\u003e 24))) * 10000000\n272: \tresult += uint32(BCDToUint8(byte(bcd \u003e\u003e 16))) * 100000\n273: \tresult += uint32(BCDToUint8(byte(bcd \u003e\u003e 8))) * 1000\n",
+			"line": "272",
+			"column": "34",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint32 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "440: \tbits := math.Float32bits(fv.Value)\n441: \tdata = append(data, byte(bits), byte(bits\u003e\u003e8), byte(bits\u003e\u003e16), byte(bits\u003e\u003e24))\n442: \n",
+			"line": "441",
+			"column": "53",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint32 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "440: \tbits := math.Float32bits(fv.Value)\n441: \tdata = append(data, byte(bits), byte(bits\u003e\u003e8), byte(bits\u003e\u003e16), byte(bits\u003e\u003e24))\n442: \n",
+			"line": "441",
+			"column": "38",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint32 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "440: \tbits := math.Float32bits(fv.Value)\n441: \tdata = append(data, byte(bits), byte(bits\u003e\u003e8), byte(bits\u003e\u003e16), byte(bits\u003e\u003e24))\n442: \n",
+			"line": "441",
+			"column": "26",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint32 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "309: \n310: \t\tdata = append(data, byte(it.Value), byte(it.Value\u003e\u003e8), byte(it.Value\u003e\u003e16), byte(it.Value\u003e\u003e24))\n311: \t\tdata = append(data, it.Sequence\u00260x1F)\n",
+			"line": "310",
+			"column": "62",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint32 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "309: \n310: \t\tdata = append(data, byte(it.Value), byte(it.Value\u003e\u003e8), byte(it.Value\u003e\u003e16), byte(it.Value\u003e\u003e24))\n311: \t\tdata = append(data, it.Sequence\u00260x1F)\n",
+			"line": "310",
+			"column": "43",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint32 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "309: \n310: \t\tdata = append(data, byte(it.Value), byte(it.Value\u003e\u003e8), byte(it.Value\u003e\u003e16), byte(it.Value\u003e\u003e24))\n311: \t\tdata = append(data, it.Sequence\u00260x1F)\n",
+			"line": "310",
+			"column": "27",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint32 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "262: \t\tbits := math.Float32bits(fv.Value)\n263: \t\tdata = append(data, byte(bits), byte(bits\u003e\u003e8), byte(bits\u003e\u003e16), byte(bits\u003e\u003e24))\n264: \n",
+			"line": "263",
+			"column": "54",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint32 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "262: \t\tbits := math.Float32bits(fv.Value)\n263: \t\tdata = append(data, byte(bits), byte(bits\u003e\u003e8), byte(bits\u003e\u003e16), byte(bits\u003e\u003e24))\n264: \n",
+			"line": "263",
+			"column": "39",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint32 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "262: \t\tbits := math.Float32bits(fv.Value)\n263: \t\tdata = append(data, byte(bits), byte(bits\u003e\u003e8), byte(bits\u003e\u003e16), byte(bits\u003e\u003e24))\n264: \n",
+			"line": "263",
+			"column": "27",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint32 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "36: \t\tbyte(addr \u003e\u003e 8),\n37: \t\tbyte(addr \u003e\u003e 16),\n38: \t}\n",
+			"line": "37",
+			"column": "7",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint32 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "35: \t\tbyte(addr),\n36: \t\tbyte(addr \u003e\u003e 8),\n37: \t\tbyte(addr \u003e\u003e 16),\n",
+			"line": "36",
+			"column": "7",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint32 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "34: \treturn []byte{\n35: \t\tbyte(addr),\n36: \t\tbyte(addr \u003e\u003e 8),\n",
+			"line": "35",
+			"column": "7",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint16 -\u003e int16",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\master.go",
+			"code": "443: func (r *RegisterValue) ToInt16() int16 {\n444: \treturn int16(r.Value)\n445: }\n",
+			"line": "444",
+			"column": "14",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint16 -\u003e int16",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\converter.go",
+			"code": "77: \t}\n78: \treturn int16(val), nil\n79: }\n",
+			"line": "78",
+			"column": "14",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint16 -\u003e int16",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "1062: \t\tValue: \u0026ScaledValue{\n1063: \t\t\tValue: int16(binary.LittleEndian.Uint16(data[0:2])),\n1064: \t\t},\n",
+			"line": "1063",
+			"column": "16",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint16 -\u003e int16",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "1041: \n1042: \tintVal := int16(binary.LittleEndian.Uint16(data[0:2]))\n1043: \tcmd := \u0026SetPointCommand{\n",
+			"line": "1042",
+			"column": "17",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint16 -\u003e int16",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "870: \tsv := \u0026ScaledValue{\n871: \t\tValue:   int16(binary.LittleEndian.Uint16(data[0:2])),\n872: \t\tQuality: ParseMeasureQuality(data[2]),\n",
+			"line": "871",
+			"column": "17",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint16 -\u003e int16",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "829: \n830: \tintVal := int16(binary.LittleEndian.Uint16(data[0:2]))\n831: \tnv := \u0026NormalizedValue{\n",
+			"line": "830",
+			"column": "17",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint16 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\types.go",
+			"code": "224: \tcrc := CalculateCRC(result[:len(result)-2])\n225: \tresult[len(result)-2] = byte(crc)\n226: \tresult[len(result)-1] = byte(crc \u003e\u003e 8)\n",
+			"line": "225",
+			"column": "30",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint16 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\master.go",
+			"code": "431: \t\tValue:     value,\n432: \t\tRawValue:  []byte{byte(value \u003e\u003e 8), byte(value)},\n433: \t\tTimestamp: time.Now(),\n",
+			"line": "432",
+			"column": "43",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint16 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\converter.go",
+			"code": "251: \tresult += uint16(BCDToUint8(byte(bcd \u003e\u003e 8))) * 100\n252: \tresult += uint16(BCDToUint8(byte(bcd)))\n253: \treturn result\n",
+			"line": "252",
+			"column": "34",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint16 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "26: \tdata[2], data[3] = EncodeCOT(cot)\n27: \tdata[4] = byte(commonAddr)\n28: \tdata[5] = byte(commonAddr \u003e\u003e 8)\n",
+			"line": "27",
+			"column": "16",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int64 -\u003e uint64",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\compression\\compression.go",
+			"code": "945: \t// 压缩大小 (8 bytes)\n946: \tbinary.BigEndian.PutUint64(sizeBytes, uint64(b.CompressedSize))\n947: \tbuf = append(buf, sizeBytes...)\n",
+			"line": "946",
+			"column": "46",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int64 -\u003e uint64",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\compression\\compression.go",
+			"code": "941: \tsizeBytes := make([]byte, 8)\n942: \tbinary.BigEndian.PutUint64(sizeBytes, uint64(b.OriginalSize))\n943: \tbuf = append(buf, sizeBytes...)\n",
+			"line": "942",
+			"column": "46",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int64 -\u003e uint64",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\converter.go",
+			"code": "183: func Int64ToBytes(value int64, byteOrder ByteOrder, wordOrder WordOrder) []byte {\n184: \treturn Uint64ToBytes(uint64(value), byteOrder, wordOrder)\n185: }\n",
+			"line": "184",
+			"column": "29",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int64 -\u003e uint32",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec61850\\types.go",
+			"code": "155: func NewTimestamp(t time.Time) Timestamp {\n156: \tseconds := uint32(t.Unix())\n157: \tnanos := t.Nanosecond()\n",
+			"line": "156",
+			"column": "19",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int64 -\u003e uint",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\compute\\formula\\parser.go",
+			"code": "717: \tcase \"\u003e\u003e\":\n718: \t\treturn float64(leftInt \u003e\u003e uint(rightInt)), nil\n719: \tdefault:\n",
+			"line": "718",
+			"column": "33",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int64 -\u003e uint",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\compute\\formula\\parser.go",
+			"code": "715: \tcase \"\u003c\u003c\":\n716: \t\treturn float64(leftInt \u003c\u003c uint(rightInt)), nil\n717: \tcase \"\u003e\u003e\":\n",
+			"line": "716",
+			"column": "33",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int64 -\u003e rune",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\alarm\\aggregator\\aggregator.go",
+			"code": "209: \t\twindowNum := alarm.TriggeredAt.Unix() / int64(a.config.WindowDuration.Seconds())\n210: \t\treturn string(rune(windowNum))\n211: \tcase StrategyByDeviceAndType:\n",
+			"line": "210",
+			"column": "21",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int32 -\u003e uint32",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\converter.go",
+			"code": "122: func Int32ToBytes(value int32, byteOrder ByteOrder, wordOrder WordOrder) []byte {\n123: \treturn Uint32ToBytes(uint32(value), byteOrder, wordOrder)\n124: }\n",
+			"line": "123",
+			"column": "29",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int32 -\u003e uint32",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\master.go",
+			"code": "793: \t\tif v.Value != 0 {\n794: \t\t\tbits = uint32(int32(v.Value * 1000))\n795: \t\t}\n",
+			"line": "794",
+			"column": "17",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int16 -\u003e uint16",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\master.go",
+			"code": "358: \t\t\tcase int16:\n359: \t\t\t\terr = m.WriteSingleRegister(req.Address, uint16(v))\n360: \t\t\tcase []int16:\n",
+			"line": "359",
+			"column": "52",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int16 -\u003e uint16",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\converter.go",
+			"code": "68: func Int16ToBytes(value int16, order ByteOrder) []byte {\n69: \treturn Uint16ToBytes(uint16(value), order)\n70: }\n",
+			"line": "69",
+			"column": "29",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int16 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\master.go",
+			"code": "788: \tcase *ScaledValue:\n789: \t\tdata = append(data, byte(v.Value), byte(v.Value\u003e\u003e8))\n790: \t\tdata = append(data, EncodeMeasureQuality(v.Quality))\n",
+			"line": "789",
+			"column": "42",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int16 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\master.go",
+			"code": "788: \tcase *ScaledValue:\n789: \t\tdata = append(data, byte(v.Value), byte(v.Value\u003e\u003e8))\n790: \t\tdata = append(data, EncodeMeasureQuality(v.Quality))\n",
+			"line": "789",
+			"column": "27",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int16 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\master.go",
+			"code": "785: \t\tintVal := int16(v.Value * 32767)\n786: \t\tdata = append(data, byte(intVal), byte(intVal\u003e\u003e8))\n787: \t\tdata = append(data, EncodeMeasureQuality(v.Quality))\n",
+			"line": "786",
+			"column": "41",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int16 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\master.go",
+			"code": "785: \t\tintVal := int16(v.Value * 32767)\n786: \t\tdata = append(data, byte(intVal), byte(intVal\u003e\u003e8))\n787: \t\tdata = append(data, EncodeMeasureQuality(v.Quality))\n",
+			"line": "786",
+			"column": "27",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int16 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "416: \n417: \tdata = append(data, byte(sv.Value), byte(sv.Value\u003e\u003e8))\n418: \n",
+			"line": "417",
+			"column": "26",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int16 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "416: \n417: \tdata = append(data, byte(sv.Value), byte(sv.Value\u003e\u003e8))\n418: \n",
+			"line": "417",
+			"column": "42",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int16 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "393: \tintVal := int16(nv.Value * 32767)\n394: \tdata = append(data, byte(intVal), byte(intVal\u003e\u003e8))\n395: \n",
+			"line": "394",
+			"column": "40",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int16 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "393: \tintVal := int16(nv.Value * 32767)\n394: \tdata = append(data, byte(intVal), byte(intVal\u003e\u003e8))\n395: \n",
+			"line": "394",
+			"column": "26",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int16 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "214: \n215: \t\tdata = append(data, byte(sv.Value), byte(sv.Value\u003e\u003e8))\n216: \n",
+			"line": "215",
+			"column": "43",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int16 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "214: \n215: \t\tdata = append(data, byte(sv.Value), byte(sv.Value\u003e\u003e8))\n216: \n",
+			"line": "215",
+			"column": "27",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int16 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "167: \t\tintVal := int16(nv.Value * 32767)\n168: \t\tdata = append(data, byte(intVal), byte(intVal\u003e\u003e8))\n169: \n",
+			"line": "168",
+			"column": "27",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int16 -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "167: \t\tintVal := int16(nv.Value * 32767)\n168: \t\tdata = append(data, byte(intVal), byte(intVal\u003e\u003e8))\n169: \n",
+			"line": "168",
+			"column": "41",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint8",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\types.go",
+			"code": "474: \tyear := t.Year() % 100\n475: \tdata[6] |= byte(year \u003c\u003c 4)\n476: \t\n",
+			"line": "475",
+			"column": "17",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint8",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\types.go",
+			"code": "471: \tdata[5] = uint8(t.Day()) \u0026 0x1F\n472: \tdata[6] = uint8(t.Month()) \u0026 0x0F\n473: \t\n",
+			"line": "472",
+			"column": "17",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint8",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\types.go",
+			"code": "470: \t}\n471: \tdata[5] = uint8(t.Day()) \u0026 0x1F\n472: \tdata[6] = uint8(t.Month()) \u0026 0x0F\n",
+			"line": "471",
+			"column": "17",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint8",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\types.go",
+			"code": "466: \tdata[3] = uint8(t.Hour()) \u0026 0x1F\n467: \tdata[4] = uint8(t.Weekday())\n468: \tif data[4] == 0 {\n",
+			"line": "467",
+			"column": "17",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint8",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\types.go",
+			"code": "465: \tdata[2] = uint8(t.Minute()) \u0026 0x3F\n466: \tdata[3] = uint8(t.Hour()) \u0026 0x1F\n467: \tdata[4] = uint8(t.Weekday())\n",
+			"line": "466",
+			"column": "17",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint8",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\types.go",
+			"code": "464: \t\n465: \tdata[2] = uint8(t.Minute()) \u0026 0x3F\n466: \tdata[3] = uint8(t.Hour()) \u0026 0x1F\n",
+			"line": "465",
+			"column": "17",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint8",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\types.go",
+			"code": "435: \t\n436: \tdata[2] = uint8(t.Minute()) \u0026 0x3F\n437: \t// 备用位和夏时制标志未实现\n",
+			"line": "436",
+			"column": "17",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint8",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\connection.go",
+			"code": "358: \tframe = append(frame, START_BYTE)\n359: \tframe = append(frame, byte(len(asdu)+4))\n360: \tframe = append(frame, control1, control2, control3, control4)\n",
+			"line": "359",
+			"column": "28",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint8",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "295: \tvsq := VSQ{\n296: \t\tNumber:     uint8(len(objects)),\n297: \t\tIsSequence: false,\n",
+			"line": "296",
+			"column": "20",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint8",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "247: \tvsq := VSQ{\n248: \t\tNumber:     uint8(len(objects)),\n249: \t\tIsSequence: false,\n",
+			"line": "248",
+			"column": "20",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint8",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "200: \tvsq := VSQ{\n201: \t\tNumber:     uint8(len(objects)),\n202: \t\tIsSequence: false,\n",
+			"line": "201",
+			"column": "20",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint8",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "151: \tvsq := VSQ{\n152: \t\tNumber:     uint8(len(objects)),\n153: \t\tIsSequence: false,\n",
+			"line": "152",
+			"column": "20",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint8",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "105: \tvsq := VSQ{\n106: \t\tNumber:     uint8(len(objects)),\n107: \t\tIsSequence: false,\n",
+			"line": "106",
+			"column": "20",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint8",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\asdu.go",
+			"code": "56: \tvsq := VSQ{\n57: \t\tNumber:     uint8(len(objects)),\n58: \t\tIsSequence: false,\n",
+			"line": "57",
+			"column": "20",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint64",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\connection.go",
+			"code": "393: \tc.mu.Lock()\n394: \tc.stats.BytesSent += uint64(n)\n395: \tc.stats.FramesSent++\n",
+			"line": "394",
+			"column": "29",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint32",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\sharding\\sharding.go",
+			"code": "193: \t// 简单取模\n194: \treturn int(hash % uint32(hs.shardCount)), nil\n195: }\n",
+			"line": "194",
+			"column": "26",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint32",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\compression\\compression.go",
+			"code": "936: \talgBytes := make([]byte, 4)\n937: \tbinary.BigEndian.PutUint32(algBytes, uint32(b.Algorithm))\n938: \tbuf = append(buf, algBytes...)\n",
+			"line": "937",
+			"column": "45",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint32",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec61850\\sampled_values.go",
+			"code": "306: \t\tfor _, sv := range asdu.SV {\n307: \t\t\tbinary.BigEndian.PutUint32(data[offset:], uint32(sv.Inst))\n308: \t\t\toffset += 4\n",
+			"line": "307",
+			"column": "52",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint32",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec61850\\report.go",
+			"code": "427: \t// Values count\n428: \tbinary.BigEndian.PutUint32(data[offset:], uint32(len(report.Values)))\n429: \toffset += 4\n",
+			"line": "428",
+			"column": "50",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint32",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec61850\\mms_client.go",
+			"code": "543: \tdata := make([]byte, 4+len(req.DomainID))\n544: \tbinary.BigEndian.PutUint32(data[0:4], uint32(len(req.DomainID)))\n545: \tcopy(data[4:], req.DomainID)\n",
+			"line": "544",
+			"column": "46",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint32",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec61850\\mms_client.go",
+			"code": "506: \tdata := make([]byte, 4+len(req.ObjectClass))\n507: \tbinary.BigEndian.PutUint32(data[0:4], uint32(len(req.ObjectClass)))\n508: \tcopy(data[4:], req.ObjectClass)\n",
+			"line": "507",
+			"column": "46",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint32",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec61850\\mms_client.go",
+			"code": "484: \t\n485: \tbinary.BigEndian.PutUint32(data[offset:], uint32(len(req.ItemID)))\n486: \toffset += 4\n",
+			"line": "485",
+			"column": "50",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint32",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec61850\\mms_client.go",
+			"code": "479: \t\n480: \tbinary.BigEndian.PutUint32(data[offset:], uint32(len(req.DomainID)))\n481: \toffset += 4\n",
+			"line": "480",
+			"column": "50",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint32",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec61850\\mms_client.go",
+			"code": "433: \t\n434: \tbinary.BigEndian.PutUint32(data[offset:], uint32(len(req.ItemID)))\n435: \toffset += 4\n",
+			"line": "434",
+			"column": "50",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint32",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec61850\\mms_client.go",
+			"code": "428: \t\n429: \tbinary.BigEndian.PutUint32(data[offset:], uint32(len(req.DomainID)))\n430: \toffset += 4\n",
+			"line": "429",
+			"column": "50",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint32",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec61850\\mms_client.go",
+			"code": "406: \tdata := make([]byte, 8)\n407: \tbinary.BigEndian.PutUint32(data[0:4], uint32(req.Version))\n408: \treturn data, nil\n",
+			"line": "407",
+			"column": "46",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint32",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec61850\\mms_client.go",
+			"code": "308: \t// Write length prefix\n309: \tlength := uint32(len(data))\n310: \theader := make([]byte, 4)\n",
+			"line": "309",
+			"column": "18",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint16",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\tcp_client.go",
+			"code": "365: func (c *TCPClient) WriteMultipleRegisters(address uint16, values []byte) error {\n366: \tquantity := uint16(len(values) / 2)\n367: \tif quantity \u003c 1 || quantity \u003e MaxRegistersWriteQuantity {\n",
+			"line": "366",
+			"column": "20",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint16",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\tcp_client.go",
+			"code": "345: func (c *TCPClient) WriteMultipleCoils(address uint16, values []byte) error {\n346: \tquantity := uint16(len(values) * 8)\n347: \tif quantity \u003c 1 || quantity \u003e MaxCoilsWriteQuantity {\n",
+			"line": "346",
+			"column": "20",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint16",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\tcp_client.go",
+			"code": "174: \tpduBytes := pdu.Bytes()\n175: \tlength := uint16(len(pduBytes) + 1) // +1 for unit ID\n176: \n",
+			"line": "175",
+			"column": "18",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint16",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\rtu_client.go",
+			"code": "393: func (c *RTUClient) WriteMultipleRegisters(address uint16, values []byte) error {\n394: \tquantity := uint16(len(values) / 2)\n395: \tif quantity \u003c 1 || quantity \u003e MaxRegistersWriteQuantity {\n",
+			"line": "394",
+			"column": "20",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint16",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\rtu_client.go",
+			"code": "374: func (c *RTUClient) WriteMultipleCoils(address uint16, values []byte) error {\n375: \tquantity := uint16(len(values) * 8)\n376: \tif quantity \u003c 1 || quantity \u003e MaxCoilsWriteQuantity {\n",
+			"line": "375",
+			"column": "20",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint16",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\ascii_client.go",
+			"code": "348: func (c *ASCIClient) WriteMultipleRegisters(address uint16, values []byte) error {\n349: \tquantity := uint16(len(values) / 2)\n350: \tif quantity \u003c 1 || quantity \u003e MaxRegistersWriteQuantity {\n",
+			"line": "349",
+			"column": "20",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint16",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\ascii_client.go",
+			"code": "329: func (c *ASCIClient) WriteMultipleCoils(address uint16, values []byte) error {\n330: \tquantity := uint16(len(values) * 8)\n331: \tif quantity \u003c 1 || quantity \u003e MaxCoilsWriteQuantity {\n",
+			"line": "330",
+			"column": "20",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint16",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec61850\\report.go",
+			"code": "433: \t\trefLen := len(val.Ref)\n434: \t\tbinary.BigEndian.PutUint16(data[offset:], uint16(refLen))\n435: \t\toffset += 2\n",
+			"line": "434",
+			"column": "51",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint16",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec61850\\report.go",
+			"code": "407: \t// RptID\n408: \tbinary.BigEndian.PutUint16(data[offset:], uint16(rptIDLen))\n409: \toffset += 2\n",
+			"line": "408",
+			"column": "50",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint16",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec61850\\control.go",
+			"code": "314: \t// Reference\n315: \tbinary.BigEndian.PutUint16(data[offset:], uint16(refLen))\n316: \toffset += 2\n",
+			"line": "315",
+			"column": "50",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint16",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\types.go",
+			"code": "461: \t\n462: \tms := uint16(t.Nanosecond()/1000000) + uint16(t.Second())*1000\n463: \tbinary.LittleEndian.PutUint16(data[0:2], ms)\n",
+			"line": "462",
+			"column": "14",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint16",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\types.go",
+			"code": "461: \t\n462: \tms := uint16(t.Nanosecond()/1000000) + uint16(t.Second())*1000\n463: \tbinary.LittleEndian.PutUint16(data[0:2], ms)\n",
+			"line": "462",
+			"column": "47",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint16",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\types.go",
+			"code": "432: \t\n433: \tms := uint16(t.Nanosecond()/1000000) + uint16(t.Second())*1000\n434: \tbinary.LittleEndian.PutUint16(data[0:2], ms)\n",
+			"line": "433",
+			"column": "14",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint16",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec104\\types.go",
+			"code": "432: \t\n433: \tms := uint16(t.Nanosecond()/1000000) + uint16(t.Second())*1000\n434: \tbinary.LittleEndian.PutUint16(data[0:2], ms)\n",
+			"line": "433",
+			"column": "47",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e rune",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\monitoring\\dashboard\\grafana.go",
+			"code": "558: \tp.Targets = append(p.Targets, Target{\n559: \t\tRefID:        string(rune('A' + len(p.Targets))),\n560: \t\tExpr:         expr,\n",
+			"line": "559",
+			"column": "28",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e rune",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\alarm\\aggregator\\aggregator.go",
+			"code": "213: \tcase StrategyByStationAndLevel:\n214: \t\treturn alarm.StationID + \":\" + string(rune(alarm.Level))\n215: \tdefault:\n",
+			"line": "214",
+			"column": "45",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e rune",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\alarm\\aggregator\\aggregator.go",
+			"code": "205: \tcase StrategyByLevel:\n206: \t\treturn string(rune(alarm.Level))\n207: \tcase StrategyByTimeWindow:\n",
+			"line": "206",
+			"column": "21",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e int32",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\nacos\\config_client.go",
+			"code": "300: \t\tPageNumber:     int32(result.PageNumber),\n301: \t\tPagesAvailable: int32(result.PagesAvailable),\n302: \t\tPageItems:      items,\n",
+			"line": "301",
+			"column": "24",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e int32",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\nacos\\config_client.go",
+			"code": "299: \t\tTotalCount:     int64(result.TotalCount),\n300: \t\tPageNumber:     int32(result.PageNumber),\n301: \t\tPagesAvailable: int32(result.PagesAvailable),\n",
+			"line": "300",
+			"column": "24",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e int32",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\collector\\pool.go",
+			"code": "368: \t// 没有空闲工作协程，创建新的\n369: \tif atomic.LoadInt32(\u0026p.metrics.TotalWorkers) \u003c int32(p.maxWorkers) {\n370: \t\tp.addWorker()\n",
+			"line": "369",
+			"column": "54",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e int32",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\collector\\pool.go",
+			"code": "264: func (p *WorkerPool) addWorker() {\n265: \tif atomic.LoadInt32(\u0026p.metrics.TotalWorkers) \u003e= int32(p.maxWorkers) {\n266: \t\treturn\n",
+			"line": "265",
+			"column": "55",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\tcp_client.go",
+			"code": "395: \n396: \tbyteCount := byte(len(values))\n397: \tdata := make([]byte, 9+byteCount)\n",
+			"line": "396",
+			"column": "19",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\tcp_client.go",
+			"code": "370: \n371: \tbyteCount := byte(len(values))\n372: \tdata := make([]byte, 5+byteCount)\n",
+			"line": "371",
+			"column": "19",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\tcp_client.go",
+			"code": "350: \n351: \tbyteCount := byte(len(values))\n352: \tdata := make([]byte, 5+byteCount)\n",
+			"line": "351",
+			"column": "19",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\rtu_client.go",
+			"code": "398: \n399: \tbyteCount := byte(len(values))\n400: \tdata := make([]byte, 5+byteCount)\n",
+			"line": "399",
+			"column": "19",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\rtu_client.go",
+			"code": "379: \n380: \tbyteCount := byte(len(values))\n381: \tdata := make([]byte, 5+byteCount)\n",
+			"line": "380",
+			"column": "19",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\ascii_client.go",
+			"code": "353: \n354: \tbyteCount := byte(len(values))\n355: \tdata := make([]byte, 5+byteCount)\n",
+			"line": "354",
+			"column": "19",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\ascii_client.go",
+			"code": "334: \n335: \tbyteCount := byte(len(values))\n336: \tdata := make([]byte, 5+byteCount)\n",
+			"line": "335",
+			"column": "19",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e byte",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\iec61850\\sampled_values.go",
+			"code": "294: \t// Dataset name\n295: \tdata[offset] = byte(datasetLen)\n296: \toffset += 1\n",
+			"line": "295",
+			"column": "21",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "338",
+				"url": "https://cwe.mitre.org/data/definitions/338.html"
+			},
+			"rule_id": "G404",
+			"details": "Use of weak random number generator (math/rand or math/rand/v2 instead of crypto/rand)",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\statistics\\scheduler\\distributed.go",
+			"code": "1193: \ttimestamp := time.Now().UnixNano()\n1194: \trandom := rand.Int63()\n1195: \thash := sha256.Sum256([]byte(fmt.Sprintf(\"%d-%d-%d\", timestamp, random, time.Now().Nanosecond())))\n",
+			"line": "1194",
+			"column": "12",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "338",
+				"url": "https://cwe.mitre.org/data/definitions/338.html"
+			},
+			"rule_id": "G404",
+			"details": "Use of weak random number generator (math/rand or math/rand/v2 instead of crypto/rand)",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\statistics\\scheduler\\distributed.go",
+			"code": "1186: \ttimestamp := time.Now().UnixNano()\n1187: \trandom := rand.Int63()\n1188: \thash := sha256.Sum256([]byte(fmt.Sprintf(\"%d-%d\", timestamp, random)))\n",
+			"line": "1187",
+			"column": "12",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "LOW",
+			"cwe": {
+				"id": "295",
+				"url": "https://cwe.mitre.org/data/definitions/295.html"
+			},
+			"rule_id": "G402",
+			"details": "TLS InsecureSkipVerify may be set to true.",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\ai\\service\\adapter.go",
+			"code": "109: \t\tTLSClientConfig: \u0026tls.Config{\n110: \t\t\tInsecureSkipVerify: config.InsecureSkipVerify,\n111: \t\t},\n",
+			"line": "110",
+			"column": "24",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "LOW",
+			"cwe": {
+				"id": "798",
+				"url": "https://cwe.mitre.org/data/definitions/798.html"
+			},
+			"rule_id": "G101",
+			"details": "Potential hardcoded credentials",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\errors\\codes.go",
+			"code": "62: \n63: var errorMessages = map[ErrorCode]string{\n64: \tErrSuccess:                   \"操作成功\",\n65: \tErrUnknown:                   \"未知错误\",\n66: \tErrInvalidParam:              \"无效参数\",\n67: \tErrUnauthorized:              \"未授权\",\n68: \tErrForbidden:                 \"禁止访问\",\n69: \tErrNotFound:                 \"资源不存在\",\n70: \tErrConflict:                  \"资源冲突\",\n71: \tErrInternalServer:            \"服务器内部错误\",\n72: \tErrServiceUnavailable:         \"服务不可用\",\n73: \tErrTimeout:                   \"操作超时\",\n74: \tErrUserNotFound:              \"用户不存在\",\n75: \tErrUserAlreadyExists:         \"用户已存在\",\n76: \tErrInvalidPassword:           \"密码错误\",\n77: \tErrInvalidToken:              \"无效Token\",\n78: \tErrTokenExpired:              \"Token已过期\",\n79: \tErrInsufficientPermission:    \"权限不足\",\n80: \tErrDeviceNotFound:            \"设备不存在\",\n81: \tErrDeviceOffline:              \"设备离线\",\n82: \tErrDeviceCommunication:        \"设备通信失败\",\n83: \tErrDeviceAlreadyExists:       \"设备已存在\",\n84: \tErrDeviceTypeMismatch:         \"设备类型不匹配\",\n85: \tErrStationNotFound:           \"电站不存在\",\n86: \tErrStationAlreadyExists:       \"电站已存在\",\n87: \tErrStationOffline:             \"电站离线\",\n88: \tErrPointNotFound:             \"采集点不存在\",\n89: \tErrPointAlreadyExists:        \"采集点已存在\",\n90: \tErrDataQuality:               \"数据质量异常\",\n91: \tErrCollectTimeout:            \"采集超时\",\n92: \tErrInvalidPointValue:         \"无效的测点值\",\n93: \tErrAlarmNotFound:             \"告警不存在\",\n94: \tErrAlarmRuleInvalid:           \"告警规则无效\",\n95: \tErrAlarmAlreadyAcknowledged:   \"告警已确认\",\n96: \tErrAlarmAlreadyCleared:       \"告警已清除\",\n97: \tErrRuleNotFound:              \"规则不存在\",\n98: \tErrRuleAlreadyExists:          \"规则已存在\",\n99: \tErrRuleInvalidExpression:       \"规则表达式无效\",\n100: \tErrConfigNotFound:             \"配置不存在\",\n101: \tErrConfigAlreadyExists:        \"配置已存在\",\n102: \tErrConfigInvalid:              \"配置无效\",\n103: \tErrDatabaseError:             \"数据库错误\",\n104: \tErrCacheError:                \"缓存错误\",\n105: \tErrQueueError:                \"消息队列错误\",\n106: \tErrNetworkError:              \"网络错误\",\n107: \tErrRateLimitExceeded:         \"请求过于频繁\",\n108: \tErrResourceExhausted:         \"资源耗尽\",\n109: }\n110: \n",
+			"line": "63-109",
+			"column": "21",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "400",
+				"url": "https://cwe.mitre.org/data/definitions/400.html"
+			},
+			"rule_id": "G118",
+			"details": "Goroutine uses context.Background/TODO while request-scoped context is available",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\tiered.go",
+			"code": "234: \t\t// 提升到热数据层\n235: \t\tgo ts.promoteToHot(context.Background(), key, data)\n236: \t\treturn json.Unmarshal(data, dest)\n",
+			"line": "235",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "400",
+				"url": "https://cwe.mitre.org/data/definitions/400.html"
+			},
+			"rule_id": "G118",
+			"details": "Goroutine uses context.Background/TODO while request-scoped context is available",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\tiered.go",
+			"code": "225: \t\t// 提升到热数据层\n226: \t\tgo ts.promoteToHot(context.Background(), key, data)\n227: \t\treturn json.Unmarshal(data, dest)\n",
+			"line": "226",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "400",
+				"url": "https://cwe.mitre.org/data/definitions/400.html"
+			},
+			"rule_id": "G118",
+			"details": "Goroutine uses context.Background/TODO while request-scoped context is available",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\monitoring\\alerting\\aggregator.go",
+			"code": "295: \taa.wg.Add(1)\n296: \tgo aa.runFlushLoop(ctx)\n297: }\n",
+			"line": "296",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "400",
+				"url": "https://cwe.mitre.org/data/definitions/400.html"
+			},
+			"rule_id": "G118",
+			"details": "Goroutine uses context.Background/TODO while request-scoped context is available",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\alarm\\aggregator\\aggregator.go",
+			"code": "381: \ta.wg.Add(1)\n382: \tgo a.runFlushLoop(ctx)\n383: }\n",
+			"line": "382",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "328",
+				"url": "https://cwe.mitre.org/data/definitions/328.html"
+			},
+			"rule_id": "G401",
+			"details": "Use of weak cryptographic primitive",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\sharding\\sharding.go",
+			"code": "168: func md5Hash(data []byte) uint32 {\n169: \th := md5.New()\n170: \th.Write(data)\n",
+			"line": "169",
+			"column": "7",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "89",
+				"url": "https://cwe.mitre.org/data/definitions/89.html"
+			},
+			"rule_id": "G201",
+			"details": "SQL string formatting",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\timeseries\\doris.go",
+			"code": "360: \n361: \tquery := fmt.Sprintf(`\n362: \t\tSELECT point_id, timestamp, value, quality, tags\n363: \t\tFROM (\n364: \t\t\tSELECT point_id, timestamp, value, quality, tags,\n365: \t\t\t\tROW_NUMBER() OVER (PARTITION BY point_id ORDER BY timestamp DESC) as rn\n366: \t\t\tFROM %s.data_points\n367: \t\t\tWHERE point_id IN (%s)\n368: \t\t) t\n369: \t\tWHERE rn = 1\n370: \t`, c.config.Database, strings.Join(placeholders, \",\"))\n371: \n",
+			"line": "361-370",
+			"column": "11",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "89",
+				"url": "https://cwe.mitre.org/data/definitions/89.html"
+			},
+			"rule_id": "G201",
+			"details": "SQL string formatting",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\timeseries\\doris.go",
+			"code": "226: \n227: \tquery := fmt.Sprintf(\"INSERT INTO `%s`.`%s` (point_id, timestamp, value, quality, tags) VALUES %s\",\n228: \t\tdatabase, table, strings.Join(valueStrings, \",\"))\n229: \n",
+			"line": "227-228",
+			"column": "11",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "22",
+				"url": "https://cwe.mitre.org/data/definitions/22.html"
+			},
+			"rule_id": "G304",
+			"details": "Potential file inclusion via variable",
+			"file": "E:\\ai_work\\new-energy-monitoring\\tests\\performance\\report.go",
+			"code": "195: \tfilePath := filepath.Join(g.outputDir, filename)\n196: \tfile, err := os.Create(filePath)\n197: \tif err != nil {\n",
+			"line": "196",
+			"column": "15",
+			"nosec": false,
+			"suppressions": null,
+			"autofix": "Consider using os.Root to scope file access under a fixed root (Go \u003e=1.24). Prefer root.Open/root.Stat over os.Open/os.Stat to prevent directory traversal."
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "22",
+				"url": "https://cwe.mitre.org/data/definitions/22.html"
+			},
+			"rule_id": "G304",
+			"details": "Potential file inclusion via variable",
+			"file": "E:\\ai_work\\new-energy-monitoring\\tests\\performance\\report.go",
+			"code": "172: \tfilePath := filepath.Join(g.outputDir, filename)\n173: \tfile, err := os.Create(filePath)\n174: \tif err != nil {\n",
+			"line": "173",
+			"column": "15",
+			"nosec": false,
+			"suppressions": null,
+			"autofix": "Consider using os.Root to scope file access under a fixed root (Go \u003e=1.24). Prefer root.Open/root.Stat over os.Open/os.Stat to prevent directory traversal."
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "22",
+				"url": "https://cwe.mitre.org/data/definitions/22.html"
+			},
+			"rule_id": "G304",
+			"details": "Potential file inclusion via variable",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\query\\monitor.go",
+			"code": "269: \t\tif err := os.MkdirAll(dir, 0755); err == nil {\n270: \t\t\tfile, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)\n271: \t\t\tif err == nil {\n",
+			"line": "270",
+			"column": "17",
+			"nosec": false,
+			"suppressions": null,
+			"autofix": "Consider using os.Root to scope file access under a fixed root (Go \u003e=1.24). Prefer root.Open/root.Stat over os.Open/os.Stat to prevent directory traversal."
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "22",
+				"url": "https://cwe.mitre.org/data/definitions/22.html"
+			},
+			"rule_id": "G304",
+			"details": "Potential file inclusion via variable",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\backup.go",
+			"code": "1225: \n1226: \tdestFile, err := os.Create(destPath)\n1227: \tif err != nil {\n",
+			"line": "1226",
+			"column": "19",
+			"nosec": false,
+			"suppressions": null,
+			"autofix": "Consider using os.Root to scope file access under a fixed root (Go \u003e=1.24). Prefer root.Open/root.Stat over os.Open/os.Stat to prevent directory traversal."
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "22",
+				"url": "https://cwe.mitre.org/data/definitions/22.html"
+			},
+			"rule_id": "G304",
+			"details": "Potential file inclusion via variable",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\backup.go",
+			"code": "1206: \t// 打开源文件\n1207: \tsrcFile, err := os.Open(srcPath)\n1208: \tif err != nil {\n",
+			"line": "1207",
+			"column": "18",
+			"nosec": false,
+			"suppressions": null,
+			"autofix": "Consider using os.Root to scope file access under a fixed root (Go \u003e=1.24). Prefer root.Open/root.Stat over os.Open/os.Stat to prevent directory traversal."
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "22",
+				"url": "https://cwe.mitre.org/data/definitions/22.html"
+			},
+			"rule_id": "G304",
+			"details": "Potential file inclusion via variable",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\backup.go",
+			"code": "1185: \n1186: \tdestFile, err := os.Create(destPath)\n1187: \tif err != nil {\n",
+			"line": "1186",
+			"column": "19",
+			"nosec": false,
+			"suppressions": null,
+			"autofix": "Consider using os.Root to scope file access under a fixed root (Go \u003e=1.24). Prefer root.Open/root.Stat over os.Open/os.Stat to prevent directory traversal."
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "22",
+				"url": "https://cwe.mitre.org/data/definitions/22.html"
+			},
+			"rule_id": "G304",
+			"details": "Potential file inclusion via variable",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\backup.go",
+			"code": "698: \n699: \tfile, err := os.Create(filePath)\n700: \tif err != nil {\n",
+			"line": "699",
+			"column": "15",
+			"nosec": false,
+			"suppressions": null,
+			"autofix": "Consider using os.Root to scope file access under a fixed root (Go \u003e=1.24). Prefer root.Open/root.Stat over os.Open/os.Stat to prevent directory traversal."
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "22",
+				"url": "https://cwe.mitre.org/data/definitions/22.html"
+			},
+			"rule_id": "G304",
+			"details": "Potential file inclusion via variable",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\archive.go",
+			"code": "1063: func (da *DataArchiver) CalculateChecksum(filePath string) (string, error) {\n1064: \tfile, err := os.Open(filePath)\n1065: \tif err != nil {\n",
+			"line": "1064",
+			"column": "15",
+			"nosec": false,
+			"suppressions": null,
+			"autofix": "Consider using os.Root to scope file access under a fixed root (Go \u003e=1.24). Prefer root.Open/root.Stat over os.Open/os.Stat to prevent directory traversal."
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "22",
+				"url": "https://cwe.mitre.org/data/definitions/22.html"
+			},
+			"rule_id": "G304",
+			"details": "Potential file inclusion via variable",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\archive.go",
+			"code": "1023: func (da *DataArchiver) StreamArchive(ctx context.Context, filePath string, handler func(record map[string]interface{}) error) error {\n1024: \tfile, err := os.Open(filePath)\n1025: \tif err != nil {\n",
+			"line": "1024",
+			"column": "15",
+			"nosec": false,
+			"suppressions": null,
+			"autofix": "Consider using os.Root to scope file access under a fixed root (Go \u003e=1.24). Prefer root.Open/root.Stat over os.Open/os.Stat to prevent directory traversal."
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "22",
+				"url": "https://cwe.mitre.org/data/definitions/22.html"
+			},
+			"rule_id": "G304",
+			"details": "Potential file inclusion via variable",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\archive.go",
+			"code": "988: func (da *DataArchiver) ReadArchive(ctx context.Context, filePath string) ([]map[string]interface{}, error) {\n989: \tfile, err := os.Open(filePath)\n990: \tif err != nil {\n",
+			"line": "989",
+			"column": "15",
+			"nosec": false,
+			"suppressions": null,
+			"autofix": "Consider using os.Root to scope file access under a fixed root (Go \u003e=1.24). Prefer root.Open/root.Stat over os.Open/os.Stat to prevent directory traversal."
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "22",
+				"url": "https://cwe.mitre.org/data/definitions/22.html"
+			},
+			"rule_id": "G304",
+			"details": "Potential file inclusion via variable",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\archive.go",
+			"code": "964: \n965: \tfile, err := os.Create(filePath)\n966: \tif err != nil {\n",
+			"line": "965",
+			"column": "15",
+			"nosec": false,
+			"suppressions": null,
+			"autofix": "Consider using os.Root to scope file access under a fixed root (Go \u003e=1.24). Prefer root.Open/root.Stat over os.Open/os.Stat to prevent directory traversal."
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "22",
+				"url": "https://cwe.mitre.org/data/definitions/22.html"
+			},
+			"rule_id": "G304",
+			"details": "Potential file inclusion via variable",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\archive.go",
+			"code": "856: \n857: \tmergedFile, err := os.Create(mergedFilePath)\n858: \tif err != nil {\n",
+			"line": "857",
+			"column": "21",
+			"nosec": false,
+			"suppressions": null,
+			"autofix": "Consider using os.Root to scope file access under a fixed root (Go \u003e=1.24). Prefer root.Open/root.Stat over os.Open/os.Stat to prevent directory traversal."
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "22",
+				"url": "https://cwe.mitre.org/data/definitions/22.html"
+			},
+			"rule_id": "G304",
+			"details": "Potential file inclusion via variable",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\archive.go",
+			"code": "759: func (da *DataArchiver) ValidateArchiveFile(filePath string) error {\n760: \tfile, err := os.Open(filePath)\n761: \tif err != nil {\n",
+			"line": "760",
+			"column": "15",
+			"nosec": false,
+			"suppressions": null,
+			"autofix": "Consider using os.Root to scope file access under a fixed root (Go \u003e=1.24). Prefer root.Open/root.Stat over os.Open/os.Stat to prevent directory traversal."
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "22",
+				"url": "https://cwe.mitre.org/data/definitions/22.html"
+			},
+			"rule_id": "G304",
+			"details": "Potential file inclusion via variable",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\archive.go",
+			"code": "539: \n540: \tfile, err := os.Create(filePath)\n541: \tif err != nil {\n",
+			"line": "540",
+			"column": "15",
+			"nosec": false,
+			"suppressions": null,
+			"autofix": "Consider using os.Root to scope file access under a fixed root (Go \u003e=1.24). Prefer root.Open/root.Stat over os.Open/os.Stat to prevent directory traversal."
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "22",
+				"url": "https://cwe.mitre.org/data/definitions/22.html"
+			},
+			"rule_id": "G304",
+			"details": "Potential file inclusion via variable",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\monitoring\\dashboard\\grafana.go",
+			"code": "392: func LoadFromFile(filename string) (*Dashboard, error) {\n393: \tdata, err := os.ReadFile(filename)\n394: \tif err != nil {\n",
+			"line": "393",
+			"column": "15",
+			"nosec": false,
+			"suppressions": null,
+			"autofix": "Consider using os.Root to scope file access under a fixed root (Go \u003e=1.24). Prefer root.Open/root.Stat over os.Open/os.Stat to prevent directory traversal."
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "22",
+				"url": "https://cwe.mitre.org/data/definitions/22.html"
+			},
+			"rule_id": "G304",
+			"details": "Potential file inclusion via variable",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\alarm\\rule\\manager.go",
+			"code": "353: func (rm *RuleManager) ImportFromFile(ctx context.Context, filePath string) ([]*RuleDSL, error) {\n354: \tfile, err := os.Open(filePath)\n355: \tif err != nil {\n",
+			"line": "354",
+			"column": "15",
+			"nosec": false,
+			"suppressions": null,
+			"autofix": "Consider using os.Root to scope file access under a fixed root (Go \u003e=1.24). Prefer root.Open/root.Stat over os.Open/os.Stat to prevent directory traversal."
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "22",
+				"url": "https://cwe.mitre.org/data/definitions/22.html"
+			},
+			"rule_id": "G304",
+			"details": "Potential file inclusion via variable",
+			"file": "E:\\ai_work\\new-energy-monitoring\\internal\\infrastructure\\logger\\logger.go",
+			"code": "81: \tdefault:\n82: \t\tfile, err := os.OpenFile(output, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)\n83: \t\tif err != nil {\n",
+			"line": "82",
+			"column": "16",
+			"nosec": false,
+			"suppressions": null,
+			"autofix": "Consider using os.Root to scope file access under a fixed root (Go \u003e=1.24). Prefer root.Open/root.Stat over os.Open/os.Stat to prevent directory traversal."
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "LOW",
+			"cwe": {
+				"id": "400",
+				"url": "https://cwe.mitre.org/data/definitions/400.html"
+			},
+			"rule_id": "G112",
+			"details": "Potential Slowloris Attack because ReadHeaderTimeout is not configured in the http.Server",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\monitoring\\metrics\\prometheus.go",
+			"code": "406: \n407: \tmc.server = \u0026http.Server{\n408: \t\tAddr:    fmt.Sprintf(\":%d\", port),\n409: \t\tHandler: mux,\n410: \t}\n411: \n",
+			"line": "407-410",
+			"column": "15",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "LOW",
+			"cwe": {
+				"id": "400",
+				"url": "https://cwe.mitre.org/data/definitions/400.html"
+			},
+			"rule_id": "G112",
+			"details": "Potential Slowloris Attack because ReadHeaderTimeout is not configured in the http.Server",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\monitoring\\health\\health.go",
+			"code": "688: \n689: \tserver := \u0026http.Server{\n690: \t\tAddr:    fmt.Sprintf(\":%d\", port),\n691: \t\tHandler: mux,\n692: \t}\n693: \n",
+			"line": "689-692",
+			"column": "13",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "276",
+				"url": "https://cwe.mitre.org/data/definitions/276.html"
+			},
+			"rule_id": "G302",
+			"details": "Expect file permissions to be 0600 or less",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\query\\monitor.go",
+			"code": "269: \t\tif err := os.MkdirAll(dir, 0755); err == nil {\n270: \t\t\tfile, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)\n271: \t\t\tif err == nil {\n",
+			"line": "270",
+			"column": "17",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "276",
+				"url": "https://cwe.mitre.org/data/definitions/276.html"
+			},
+			"rule_id": "G302",
+			"details": "Expect file permissions to be 0600 or less",
+			"file": "E:\\ai_work\\new-energy-monitoring\\internal\\infrastructure\\logger\\logger.go",
+			"code": "81: \tdefault:\n82: \t\tfile, err := os.OpenFile(output, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)\n83: \t\tif err != nil {\n",
+			"line": "82",
+			"column": "16",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "276",
+				"url": "https://cwe.mitre.org/data/definitions/276.html"
+			},
+			"rule_id": "G301",
+			"details": "Expect directory permissions to be 0750 or less",
+			"file": "E:\\ai_work\\new-energy-monitoring\\tests\\performance\\report.go",
+			"code": "190: func (g *ReportGenerator) SaveHTMLReport(report *PerformanceReport, filename string) error {\n191: \tif err := os.MkdirAll(g.outputDir, 0755); err != nil {\n192: \t\treturn fmt.Errorf(\"failed to create output directory: %w\", err)\n",
+			"line": "191",
+			"column": "12",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "276",
+				"url": "https://cwe.mitre.org/data/definitions/276.html"
+			},
+			"rule_id": "G301",
+			"details": "Expect directory permissions to be 0750 or less",
+			"file": "E:\\ai_work\\new-energy-monitoring\\tests\\performance\\report.go",
+			"code": "167: func (g *ReportGenerator) SaveJSONReport(report *PerformanceReport, filename string) error {\n168: \tif err := os.MkdirAll(g.outputDir, 0755); err != nil {\n169: \t\treturn fmt.Errorf(\"failed to create output directory: %w\", err)\n",
+			"line": "168",
+			"column": "12",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "276",
+				"url": "https://cwe.mitre.org/data/definitions/276.html"
+			},
+			"rule_id": "G301",
+			"details": "Expect directory permissions to be 0750 or less",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\query\\monitor.go",
+			"code": "268: \t\tdir := filepath.Dir(filePath)\n269: \t\tif err := os.MkdirAll(dir, 0755); err == nil {\n270: \t\t\tfile, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)\n",
+			"line": "269",
+			"column": "13",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "276",
+				"url": "https://cwe.mitre.org/data/definitions/276.html"
+			},
+			"rule_id": "G301",
+			"details": "Expect directory permissions to be 0750 or less",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\backup.go",
+			"code": "192: \t}\n193: \tif err := os.MkdirAll(bm.config.TempPath, 0755); err != nil {\n194: \t\treturn fmt.Errorf(\"failed to create temp path: %w\", err)\n",
+			"line": "193",
+			"column": "12",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "276",
+				"url": "https://cwe.mitre.org/data/definitions/276.html"
+			},
+			"rule_id": "G301",
+			"details": "Expect directory permissions to be 0750 or less",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\backup.go",
+			"code": "189: \t// 确保目录存在\n190: \tif err := os.MkdirAll(bm.config.StoragePath, 0755); err != nil {\n191: \t\treturn fmt.Errorf(\"failed to create storage path: %w\", err)\n",
+			"line": "190",
+			"column": "12",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "276",
+				"url": "https://cwe.mitre.org/data/definitions/276.html"
+			},
+			"rule_id": "G301",
+			"details": "Expect directory permissions to be 0750 or less",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\archive.go",
+			"code": "167: \t}\n168: \tif err := os.MkdirAll(da.config.TempPath, 0755); err != nil {\n169: \t\treturn fmt.Errorf(\"failed to create temp path: %w\", err)\n",
+			"line": "168",
+			"column": "12",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "276",
+				"url": "https://cwe.mitre.org/data/definitions/276.html"
+			},
+			"rule_id": "G301",
+			"details": "Expect directory permissions to be 0750 or less",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\archive.go",
+			"code": "164: \t// 确保目录存在\n165: \tif err := os.MkdirAll(da.config.StoragePath, 0755); err != nil {\n166: \t\treturn fmt.Errorf(\"failed to create storage path: %w\", err)\n",
+			"line": "165",
+			"column": "12",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "276",
+				"url": "https://cwe.mitre.org/data/definitions/276.html"
+			},
+			"rule_id": "G306",
+			"details": "Expect WriteFile permissions to be 0600 or less",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\monitoring\\dashboard\\grafana.go",
+			"code": "924: \n925: \tif err := os.WriteFile(filename, data, 0644); err != nil {\n926: \t\treturn fmt.Errorf(\"failed to write file: %w\", err)\n",
+			"line": "925",
+			"column": "12",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "276",
+				"url": "https://cwe.mitre.org/data/definitions/276.html"
+			},
+			"rule_id": "G306",
+			"details": "Expect WriteFile permissions to be 0600 or less",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\monitoring\\dashboard\\grafana.go",
+			"code": "383: \n384: \tif err := os.WriteFile(filename, data, 0644); err != nil {\n385: \t\treturn fmt.Errorf(\"failed to write file: %w\", err)\n",
+			"line": "384",
+			"column": "12",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "276",
+				"url": "https://cwe.mitre.org/data/definitions/276.html"
+			},
+			"rule_id": "G306",
+			"details": "Expect WriteFile permissions to be 0600 or less",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\alarm\\rule\\manager.go",
+			"code": "374: \n375: \tif err := os.WriteFile(filePath, data, 0644); err != nil {\n376: \t\treturn fmt.Errorf(\"failed to write file: %w\", err)\n",
+			"line": "375",
+			"column": "12",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "327",
+				"url": "https://cwe.mitre.org/data/definitions/327.html"
+			},
+			"rule_id": "G501",
+			"details": "Blocklisted import crypto/md5: weak cryptographic primitive",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\sharding\\sharding.go",
+			"code": "5: import (\n6: \t\"crypto/md5\"\n7: \t\"encoding/binary\"\n",
+			"line": "6",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\timeseries\\doris.go",
+			"code": "133: \t\tif err != nil {\n134: \t\t\tdb.Close()\n135: \t\t\tlastErr = err\n",
+			"line": "134",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\timeseries\\clickhouse.go",
+			"code": "143: \tif err != nil {\n144: \t\tconn.Close()\n145: \t\treturn nil, NewConnectionError(\n",
+			"line": "144",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\sharding\\sharding.go",
+			"code": "162: \th := fnv.New32a()\n163: \th.Write(data)\n164: \treturn h.Sum32()\n",
+			"line": "163",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\query\\ratelimit.go",
+			"code": "766: \tif count == 1 {\n767: \t\td.redis.Expire(ctx, globalKey, time.Second)\n768: \t}\n",
+			"line": "767",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\query\\monitor.go",
+			"code": "883: \t\tdata, _ := json.Marshal(entry)\n884: \t\tl.file.WriteString(string(data) + \"\\n\")\n885: \t}\n",
+			"line": "884",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\query\\monitor.go",
+			"code": "335: \tif m.slowQueries.file != nil {\n336: \t\tm.slowQueries.file.Close()\n337: \t}\n",
+			"line": "336",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\query\\cache.go",
+			"code": "1032: \tfor _, level := range m.levels {\n1033: \t\tlevel.Cache.Delete(ctx, req)\n1034: \t}\n",
+			"line": "1033",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\query\\cache.go",
+			"code": "904: \t\t\t}\n905: \t\t\tw.cache.Set(ctx, task.Query, result)\n906: \t\t}\n",
+			"line": "905",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\query\\cache.go",
+			"code": "881: \n882: \t\tw.cache.Set(ctx, task.Query, result)\n883: \n",
+			"line": "882",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\query\\cache.go",
+			"code": "822: \tif len(rule.Tags) \u003e 0 {\n823: \t\ti.cache.DeleteByTags(context.Background(), rule.Tags)\n824: \t}\n",
+			"line": "823",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\query\\cache.go",
+			"code": "159: \t\t\t// 回填本地缓存\n160: \t\t\tc.Set(ctx, req, result)\n161: \n",
+			"line": "160",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\query\\cache.go",
+			"code": "136: \t\tif entry.IsExpired() {\n137: \t\t\tc.deleteEntry(key)\n138: \t\t\tatomic.AddInt64(\u0026c.stats.ExpiredCount, 1)\n",
+			"line": "137",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\partition\\partition.go",
+			"code": "1081: \t\t// 分区不存在，尝试创建\n1082: \t\tc.strategy.GetPartition(key)\n1083: \t}\n",
+			"line": "1082",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\partition\\partition.go",
+			"code": "969: \t\tif now.Sub(task.LastRun) \u003e= task.Interval {\n970: \t\t\ttask.Handler()\n971: \t\t\ttask.LastRun = now\n",
+			"line": "970",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\tiered.go",
+			"code": "345: \tcase TierCold:\n346: \t\tts.deleteCold(ctx, key)\n347: \t}\n",
+			"line": "346",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\tiered.go",
+			"code": "343: \tcase TierWarm:\n344: \t\tts.deleteWarm(ctx, key)\n345: \tcase TierCold:\n",
+			"line": "344",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\tiered.go",
+			"code": "341: \tcase TierHot:\n342: \t\tts.deleteHot(ctx, key)\n343: \tcase TierWarm:\n",
+			"line": "342",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\cleanup.go",
+			"code": "638: \t\t\t// 触发清理\n639: \t\t\tdc.TriggerCleanup(ctx, policy.ID)\n640: \t\t}\n",
+			"line": "639",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\backup.go",
+			"code": "1092: \t\t\tfor i := policy.MaxBackups; i \u003c len(allBackups); i++ {\n1093: \t\t\t\tbm.DeleteBackup(ctx, allBackups[i].ID)\n1094: \t\t\t}\n",
+			"line": "1093",
+			"column": "5",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\backup.go",
+			"code": "1079: \t\tfor _, backup := range oldBackups {\n1080: \t\t\tbm.DeleteBackup(ctx, backup.ID)\n1081: \t\t}\n",
+			"line": "1080",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\backup.go",
+			"code": "1037: \n1038: \t\t\tbm.TriggerBackup(ctx, policy.ID)\n1039: \t\t}\n",
+			"line": "1038",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\archive.go",
+			"code": "922: \t\t// 删除原文件\n923: \t\tos.Remove(task.FilePath)\n924: \t}\n",
+			"line": "923",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\archive.go",
+			"code": "918: \n919: \t\tfile.Close()\n920: \t\ttotalSize += task.DataSize\n",
+			"line": "919",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\archive.go",
+			"code": "891: \t\t\tif err != nil {\n892: \t\t\t\tfile.Close()\n893: \t\t\t\tcontinue\n",
+			"line": "892",
+			"column": "5",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\lifecycle\\archive.go",
+			"code": "720: \t\t\t// 触发归档\n721: \t\t\tda.TriggerArchive(ctx, policy.ID)\n722: \t\t}\n",
+			"line": "721",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\index\\index.go",
+			"code": "842: func (idx *BloomIndex) Rebuild(entries []*IndexEntry) error {\n843: \tidx.Clear()\n844: \tidx.stats.RecordRebuild()\n",
+			"line": "843",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\index\\index.go",
+			"code": "661: func (idx *CompositeIndex) Rebuild(entries []*IndexEntry) error {\n662: \tidx.Clear()\n663: \tidx.stats.RecordRebuild()\n",
+			"line": "662",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\index\\index.go",
+			"code": "500: func (idx *TagIndex) Rebuild(entries []*IndexEntry) error {\n501: \tidx.Clear()\n502: \tidx.stats.RecordRebuild()\n",
+			"line": "501",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\index\\index.go",
+			"code": "324: func (idx *TimeIndex) Rebuild(entries []*IndexEntry) error {\n325: \tidx.Clear()\n326: \tidx.stats.RecordRebuild()\n",
+			"line": "325",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\compression\\compression.go",
+			"code": "838: \t// 预创建默认压缩器\n839: \tcm.factory.CreateCompressor(config)\n840: \n",
+			"line": "839",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\compression\\compression.go",
+			"code": "694: \n695: \twriter.Close()\n696: \tresult := buf.Bytes()\n",
+			"line": "695",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\compression\\compression.go",
+			"code": "689: \tif err != nil {\n690: \t\twriter.Close()\n691: \t\tc.stats.RecordCompress(int64(len(data)), 0, time.Since(start), true)\n",
+			"line": "690",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\compression\\compression.go",
+			"code": "598: \n599: \twriter.Close()\n600: \tresult := buf.Bytes()\n",
+			"line": "599",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\compression\\compression.go",
+			"code": "593: \tif err != nil {\n594: \t\twriter.Close()\n595: \t\tc.stats.RecordCompress(int64(len(data)), 0, time.Since(start), true)\n",
+			"line": "594",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\compression\\compression.go",
+			"code": "520: \n521: \twriter.Close()\n522: \tresult := buf.Bytes()\n",
+			"line": "521",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\compression\\compression.go",
+			"code": "515: \tif err != nil {\n516: \t\twriter.Close()\n517: \t\tc.stats.RecordCompress(int64(len(data)), 0, time.Since(start), true)\n",
+			"line": "516",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\compression\\compression.go",
+			"code": "424: \n425: \twriter.Close()\n426: \tresult := buf.Bytes()\n",
+			"line": "425",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\compression\\compression.go",
+			"code": "419: \tif err != nil {\n420: \t\twriter.Close()\n421: \t\tc.stats.RecordCompress(int64(len(data)), 0, time.Since(start), true)\n",
+			"line": "420",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\compression\\compression.go",
+			"code": "326: \n327: \twriter.Close()\n328: \tresult := buf.Bytes()\n",
+			"line": "327",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\storage\\compression\\compression.go",
+			"code": "321: \tif err != nil {\n322: \t\twriter.Close()\n323: \t\tc.stats.RecordCompress(int64(len(data)), 0, time.Since(start), true)\n",
+			"line": "322",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\statistics\\scheduler\\monitor.go",
+			"code": "313: \t// 成功率下降告警\n314: \tm.AddAlertRule(\u0026AlertRule{\n315: \t\tID:          \"success-rate-drop\",\n316: \t\tName:        \"成功率下降告警\",\n317: \t\tTaskPattern: \"*\",\n318: \t\tType:        \"success_rate\",\n319: \t\tSeverity:    AlertSeverityWarning,\n320: \t\tThreshold:   0.8, // 80%\n321: \t\tCount:       5,\n322: \t\tEnabled:     true,\n323: \t\tCoolDown:    10 * time.Minute,\n324: \t\tLabels:      map[string]string{\"category\": \"reliability\"},\n325: \t})\n326: }\n",
+			"line": "314-325",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\statistics\\scheduler\\monitor.go",
+			"code": "299: \t// 任务延迟告警\n300: \tm.AddAlertRule(\u0026AlertRule{\n301: \t\tID:          \"task-latency\",\n302: \t\tName:        \"任务延迟告警\",\n303: \t\tTaskPattern: \"*\",\n304: \t\tType:        \"latency\",\n305: \t\tSeverity:    AlertSeverityWarning,\n306: \t\tThreshold:   30, // 30秒\n307: \t\tCount:       3,\n308: \t\tEnabled:     true,\n309: \t\tCoolDown:    5 * time.Minute,\n310: \t\tLabels:      map[string]string{\"category\": \"performance\"},\n311: \t})\n312: \n",
+			"line": "300-311",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\statistics\\scheduler\\monitor.go",
+			"code": "285: \t// 任务超时告警\n286: \tm.AddAlertRule(\u0026AlertRule{\n287: \t\tID:          \"task-timeout\",\n288: \t\tName:        \"任务超时告警\",\n289: \t\tTaskPattern: \"*\",\n290: \t\tType:        \"timeout\",\n291: \t\tSeverity:    AlertSeverityWarning,\n292: \t\tThreshold:   2,\n293: \t\tCount:       2,\n294: \t\tEnabled:     true,\n295: \t\tCoolDown:    10 * time.Minute,\n296: \t\tLabels:      map[string]string{\"category\": \"task\"},\n297: \t})\n298: \n",
+			"line": "286-297",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\statistics\\scheduler\\monitor.go",
+			"code": "271: \t// 任务失败告警\n272: \tm.AddAlertRule(\u0026AlertRule{\n273: \t\tID:          \"task-failure\",\n274: \t\tName:        \"任务失败告警\",\n275: \t\tTaskPattern: \"*\",\n276: \t\tType:        \"failure\",\n277: \t\tSeverity:    AlertSeverityError,\n278: \t\tThreshold:   3,\n279: \t\tCount:       3,\n280: \t\tEnabled:     true,\n281: \t\tCoolDown:    5 * time.Minute,\n282: \t\tLabels:      map[string]string{\"category\": \"task\"},\n283: \t})\n284: \n",
+			"line": "272-283",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\statistics\\scheduler\\executor.go",
+			"code": "577: \t// 数据同步任务\n578: \tste.executor.RegisterHandler(\"sync\", ste.handleSyncTask)\n579: }\n",
+			"line": "578",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\statistics\\scheduler\\executor.go",
+			"code": "574: \t// 报表生成任务\n575: \tste.executor.RegisterHandler(\"report\", ste.handleReportTask)\n576: \t\n",
+			"line": "575",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\statistics\\scheduler\\executor.go",
+			"code": "571: \t// 数据清理任务\n572: \tste.executor.RegisterHandler(\"cleanup\", ste.handleCleanupTask)\n573: \t\n",
+			"line": "572",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\statistics\\scheduler\\executor.go",
+			"code": "568: \t// 数据统计任务\n569: \tste.executor.RegisterHandler(\"statistics\", ste.handleStatisticsTask)\n570: \t\n",
+			"line": "569",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\statistics\\scheduler\\executor.go",
+			"code": "565: \t// 数据聚合任务\n566: \tste.executor.RegisterHandler(\"aggregation\", ste.handleAggregationTask)\n567: \t\n",
+			"line": "566",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\tcp_client.go",
+			"code": "109: \tif c.config.Timeout \u003e 0 {\n110: \t\tc.conn.SetDeadline(time.Now().Add(c.config.Timeout))\n111: \t}\n",
+			"line": "110",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\tcp_client.go",
+			"code": "55: \t\ttcpConn.SetKeepAlivePeriod(30 * time.Second)\n56: \t\ttcpConn.SetNoDelay(true)\n57: \t}\n",
+			"line": "56",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\tcp_client.go",
+			"code": "54: \t\ttcpConn.SetKeepAlive(true)\n55: \t\ttcpConn.SetKeepAlivePeriod(30 * time.Second)\n56: \t\ttcpConn.SetNoDelay(true)\n",
+			"line": "55",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\tcp_client.go",
+			"code": "53: \tif tcpConn, ok := conn.(*net.TCPConn); ok {\n54: \t\ttcpConn.SetKeepAlive(true)\n55: \t\ttcpConn.SetKeepAlivePeriod(30 * time.Second)\n",
+			"line": "54",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\examples.go",
+			"code": "229: \t\tlastErr = err\n230: \t\tmaster.Disconnect()\n231: \t\ttime.Sleep(config.RetryInterval)\n",
+			"line": "230",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\protocol\\modbus\\examples.go",
+			"code": "224: \t\t\tfmt.Printf(\"成功读取: %v\\n\", registers)\n225: \t\t\tmaster.Disconnect()\n226: \t\t\treturn\n",
+			"line": "225",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\monitoring\\health\\health.go",
+			"code": "330: \t\tw.WriteHeader(http.StatusServiceUnavailable)\n331: \t\tw.Write([]byte(\"Not Ready\"))\n332: \t}\n",
+			"line": "331",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\monitoring\\health\\health.go",
+			"code": "326: \t\t\tw.WriteHeader(http.StatusOK)\n327: \t\t\tw.Write([]byte(\"OK\"))\n328: \t\t\treturn\n",
+			"line": "327",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\monitoring\\health\\health.go",
+			"code": "317: \t\tw.WriteHeader(http.StatusServiceUnavailable)\n318: \t\tw.Write([]byte(\"Not Alive\"))\n319: \t}\n",
+			"line": "318",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\monitoring\\health\\health.go",
+			"code": "313: \t\t\tw.WriteHeader(http.StatusOK)\n314: \t\t\tw.Write([]byte(\"OK\"))\n315: \t\t\treturn\n",
+			"line": "314",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\monitoring\\alerting\\service.go",
+			"code": "147: \t\trecipients := as.getDefaultRecipients(rule)\n148: \t\tas.notifier.NotifyAlert(as.ctx, alert, rule.NotifyChannels, recipients)\n149: \t}\n",
+			"line": "148",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\monitoring\\alerting\\api.go",
+			"code": "782: \tw.WriteHeader(http.StatusOK)\n783: \tjson.NewEncoder(w).Encode(PaginatedResponse{\n784: \t\tSuccess:  true,\n785: \t\tData:     data,\n786: \t\tTotal:    total,\n787: \t\tPage:     page,\n788: \t\tPageSize: pageSize,\n789: \t})\n790: }\n",
+			"line": "783-789",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\monitoring\\alerting\\api.go",
+			"code": "772: \tw.WriteHeader(statusCode)\n773: \tjson.NewEncoder(w).Encode(APIResponse{\n774: \t\tSuccess: false,\n775: \t\tError:   message,\n776: \t})\n777: }\n",
+			"line": "773-776",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\monitoring\\alerting\\api.go",
+			"code": "762: \tw.WriteHeader(http.StatusOK)\n763: \tjson.NewEncoder(w).Encode(APIResponse{\n764: \t\tSuccess: true,\n765: \t\tData:    data,\n766: \t})\n767: }\n",
+			"line": "763-766",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\export\\excel.go",
+			"code": "275: \t}\n276: \ts.exporter.Close()\n277: \treturn buf, nil\n",
+			"line": "276",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\export\\excel.go",
+			"code": "272: \tif err != nil {\n273: \t\ts.exporter.Close()\n274: \t\treturn nil, err\n",
+			"line": "273",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\export\\excel.go",
+			"code": "249: \tif len(opt.ColumnWidths) \u003e 0 {\n250: \t\texporter.SetColumnWidths(opt.ColumnWidths)\n251: \t}\n",
+			"line": "250",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\export\\excel.go",
+			"code": "243: \tif err := exporter.SetHeaders(opt.Headers, opt.FieldNames); err != nil {\n244: \t\texporter.Close()\n245: \t\treturn nil, err\n",
+			"line": "244",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\export\\excel.go",
+			"code": "237: \t\tif err := exporter.SetSheetName(opt.SheetName); err != nil {\n238: \t\t\texporter.Close()\n239: \t\t\treturn nil, err\n",
+			"line": "238",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\export\\excel.go",
+			"code": "221: \n222: \texporter.Close()\n223: \treturn buf, nil\n",
+			"line": "222",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\export\\excel.go",
+			"code": "217: \tif err != nil {\n218: \t\texporter.Close()\n219: \t\treturn nil, err\n",
+			"line": "218",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\export\\excel.go",
+			"code": "212: \tif len(opt.ColumnWidths) \u003e 0 {\n213: \t\texporter.SetColumnWidths(opt.ColumnWidths)\n214: \t}\n",
+			"line": "213",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\export\\excel.go",
+			"code": "206: \tif err := exporter.AddRows(dataList, opt.FieldNames); err != nil {\n207: \t\texporter.Close()\n208: \t\treturn nil, err\n",
+			"line": "207",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\export\\excel.go",
+			"code": "201: \tif err := exporter.SetHeaders(opt.Headers, opt.FieldNames); err != nil {\n202: \t\texporter.Close()\n203: \t\treturn nil, err\n",
+			"line": "202",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\export\\excel.go",
+			"code": "195: \t\tif err := exporter.SetSheetName(opt.SheetName); err != nil {\n196: \t\t\texporter.Close()\n197: \t\t\treturn nil, err\n",
+			"line": "196",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\export\\excel.go",
+			"code": "106: \t\t\tcell, _ := excelize.CoordinatesToCellName(i+1, e.rowIndex)\n107: \t\t\te.file.SetCellValue(e.sheetName, cell, \"\")\n108: \t\t\tcontinue\n",
+			"line": "107",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\export\\excel.go",
+			"code": "83: \t\tstartCol, _ := excelize.CoordinatesToCellName(1, e.rowIndex)\n84: \t\te.file.SetCellStyle(e.sheetName, startCol, endCol, style)\n85: \t}\n",
+			"line": "84",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\compute\\rule\\engine.go",
+			"code": "666: \tvar result float64\n667: \tfmt.Sscanf(formula, \"%f\", \u0026result)\n668: \n",
+			"line": "667",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\compute\\rule\\engine.go",
+			"code": "590: \t\t}\n591: \t\te.cache.Set(ctx, cacheKey, computeResult)\n592: \t}\n",
+			"line": "591",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\alarm\\notifier\\scheduler.go",
+			"code": "415: \t\t\tnotification.Status = StatusFailed\n416: \t\t\ts.store.Update(ctx, notification)\n417: \t\t\tcontinue\n",
+			"line": "416",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\alarm\\notifier\\scheduler.go",
+			"code": "365: \tif s.logger != nil {\n366: \t\ts.logger.Log(context.Background(), notification, result)\n367: \t}\n",
+			"line": "366",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\alarm\\notifier\\scheduler.go",
+			"code": "361: \n362: \ts.store.Update(context.Background(), notification)\n363: \n",
+			"line": "362",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\alarm\\notifier\\scheduler.go",
+			"code": "347: \n348: \ts.store.Update(context.Background(), notification)\n349: }\n",
+			"line": "348",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\alarm\\notifier\\scheduler.go",
+			"code": "330: \t\tif s.logger != nil {\n331: \t\t\ts.logger.Log(context.Background(), notification, \u0026NotificationResult{\n332: \t\t\t\tNotificationID: notification.ID,\n333: \t\t\t\tSuccess:        false,\n334: \t\t\t\tStatus:         StatusFailed,\n335: \t\t\t\tMessage:        err.Error(),\n336: \t\t\t\tError:          err,\n337: \t\t\t})\n338: \t\t}\n",
+			"line": "331-337",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\alarm\\notifier\\scheduler.go",
+			"code": "326: \t\tnotification.Status = StatusFailed\n327: \t\ts.store.Update(context.Background(), notification)\n328: \n",
+			"line": "327",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\alarm\\notifier\\scheduler.go",
+			"code": "167: \tfor _, notifier := range s.notifiers {\n168: \t\tnotifier.Close()\n169: \t}\n",
+			"line": "168",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\alarm\\notifier\\email.go",
+			"code": "368: \t\tif err := client.Auth(auth); err != nil {\n369: \t\t\tclient.Close()\n370: \t\t\treturn nil, fmt.Errorf(\"failed to authenticate: %w\", err)\n",
+			"line": "369",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\alarm\\notifier\\email.go",
+			"code": "359: \t\tif err := client.StartTLS(tlsConfig); err != nil {\n360: \t\t\tclient.Close()\n361: \t\t\treturn nil, fmt.Errorf(\"failed to start TLS: %w\", err)\n",
+			"line": "360",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\alarm\\notifier\\email.go",
+			"code": "348: \tif err := client.Hello(host); err != nil {\n349: \t\tclient.Close()\n350: \t\treturn nil, fmt.Errorf(\"failed to send HELO: %w\", err)\n",
+			"line": "349",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\alarm\\notifier\\email.go",
+			"code": "334: \t\tif err != nil {\n335: \t\t\tconn.Close()\n336: \t\t\treturn nil, fmt.Errorf(\"failed to create SMTP client: %w\", err)\n",
+			"line": "335",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\alarm\\notifier\\email.go",
+			"code": "174: \tif e.smtpClient != nil {\n175: \t\te.smtpClient.Close()\n176: \t\te.smtpClient = nil\n",
+			"line": "175",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\alarm\\notifier\\email.go",
+			"code": "164: \t}\n165: \tclient.Close()\n166: \treturn nil\n",
+			"line": "165",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\alarm\\aggregator\\aggregator.go",
+			"code": "242: \t\t// 达到最大大小，先刷新\n243: \t\ta.flushGroupLocked(ctx, groupKey)\n244: \t\tgroup = NewAggregatedAlarm(a.config.Strategy, groupKey)\n",
+			"line": "243",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\alarm\\aggregator\\aggregator.go",
+			"code": "228: \tif a.config.Strategy == StrategyByTimeWindow \u0026\u0026 time.Now().After(a.windowEnd) {\n229: \t\ta.flushLocked(ctx)\n230: \t\ta.resetWindow()\n",
+			"line": "229",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\ai\\service\\prompt.go",
+			"code": "822: \tminor := 0\n823: \tfmt.Sscanf(parts[1], \"%d\", \u0026minor)\n824: \treturn fmt.Sprintf(\"%s.%d.%s\", parts[0], minor+1, parts[2])\n",
+			"line": "823",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\ai\\service\\adapter.go",
+			"code": "174: \t\tif resp.StatusCode \u003e= 500 || resp.StatusCode == 429 {\n175: \t\t\tresp.Body.Close()\n176: \t\t\tlastErr = fmt.Errorf(\"server error: %d\", resp.StatusCode)\n",
+			"line": "175",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\ai\\operation\\api.go",
+			"code": "648: \tw.Header().Set(\"Content-Type\", \"application/json\")\n649: \tjson.NewEncoder(w).Encode(stats)\n650: }\n",
+			"line": "649",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\ai\\operation\\api.go",
+			"code": "635: \tw.Header().Set(\"Content-Type\", \"application/json\")\n636: \tjson.NewEncoder(w).Encode(logs)\n637: }\n",
+			"line": "636",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\ai\\operation\\api.go",
+			"code": "625: \tif l := r.URL.Query().Get(\"limit\"); l != \"\" {\n626: \t\tfmt.Sscanf(l, \"%d\", \u0026limit)\n627: \t}\n",
+			"line": "626",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\ai\\operation\\api.go",
+			"code": "612: \tw.Header().Set(\"Content-Type\", \"application/json\")\n613: \tjson.NewEncoder(w).Encode(confirmations)\n614: }\n",
+			"line": "613",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\ai\\operation\\api.go",
+			"code": "595: \tw.Header().Set(\"Content-Type\", \"application/json\")\n596: \tjson.NewEncoder(w).Encode(response)\n597: }\n",
+			"line": "596",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\ai\\operation\\api.go",
+			"code": "572: \tw.Header().Set(\"Content-Type\", \"application/json\")\n573: \tjson.NewEncoder(w).Encode(response)\n574: }\n",
+			"line": "573",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\ai\\operation\\api.go",
+			"code": "556: \tif limit := r.URL.Query().Get(\"limit\"); limit != \"\" {\n557: \t\tfmt.Sscanf(limit, \"%d\", \u0026req.Limit)\n558: \t}\n",
+			"line": "557",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\ai\\operation\\api.go",
+			"code": "541: \tw.Header().Set(\"Content-Type\", \"application/json\")\n542: \tjson.NewEncoder(w).Encode(response)\n543: }\n",
+			"line": "542",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\ai\\operation\\api.go",
+			"code": "518: \tw.Header().Set(\"Content-Type\", \"application/json\")\n519: \tjson.NewEncoder(w).Encode(response)\n520: }\n",
+			"line": "519",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\ai\\operation\\api.go",
+			"code": "495: \tw.Header().Set(\"Content-Type\", \"application/json\")\n496: \tjson.NewEncoder(w).Encode(response)\n497: }\n",
+			"line": "496",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\ai\\config\\assistant.go",
+			"code": "718: \t\tvar result float64\n719: \t\tfmt.Sscanf(value, \"%f\", \u0026result)\n720: \t\treturn result\n",
+			"line": "719",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\pkg\\ai\\config\\assistant.go",
+			"code": "714: \t\tvar result int\n715: \t\tfmt.Sscanf(value, \"%d\", \u0026result)\n716: \t\treturn result\n",
+			"line": "715",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\internal\\infrastructure\\cache\\redis.go",
+			"code": "427: \tvar status int\n428: \tfmt.Sscanf(result, \"%d\", \u0026status)\n429: \treturn status, nil\n",
+			"line": "428",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\internal\\infrastructure\\cache\\redis.go",
+			"code": "409: \tfmt.Sscanf(data[\"value\"], \"%f\", \u0026value)\n410: \tfmt.Sscanf(data[\"timestamp\"], \"%d\", \u0026timestamp)\n411: \t\n",
+			"line": "410",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\internal\\infrastructure\\cache\\redis.go",
+			"code": "408: \tvar timestamp int64\n409: \tfmt.Sscanf(data[\"value\"], \"%f\", \u0026value)\n410: \tfmt.Sscanf(data[\"timestamp\"], \"%d\", \u0026timestamp)\n",
+			"line": "409",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\internal\\infrastructure\\cache\\middleware.go",
+			"code": "385: \t\tio.Copy(io.Discard, resp.Body)\n386: \t\tresp.Body.Close()\n387: \n",
+			"line": "386",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\internal\\infrastructure\\cache\\middleware.go",
+			"code": "384: \t\t// 读取并丢弃响应体\n385: \t\tio.Copy(io.Discard, resp.Body)\n386: \t\tresp.Body.Close()\n",
+			"line": "385",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "E:\\ai_work\\new-energy-monitoring\\cmd\\api-server\\main.go",
+			"code": "74: \t\twsClientsMu.Unlock()\n75: \t\tc.conn.Close()\n76: \t}()\n",
+			"line": "75",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		}
+	],
+	"Stats": {
+		"files": 219,
+		"lines": 107160,
+		"nosec": 0,
+		"found": 266
+	},
+	"GosecVersion": "dev"
+}

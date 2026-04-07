@@ -104,10 +104,9 @@ func getHTTPStatusCode(code ErrorCode) int {
 	switch code {
 	case ErrSuccess:
 		return http.StatusOK
-	case ErrInvalidParam, ErrInvalidPassword, ErrInvalidToken,
-		ErrInvalidPointValue, ErrConfigInvalid, ErrRuleInvalidExpression:
+	case ErrInvalidParam, ErrInvalidPassword, ErrInvalidPointValue, ErrConfigInvalid, ErrRuleInvalidExpression:
 		return http.StatusBadRequest
-	case ErrUnauthorized, ErrInvalidToken, ErrTokenExpired:
+	case ErrUnauthorized, ErrTokenExpired:
 		return http.StatusUnauthorized
 	case ErrForbidden, ErrInsufficientPermission:
 		return http.StatusForbidden

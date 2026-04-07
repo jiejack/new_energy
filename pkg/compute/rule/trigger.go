@@ -324,9 +324,13 @@ func (tm *TriggerManager) DeleteTrigger(triggerID string) error {
 
 	// 删除索引
 	for _, pointID := range trigger.PointIDs {
-		tm.removeFromSlice(&tm.byPoint[pointID], triggerID)
+		slice := tm.byPoint[pointID]
+		tm.removeFromSlice(&slice, triggerID)
+		tm.byPoint[pointID] = slice
 	}
-	tm.removeFromSlice(&tm.byType[trigger.Type], triggerID)
+	slice := tm.byType[trigger.Type]
+	tm.removeFromSlice(&slice, triggerID)
+	tm.byType[trigger.Type] = slice
 
 	delete(tm.triggers, triggerID)
 
@@ -632,7 +636,7 @@ func (tm *TriggerManager) evaluateCondition(trigger *Trigger, event *TriggerEven
 
 	// 简化实现：解析简单的条件表达式
 	// 实际项目中可以使用表达式引擎
-	expr := trigger.Condition.Expression
+	_ = trigger.Condition.Expression
 
 	// 支持简单的比较表达式: value > 100, value < 50 等
 	// 这里简化处理
@@ -806,9 +810,13 @@ func (tm *TriggerManager) GetChain(chainID string) (*TriggerChain, error) {
 func (tm *TriggerManager) updateIndex(oldTrigger, newTrigger *Trigger) {
 	// 删除旧索引
 	for _, pointID := range oldTrigger.PointIDs {
-		tm.removeFromSlice(&tm.byPoint[pointID], oldTrigger.ID)
+		slice := tm.byPoint[pointID]
+		tm.removeFromSlice(&slice, oldTrigger.ID)
+		tm.byPoint[pointID] = slice
 	}
-	tm.removeFromSlice(&tm.byType[oldTrigger.Type], oldTrigger.ID)
+	slice := tm.byType[oldTrigger.Type]
+	tm.removeFromSlice(&slice, oldTrigger.ID)
+	tm.byType[oldTrigger.Type] = slice
 
 	// 添加新索引
 	for _, pointID := range newTrigger.PointIDs {

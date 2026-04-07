@@ -45,6 +45,8 @@ export interface Region {
   children?: Region[]
 }
 
+export type RegionLevel = 1 | 2 | 3 | 4
+
 /**
  * 电站相关类型定义
  */
@@ -186,6 +188,9 @@ export interface ApiResponse<T = any> {
   code: number
   message: string
   data: T
+  total?: number
+  page?: number
+  page_size?: number
 }
 
 /**

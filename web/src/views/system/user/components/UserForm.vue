@@ -1,8 +1,9 @@
 <template>
   <el-dialog
-    v-model="visible"
+    :model-value="visible"
     :title="userId ? '编辑用户' : '新增用户'"
     width="600px"
+    @update:model-value="emit('update:visible', $event)"
     @close="handleClose"
   >
     <el-form

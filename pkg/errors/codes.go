@@ -1,11 +1,5 @@
 package errors
 
-import (
-	"fmt"
-	"runtime"
-	"sync"
-)
-
 type ErrorCode int
 
 const (

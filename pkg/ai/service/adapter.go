@@ -3,39 +3,41 @@ package service
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
-	"math/rand"
+	"math/big"
 	"net/http"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 // ModelAdapter 模型适配器接口
 type ModelAdapter interface {
 	// Chat 聊天对话
 	Chat(ctx context.Context, req *ChatRequest) (*ChatResponse, error)
-	
+
 	// Embedding 获取嵌入向量
 	Embedding(ctx context.Context, req *EmbeddingRequest) (*EmbeddingResponse, error)
-	
+
 	// Completion 文本补全
 	Completion(ctx context.Context, req *CompletionRequest) (*CompletionResponse, error)
-	
+
 	// StreamChat 流式聊天
 	StreamChat(ctx context.Context, req *ChatRequest) (<-chan ChatStreamChunk, error)
-	
+
 	// HealthCheck 健康检查
 	HealthCheck(ctx context.Context) error
-	
+
 	// GetModelInfo 获取模型信息
 	GetModelInfo() *ModelInfo
-	
+
 	// Close 关闭适配器
 	Close() error
 }
@@ -44,34 +46,34 @@ type ModelAdapter interface {
 type AdapterConfig struct {
 	// 提供商类型
 	Provider ProviderType `json:"provider" yaml:"provider"`
-	
+
 	// API密钥
 	APIKey string `json:"api_key" yaml:"api_key"`
-	
+
 	// API基础URL
 	BaseURL string `json:"base_url" yaml:"base_url"`
-	
+
 	// 默认模型
 	DefaultModel string `json:"default_model" yaml:"default_model"`
-	
+
 	// 组织ID
 	Organization string `json:"organization" yaml:"organization"`
-	
+
 	// 请求超时
 	Timeout time.Duration `json:"timeout" yaml:"timeout"`
-	
+
 	// 最大重试次数
 	MaxRetries int `json:"max_retries" yaml:"max_retries"`
-	
+
 	// 重试间隔
 	RetryInterval time.Duration `json:"retry_interval" yaml:"retry_interval"`
-	
+
 	// 代理URL
 	ProxyURL string `json:"proxy_url" yaml:"proxy_url"`
-	
+
 	// TLS配置
 	InsecureSkipVerify bool `json:"insecure_skip_verify" yaml:"insecure_skip_verify"`
-	
+
 	// 模型信息
 	ModelInfo *ModelInfo `json:"model_info" yaml:"model_info"`
 }
@@ -95,7 +97,14 @@ func NewBaseAdapter(config *AdapterConfig) *BaseAdapter {
 	if config.RetryInterval == 0 {
 		config.RetryInterval = 1 * time.Second
 	}
-	
+
+	// 安全警告: InsecureSkipVerify 会跳过TLS证书验证,存在中间人攻击风险
+	if config.InsecureSkipVerify {
+		zap.L().Warn("TLS certificate verification is disabled (InsecureSkipVerify=true). " +
+			"This should only be used in development or testing environments. " +
+			"Using this in production exposes the application to man-in-the-middle attacks.")
+	}
+
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: config.InsecureSkipVerify,
@@ -104,7 +113,7 @@ func NewBaseAdapter(config *AdapterConfig) *BaseAdapter {
 		MaxIdleConnsPerHost: 10,
 		IdleConnTimeout:     90 * time.Second,
 	}
-	
+
 	return &BaseAdapter{
 		config: config,
 		httpClient: &http.Client{
@@ -131,13 +140,13 @@ func (a *BaseAdapter) doRequest(ctx context.Context, method, path string, body i
 		}
 		reqBody = bytes.NewReader(data)
 	}
-	
+
 	url := a.config.BaseURL + path
 	req, err := http.NewRequestWithContext(ctx, method, url, reqBody)
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)
 	}
-	
+
 	req.Header.Set("Content-Type", "application/json")
 	if a.config.APIKey != "" {
 		req.Header.Set("Authorization", "Bearer "+a.config.APIKey)
@@ -145,7 +154,7 @@ func (a *BaseAdapter) doRequest(ctx context.Context, method, path string, body i
 	if a.config.Organization != "" {
 		req.Header.Set("OpenAI-Organization", a.config.Organization)
 	}
-	
+
 	var lastErr error
 	for i := 0; i <= a.config.MaxRetries; i++ {
 		if i > 0 {
@@ -155,22 +164,22 @@ func (a *BaseAdapter) doRequest(ctx context.Context, method, path string, body i
 			case <-time.After(a.config.RetryInterval * time.Duration(i)):
 			}
 		}
-		
+
 		resp, err := a.httpClient.Do(req)
 		if err != nil {
 			lastErr = err
 			continue
 		}
-		
+
 		if resp.StatusCode >= 500 || resp.StatusCode == 429 {
 			resp.Body.Close()
 			lastErr = fmt.Errorf("server error: %d", resp.StatusCode)
 			continue
 		}
-		
+
 		return resp, nil
 	}
-	
+
 	return nil, fmt.Errorf("max retries exceeded: %w", lastErr)
 }
 
@@ -210,7 +219,7 @@ func NewOpenAIAdapter(config *AdapterConfig) *OpenAIAdapter {
 			Capabilities:    []string{"chat", "function_calling", "streaming"},
 		}
 	}
-	
+
 	return &OpenAIAdapter{
 		BaseAdapter: NewBaseAdapter(config),
 	}
@@ -221,24 +230,24 @@ func (a *OpenAIAdapter) Chat(ctx context.Context, req *ChatRequest) (*ChatRespon
 	if req.Model == "" {
 		req.Model = a.config.DefaultModel
 	}
-	
+
 	openaiReq := a.buildOpenAIChatRequest(req)
-	
+
 	resp, err := a.doRequest(ctx, http.MethodPost, "/chat/completions", openaiReq)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode != http.StatusOK {
 		return nil, a.parseErrorResponse(resp)
 	}
-	
+
 	var openaiResp openAIChatResponse
 	if err := json.NewDecoder(resp.Body).Decode(&openaiResp); err != nil {
 		return nil, fmt.Errorf("decode response: %w", err)
 	}
-	
+
 	return a.convertChatResponse(&openaiResp, req.ConversationID), nil
 }
 
@@ -247,28 +256,28 @@ func (a *OpenAIAdapter) Embedding(ctx context.Context, req *EmbeddingRequest) (*
 	if req.Model == "" {
 		req.Model = "text-embedding-ada-002"
 	}
-	
+
 	openaiReq := map[string]interface{}{
-		"input":          req.Input,
-		"model":          req.Model,
+		"input":           req.Input,
+		"model":           req.Model,
 		"encoding_format": req.EncodingFormat,
 	}
-	
+
 	resp, err := a.doRequest(ctx, http.MethodPost, "/embeddings", openaiReq)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode != http.StatusOK {
 		return nil, a.parseErrorResponse(resp)
 	}
-	
+
 	var openaiResp openAIEmbeddingResponse
 	if err := json.NewDecoder(resp.Body).Decode(&openaiResp); err != nil {
 		return nil, fmt.Errorf("decode response: %w", err)
 	}
-	
+
 	return a.convertEmbeddingResponse(&openaiResp), nil
 }
 
@@ -277,24 +286,24 @@ func (a *OpenAIAdapter) Completion(ctx context.Context, req *CompletionRequest) 
 	if req.Model == "" {
 		req.Model = a.config.DefaultModel
 	}
-	
+
 	openaiReq := a.buildOpenAICompletionRequest(req)
-	
+
 	resp, err := a.doRequest(ctx, http.MethodPost, "/completions", openaiReq)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode != http.StatusOK {
 		return nil, a.parseErrorResponse(resp)
 	}
-	
+
 	var openaiResp openAICompletionResponse
 	if err := json.NewDecoder(resp.Body).Decode(&openaiResp); err != nil {
 		return nil, fmt.Errorf("decode response: %w", err)
 	}
-	
+
 	return a.convertCompletionResponse(&openaiResp), nil
 }
 
@@ -304,22 +313,22 @@ func (a *OpenAIAdapter) StreamChat(ctx context.Context, req *ChatRequest) (<-cha
 		req.Model = a.config.DefaultModel
 	}
 	req.Stream = true
-	
+
 	openaiReq := a.buildOpenAIChatRequest(req)
-	
+
 	resp, err := a.doRequest(ctx, http.MethodPost, "/chat/completions", openaiReq)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	if resp.StatusCode != http.StatusOK {
 		defer resp.Body.Close()
 		return nil, a.parseErrorResponse(resp)
 	}
-	
+
 	chunkChan := make(chan ChatStreamChunk, 100)
 	go a.processStreamResponse(ctx, resp, chunkChan, req.ConversationID)
-	
+
 	return chunkChan, nil
 }
 
@@ -330,11 +339,11 @@ func (a *OpenAIAdapter) HealthCheck(ctx context.Context) error {
 		return err
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("health check failed: %d", resp.StatusCode)
 	}
-	
+
 	return nil
 }
 
@@ -413,21 +422,21 @@ type openAIErrorResponse struct {
 
 func (a *OpenAIAdapter) buildOpenAIChatRequest(req *ChatRequest) *openAIChatRequest {
 	messages := make([]map[string]interface{}, 0, len(req.Messages)+1)
-	
+
 	if req.SystemPrompt != "" {
 		messages = append(messages, map[string]interface{}{
 			"role":    "system",
 			"content": req.SystemPrompt,
 		})
 	}
-	
+
 	for _, msg := range req.Messages {
 		messages = append(messages, map[string]interface{}{
 			"role":    msg.Role,
 			"content": msg.Content,
 		})
 	}
-	
+
 	return &openAIChatRequest{
 		Model:            req.Model,
 		Messages:         messages,
@@ -470,11 +479,11 @@ func (a *OpenAIAdapter) convertChatResponse(resp *openAIChatResponse, conversati
 			CreatedAt:      time.Unix(resp.Created, 0),
 		}
 	}
-	
+
 	choice := resp.Choices[0]
 	content, _ := choice.Message["content"].(string)
 	role, _ := choice.Message["role"].(string)
-	
+
 	return &ChatResponse{
 		ID:             resp.ID,
 		ConversationID: conversationID,
@@ -502,7 +511,7 @@ func (a *OpenAIAdapter) convertEmbeddingResponse(resp *openAIEmbeddingResponse) 
 			Object:    d.Object,
 		}
 	}
-	
+
 	return &EmbeddingResponse{
 		ID:        uuid.New().String(),
 		Data:      data,
@@ -524,11 +533,11 @@ func (a *OpenAIAdapter) convertCompletionResponse(resp *openAICompletionResponse
 			FinishReason: c.FinishReason,
 		}
 	}
-	
+
 	return &CompletionResponse{
-		ID:       resp.ID,
-		Choices:  choices,
-		Model:    resp.Model,
+		ID:        resp.ID,
+		Choices:   choices,
+		Model:     resp.Model,
 		CreatedAt: time.Unix(resp.Created, 0),
 		Usage: TokenUsage{
 			PromptTokens:     resp.Usage.PromptTokens,
@@ -543,7 +552,7 @@ func (a *OpenAIAdapter) parseErrorResponse(resp *http.Response) error {
 	if err := json.NewDecoder(resp.Body).Decode(&errResp); err != nil {
 		return fmt.Errorf("http error: %d", resp.StatusCode)
 	}
-	
+
 	return &AIError{
 		Type:       errResp.Error.Type,
 		Message:    errResp.Error.Message,
@@ -556,10 +565,10 @@ func (a *OpenAIAdapter) parseErrorResponse(resp *http.Response) error {
 func (a *OpenAIAdapter) processStreamResponse(ctx context.Context, resp *http.Response, chunkChan chan<- ChatStreamChunk, conversationID string) {
 	defer close(chunkChan)
 	defer resp.Body.Close()
-	
+
 	decoder := json.NewDecoder(resp.Body)
 	requestID := a.generateRequestID()
-	
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -567,7 +576,7 @@ func (a *OpenAIAdapter) processStreamResponse(ctx context.Context, resp *http.Re
 			return
 		default:
 		}
-		
+
 		line, err := decoder.Token()
 		if err != nil {
 			if err == io.EOF {
@@ -576,11 +585,11 @@ func (a *OpenAIAdapter) processStreamResponse(ctx context.Context, resp *http.Re
 			chunkChan <- ChatStreamChunk{Error: err}
 			return
 		}
-		
+
 		if line == nil {
 			continue
 		}
-		
+
 		// 处理SSE格式的流式响应
 		// 这里简化处理，实际需要解析SSE格式
 		_ = line
@@ -614,7 +623,7 @@ func NewClaudeAdapter(config *AdapterConfig) *ClaudeAdapter {
 			Capabilities:    []string{"chat", "streaming", "vision"},
 		}
 	}
-	
+
 	return &ClaudeAdapter{
 		BaseAdapter: NewBaseAdapter(config),
 	}
@@ -625,29 +634,29 @@ func (a *ClaudeAdapter) Chat(ctx context.Context, req *ChatRequest) (*ChatRespon
 	if req.Model == "" {
 		req.Model = a.config.DefaultModel
 	}
-	
+
 	claudeReq := a.buildClaudeRequest(req)
-	
+
 	httpReq, err := a.buildClaudeHTTPRequest(ctx, claudeReq)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	resp, err := a.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode != http.StatusOK {
 		return nil, a.parseClaudeErrorResponse(resp)
 	}
-	
+
 	var claudeResp claudeResponse
 	if err := json.NewDecoder(resp.Body).Decode(&claudeResp); err != nil {
 		return nil, fmt.Errorf("decode response: %w", err)
 	}
-	
+
 	return a.convertClaudeResponse(&claudeResp, req.ConversationID), nil
 }
 
@@ -665,7 +674,7 @@ func (a *ClaudeAdapter) Completion(ctx context.Context, req *CompletionRequest) 
 		TopP:        req.TopP,
 		User:        req.User,
 	}
-	
+
 	switch v := req.Prompt.(type) {
 	case string:
 		chatReq.Messages = []Message{{Role: "user", Content: v}}
@@ -674,12 +683,12 @@ func (a *ClaudeAdapter) Completion(ctx context.Context, req *CompletionRequest) 
 			chatReq.Messages = append(chatReq.Messages, Message{Role: "user", Content: p})
 		}
 	}
-	
+
 	chatResp, err := a.Chat(ctx, chatReq)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &CompletionResponse{
 		ID:        chatResp.ID,
 		Model:     chatResp.Model,
@@ -700,39 +709,39 @@ func (a *ClaudeAdapter) StreamChat(ctx context.Context, req *ChatRequest) (<-cha
 	if req.Model == "" {
 		req.Model = a.config.DefaultModel
 	}
-	
+
 	claudeReq := a.buildClaudeRequest(req)
 	claudeReq["stream"] = true
-	
+
 	httpReq, err := a.buildClaudeHTTPRequest(ctx, claudeReq)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	resp, err := a.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	if resp.StatusCode != http.StatusOK {
 		defer resp.Body.Close()
 		return nil, a.parseClaudeErrorResponse(resp)
 	}
-	
+
 	chunkChan := make(chan ChatStreamChunk, 100)
 	go a.processClaudeStream(ctx, resp, chunkChan, req.ConversationID)
-	
+
 	return chunkChan, nil
 }
 
 // HealthCheck 健康检查
 func (a *ClaudeAdapter) HealthCheck(ctx context.Context) error {
 	req := &ChatRequest{
-		Model:    a.config.DefaultModel,
-		Messages: []Message{{Role: "user", Content: "ping"}},
+		Model:     a.config.DefaultModel,
+		Messages:  []Message{{Role: "user", Content: "ping"}},
 		MaxTokens: 5,
 	}
-	
+
 	_, err := a.Chat(ctx, req)
 	return err
 }
@@ -751,10 +760,10 @@ type claudeRequest struct {
 }
 
 type claudeResponse struct {
-	ID           string `json:"id"`
-	Type         string `json:"type"`
-	Role         string `json:"role"`
-	Content      []struct {
+	ID      string `json:"id"`
+	Type    string `json:"type"`
+	Role    string `json:"role"`
+	Content []struct {
 		Type string `json:"type"`
 		Text string `json:"text"`
 	} `json:"content"`
@@ -782,7 +791,7 @@ func (a *ClaudeAdapter) buildClaudeRequest(req *ChatRequest) map[string]interfac
 			"content": msg.Content,
 		}
 	}
-	
+
 	return map[string]interface{}{
 		"model":       req.Model,
 		"messages":    messages,
@@ -798,16 +807,16 @@ func (a *ClaudeAdapter) buildClaudeHTTPRequest(ctx context.Context, body interfa
 	if err != nil {
 		return nil, fmt.Errorf("marshal request: %w", err)
 	}
-	
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, a.config.BaseURL+"/messages", bytes.NewReader(data))
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)
 	}
-	
+
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("x-api-key", a.config.APIKey)
 	req.Header.Set("anthropic-version", "2023-06-01")
-	
+
 	return req, nil
 }
 
@@ -816,7 +825,7 @@ func (a *ClaudeAdapter) convertClaudeResponse(resp *claudeResponse, conversation
 	if len(resp.Content) > 0 {
 		content = resp.Content[0].Text
 	}
-	
+
 	return &ChatResponse{
 		ID:             resp.ID,
 		ConversationID: conversationID,
@@ -840,7 +849,7 @@ func (a *ClaudeAdapter) parseClaudeErrorResponse(resp *http.Response) error {
 	if err := json.NewDecoder(resp.Body).Decode(&errResp); err != nil {
 		return fmt.Errorf("http error: %d", resp.StatusCode)
 	}
-	
+
 	return &AIError{
 		Type:       errResp.Error.Type,
 		Message:    errResp.Error.Message,
@@ -851,10 +860,10 @@ func (a *ClaudeAdapter) parseClaudeErrorResponse(resp *http.Response) error {
 func (a *ClaudeAdapter) processClaudeStream(ctx context.Context, resp *http.Response, chunkChan chan<- ChatStreamChunk, conversationID string) {
 	defer close(chunkChan)
 	defer resp.Body.Close()
-	
+
 	decoder := json.NewDecoder(resp.Body)
 	requestID := a.generateRequestID()
-	
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -862,7 +871,7 @@ func (a *ClaudeAdapter) processClaudeStream(ctx context.Context, resp *http.Resp
 			return
 		default:
 		}
-		
+
 		var event map[string]interface{}
 		if err := decoder.Decode(&event); err != nil {
 			if err == io.EOF {
@@ -871,12 +880,12 @@ func (a *ClaudeAdapter) processClaudeStream(ctx context.Context, resp *http.Resp
 			chunkChan <- ChatStreamChunk{Error: err}
 			return
 		}
-		
+
 		eventType, _ := event["type"].(string)
 		if eventType == "content_block_delta" {
 			delta, _ := event["delta"].(map[string]interface{})
 			text, _ := delta["text"].(string)
-			
+
 			chunkChan <- ChatStreamChunk{
 				ID:             requestID,
 				ConversationID: conversationID,
@@ -917,7 +926,7 @@ func NewLocalModelAdapter(config *AdapterConfig) *LocalModelAdapter {
 			Capabilities:    []string{"chat", "completion"},
 		}
 	}
-	
+
 	return &LocalModelAdapter{
 		BaseAdapter: NewBaseAdapter(config),
 	}
@@ -928,7 +937,7 @@ func (a *LocalModelAdapter) Chat(ctx context.Context, req *ChatRequest) (*ChatRe
 	if req.Model == "" {
 		req.Model = a.config.DefaultModel
 	}
-	
+
 	localReq := map[string]interface{}{
 		"model":       req.Model,
 		"messages":    req.Messages,
@@ -936,17 +945,17 @@ func (a *LocalModelAdapter) Chat(ctx context.Context, req *ChatRequest) (*ChatRe
 		"max_tokens":  req.MaxTokens,
 		"top_p":       req.TopP,
 	}
-	
+
 	resp, err := a.doRequest(ctx, http.MethodPost, "/v1/chat/completions", localReq)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("local model error: %d", resp.StatusCode)
 	}
-	
+
 	var result struct {
 		ID      string `json:"id"`
 		Model   string `json:"model"`
@@ -956,15 +965,15 @@ func (a *LocalModelAdapter) Chat(ctx context.Context, req *ChatRequest) (*ChatRe
 		} `json:"choices"`
 		Usage TokenUsage `json:"usage"`
 	}
-	
+
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, fmt.Errorf("decode response: %w", err)
 	}
-	
+
 	if len(result.Choices) == 0 {
 		return nil, fmt.Errorf("no response from local model")
 	}
-	
+
 	return &ChatResponse{
 		ID:             result.ID,
 		ConversationID: req.ConversationID,
@@ -981,32 +990,32 @@ func (a *LocalModelAdapter) Embedding(ctx context.Context, req *EmbeddingRequest
 	if req.Model == "" {
 		req.Model = "local-embedding"
 	}
-	
+
 	localReq := map[string]interface{}{
 		"model": req.Model,
 		"input": req.Input,
 	}
-	
+
 	resp, err := a.doRequest(ctx, http.MethodPost, "/v1/embeddings", localReq)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("local model error: %d", resp.StatusCode)
 	}
-	
+
 	var result struct {
 		Data  []EmbeddingData `json:"data"`
 		Model string          `json:"model"`
 		Usage TokenUsage      `json:"usage"`
 	}
-	
+
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, fmt.Errorf("decode response: %w", err)
 	}
-	
+
 	return &EmbeddingResponse{
 		ID:        uuid.New().String(),
 		Data:      result.Data,
@@ -1021,7 +1030,7 @@ func (a *LocalModelAdapter) Completion(ctx context.Context, req *CompletionReque
 	if req.Model == "" {
 		req.Model = a.config.DefaultModel
 	}
-	
+
 	localReq := map[string]interface{}{
 		"model":       req.Model,
 		"prompt":      req.Prompt,
@@ -1029,28 +1038,28 @@ func (a *LocalModelAdapter) Completion(ctx context.Context, req *CompletionReque
 		"temperature": req.Temperature,
 		"top_p":       req.TopP,
 	}
-	
+
 	resp, err := a.doRequest(ctx, http.MethodPost, "/v1/completions", localReq)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("local model error: %d", resp.StatusCode)
 	}
-	
+
 	var result struct {
 		ID      string             `json:"id"`
 		Model   string             `json:"model"`
 		Choices []CompletionChoice `json:"choices"`
 		Usage   TokenUsage         `json:"usage"`
 	}
-	
+
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, fmt.Errorf("decode response: %w", err)
 	}
-	
+
 	return &CompletionResponse{
 		ID:        result.ID,
 		Choices:   result.Choices,
@@ -1066,7 +1075,7 @@ func (a *LocalModelAdapter) StreamChat(ctx context.Context, req *ChatRequest) (<
 		req.Model = a.config.DefaultModel
 	}
 	req.Stream = true
-	
+
 	localReq := map[string]interface{}{
 		"model":       req.Model,
 		"messages":    req.Messages,
@@ -1075,20 +1084,20 @@ func (a *LocalModelAdapter) StreamChat(ctx context.Context, req *ChatRequest) (<
 		"top_p":       req.TopP,
 		"stream":      true,
 	}
-	
+
 	resp, err := a.doRequest(ctx, http.MethodPost, "/v1/chat/completions", localReq)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	if resp.StatusCode != http.StatusOK {
 		defer resp.Body.Close()
 		return nil, fmt.Errorf("local model error: %d", resp.StatusCode)
 	}
-	
+
 	chunkChan := make(chan ChatStreamChunk, 100)
 	go a.processLocalStream(ctx, resp, chunkChan, req.ConversationID)
-	
+
 	return chunkChan, nil
 }
 
@@ -1099,21 +1108,21 @@ func (a *LocalModelAdapter) HealthCheck(ctx context.Context) error {
 		return err
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("health check failed: %d", resp.StatusCode)
 	}
-	
+
 	return nil
 }
 
 func (a *LocalModelAdapter) processLocalStream(ctx context.Context, resp *http.Response, chunkChan chan<- ChatStreamChunk, conversationID string) {
 	defer close(chunkChan)
 	defer resp.Body.Close()
-	
+
 	decoder := json.NewDecoder(resp.Body)
 	requestID := a.generateRequestID()
-	
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -1121,7 +1130,7 @@ func (a *LocalModelAdapter) processLocalStream(ctx context.Context, resp *http.R
 			return
 		default:
 		}
-		
+
 		var chunk struct {
 			Choices []struct {
 				Delta struct {
@@ -1130,7 +1139,7 @@ func (a *LocalModelAdapter) processLocalStream(ctx context.Context, resp *http.R
 				FinishReason string `json:"finish_reason"`
 			} `json:"choices"`
 		}
-		
+
 		if err := decoder.Decode(&chunk); err != nil {
 			if err == io.EOF {
 				return
@@ -1138,7 +1147,7 @@ func (a *LocalModelAdapter) processLocalStream(ctx context.Context, resp *http.R
 			chunkChan <- ChatStreamChunk{Error: err}
 			return
 		}
-		
+
 		if len(chunk.Choices) > 0 {
 			chunkChan <- ChatStreamChunk{
 				ID:             requestID,
@@ -1156,9 +1165,9 @@ func (a *LocalModelAdapter) processLocalStream(ctx context.Context, resp *http.R
 
 // ModelSelector 模型选择器
 type ModelSelector struct {
-	adapters map[string]ModelAdapter
+	adapters     map[string]ModelAdapter
 	defaultModel string
-	mu       sync.RWMutex
+	mu           sync.RWMutex
 }
 
 // NewModelSelector 创建模型选择器
@@ -1180,16 +1189,16 @@ func (s *ModelSelector) Register(name string, adapter ModelAdapter) {
 func (s *ModelSelector) Select(model string) (ModelAdapter, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	
+
 	if model == "" {
 		model = s.defaultModel
 	}
-	
+
 	adapter, ok := s.adapters[model]
 	if !ok {
 		return nil, fmt.Errorf("model not found: %s", model)
 	}
-	
+
 	return adapter, nil
 }
 
@@ -1197,7 +1206,7 @@ func (s *ModelSelector) Select(model string) (ModelAdapter, error) {
 func (s *ModelSelector) List() []string {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	
+
 	models := make([]string, 0, len(s.adapters))
 	for name := range s.adapters {
 		models = append(models, name)
@@ -1241,12 +1250,12 @@ func (lb *LoadBalancer) RegisterSelector(provider string, selector *ModelSelecto
 func (lb *LoadBalancer) Select(provider, model string) (ModelAdapter, error) {
 	lb.mu.RLock()
 	defer lb.mu.RUnlock()
-	
+
 	selector, ok := lb.selectors[provider]
 	if !ok {
 		return nil, fmt.Errorf("provider not found: %s", provider)
 	}
-	
+
 	return selector.Select(model)
 }
 
@@ -1254,26 +1263,33 @@ func (lb *LoadBalancer) Select(provider, model string) (ModelAdapter, error) {
 func (lb *LoadBalancer) SelectByStrategy() (ModelAdapter, error) {
 	lb.mu.RLock()
 	defer lb.mu.RUnlock()
-	
+
 	if len(lb.selectors) == 0 {
 		return nil, fmt.Errorf("no providers available")
 	}
-	
+
 	providers := make([]string, 0, len(lb.selectors))
 	for p := range lb.selectors {
 		providers = append(providers, p)
 	}
-	
+
 	var selectedProvider string
 	switch lb.strategy {
 	case StrategyRoundRobin:
 		selectedProvider = providers[0]
 	case StrategyRandom:
-		selectedProvider = providers[rand.Intn(len(providers))]
+		// 使用crypto/rand生成安全的随机数
+		n, err := rand.Int(rand.Reader, big.NewInt(int64(len(providers))))
+		if err != nil {
+			// 如果加密随机数生成失败,回退到第一个provider
+			selectedProvider = providers[0]
+		} else {
+			selectedProvider = providers[n.Int64()]
+		}
 	default:
 		selectedProvider = providers[0]
 	}
-	
+
 	selector := lb.selectors[selectedProvider]
 	return selector.Select("")
 }
@@ -1282,7 +1298,7 @@ func (lb *LoadBalancer) SelectByStrategy() (ModelAdapter, error) {
 func (lb *LoadBalancer) GetAllModels() []*ModelInfo {
 	lb.mu.RLock()
 	defer lb.mu.RUnlock()
-	
+
 	var models []*ModelInfo
 	for _, selector := range lb.selectors {
 		selector.mu.RLock()

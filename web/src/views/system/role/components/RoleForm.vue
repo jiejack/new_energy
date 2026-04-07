@@ -1,8 +1,9 @@
 <template>
   <el-dialog
-    v-model="visible"
+    :model-value="visible"
     :title="roleId ? '编辑角色' : '新增角色'"
     width="600px"
+    @update:model-value="emit('update:visible', $event)"
     @close="handleClose"
   >
     <el-form

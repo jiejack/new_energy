@@ -2,367 +2,145 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/new-energy-monitoring/internal/domain/entity"
 	"github.com/new-energy-monitoring/internal/domain/repository"
-	"github.com/new-energy-monitoring/pkg/qa"
+	"github.com/new-energy-monitoring/pkg/ai/qa"
 )
 
-var (
-	ErrSessionNotFound   = errors.New("session not found")
-	ErrSessionDeleted    = errors.New("session has been deleted")
-	ErrInvalidQuestion   = errors.New("invalid question")
-	ErrUnauthorizedAccess = errors.New("unauthorized access to session")
-)
-
-// QAService 问答服务
 type QAService struct {
-	qaRepo    repository.QARepository
-	assistant qa.AssistantInterface
+	qaRepo      repository.QARepository
+	dialogueMgr *qa.DialogueManager
 }
 
-// NewQAService 创建问答服务
-func NewQAService(qaRepo repository.QARepository, assistant qa.AssistantInterface) *QAService {
+func NewQAService(
+	qaRepo repository.QARepository,
+	dialogueMgr *qa.DialogueManager,
+) *QAService {
 	return &QAService{
-		qaRepo:    qaRepo,
-		assistant: assistant,
+		qaRepo:      qaRepo,
+		dialogueMgr: dialogueMgr,
 	}
 }
 
-// CreateSessionRequest 创建会话请求
-type CreateSessionRequest struct {
-	UserID string `json:"user_id" binding:"required"`
-	Title  string `json:"title"`
-}
-
-// CreateSessionResponse 创建会话响应
-type CreateSessionResponse struct {
-	SessionID string    `json:"session_id"`
-	UserID    string    `json:"user_id"`
-	Title     string    `json:"title"`
-	Status    int       `json:"status"`
-	CreatedAt string    `json:"created_at"`
-}
-
-// AskRequest 提问请求
-type AskRequest struct {
+type AskQuestionRequest struct {
 	SessionID string `json:"session_id"`
-	UserID    string `json:"user_id" binding:"required"`
 	Question  string `json:"question" binding:"required"`
+	UserID    string `json:"user_id,omitempty"`
 }
 
-// AskResponse 提问响应
-type AskResponse struct {
-	SessionID   string                 `json:"session_id"`
-	Answer      string                 `json:"answer"`
-	Confidence  float64                `json:"confidence"`
-	Intent      *IntentInfoResponse    `json:"intent,omitempty"`
-	Suggestions []string               `json:"suggestions,omitempty"`
-	RequiresMore bool                  `json:"requires_more"`
-}
-
-// IntentInfoResponse 意图信息响应
-type IntentInfoResponse struct {
-	Type       string                 `json:"type"`
-	Name       string                 `json:"name"`
-	Confidence float64                `json:"confidence"`
-	Slots      map[string]interface{} `json:"slots,omitempty"`
-}
-
-// SessionListResponse 会话列表响应
-type SessionListResponse struct {
-	Sessions []*SessionInfo `json:"sessions"`
-	Total    int64          `json:"total"`
-	Page     int            `json:"page"`
-	PageSize int            `json:"page_size"`
-}
-
-// SessionInfo 会话信息
-type SessionInfo struct {
-	ID        string          `json:"id"`
-	UserID    string          `json:"user_id"`
-	Title     string          `json:"title"`
-	Status    int             `json:"status"`
-	CreatedAt string          `json:"created_at"`
-	UpdatedAt string          `json:"updated_at"`
-}
-
-// SessionDetailResponse 会话详情响应
-type SessionDetailResponse struct {
-	ID        string          `json:"id"`
-	UserID    string          `json:"user_id"`
-	Title     string          `json:"title"`
-	Status    int             `json:"status"`
-	CreatedAt string          `json:"created_at"`
-	UpdatedAt string          `json:"updated_at"`
-	Messages  []*MessageInfo  `json:"messages"`
-}
-
-// MessageInfo 消息信息
-type MessageInfo struct {
-	ID        string `json:"id"`
+type AskQuestionResponse struct {
 	SessionID string `json:"session_id"`
-	Role      string `json:"role"`
-	Content   string `json:"content"`
-	CreatedAt string `json:"created_at"`
+	Answer    string `json:"answer"`
 }
 
-// CreateSession 创建会话
-func (s *QAService) CreateSession(ctx context.Context, req *CreateSessionRequest) (*CreateSessionResponse, error) {
-	// 创建会话实体
-	session := entity.NewQASession(req.UserID, req.Title)
+type CreateSessionRequest struct {
+	Title string `json:"title"`
+}
 
-	// 如果没有标题，使用默认标题
-	if session.Title == "" {
-		session.Title = "新对话"
+func (s *QAService) CreateSession(ctx context.Context, userID string, req *CreateSessionRequest) (*entity.QASession, error) {
+	title := req.Title
+	if title == "" {
+		title = "新对话"
 	}
 
-	// 保存到数据库
+	session := entity.NewQASession(userID, title)
+
 	if err := s.qaRepo.CreateSession(ctx, session); err != nil {
 		return nil, fmt.Errorf("failed to create session: %w", err)
 	}
 
-	return &CreateSessionResponse{
-		SessionID: session.ID,
-		UserID:    session.UserID,
-		Title:     session.Title,
-		Status:    int(session.Status),
-		CreatedAt: session.CreatedAt.Format("2006-01-02 15:04:05"),
-	}, nil
+	return session, nil
 }
 
-// Ask 提问
-func (s *QAService) Ask(ctx context.Context, req *AskRequest) (*AskResponse, error) {
-	if req.Question == "" {
-		return nil, ErrInvalidQuestion
-	}
-
+func (s *QAService) AskQuestion(ctx context.Context, req *AskQuestionRequest, userID string) (*AskQuestionResponse, error) {
 	var session *entity.QASession
 	var err error
-	var dialogueSessionID string
 
-	// 获取或创建会话
-	if req.SessionID != "" {
-		session, err = s.qaRepo.GetSessionByID(ctx, req.SessionID)
-		if err != nil {
-			return nil, ErrSessionNotFound
-		}
-		// 验证用户权限
-		if session.UserID != req.UserID {
-			return nil, ErrUnauthorizedAccess
-		}
-		// 检查会话状态
-		if session.IsDeleted() {
-			return nil, ErrSessionDeleted
-		}
-		dialogueSessionID = session.ID
-	} else {
-		// 创建新会话
-		title := s.assistant.GenerateTitle(req.Question)
-		session = entity.NewQASession(req.UserID, title)
+	if req.SessionID == "" {
+		session = entity.NewQASession(userID, "新对话")
 		if err := s.qaRepo.CreateSession(ctx, session); err != nil {
 			return nil, fmt.Errorf("failed to create session: %w", err)
 		}
-		// 启动 DialogueManager 会话
-		dialogueSessionID, err = s.assistant.StartSession(ctx, req.UserID)
+	} else {
+		session, err = s.qaRepo.GetSessionByID(ctx, req.SessionID)
 		if err != nil {
-			return nil, fmt.Errorf("failed to start dialogue session: %w", err)
+			return nil, fmt.Errorf("session not found: %w", err)
 		}
 	}
 
-	// 保存用户消息
-	userMessage := session.AddMessage(entity.QAMessageRoleUser, req.Question)
-	if err := s.qaRepo.CreateMessage(ctx, userMessage); err != nil {
+	userMsg := entity.NewQAMessage(session.ID, entity.QAMessageRoleUser, req.Question)
+	if err := s.qaRepo.CreateMessage(ctx, userMsg); err != nil {
 		return nil, fmt.Errorf("failed to save user message: %w", err)
 	}
 
-	// 获取历史消息作为上下文
-	recentMessages, err := s.qaRepo.GetRecentMessages(ctx, session.ID, 10)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get recent messages: %w", err)
-	}
-
-	// 构建上下文
-	context := s.buildConversationContext(recentMessages)
-
-	// 调用AI助手
-	askReq := &qa.AskRequest{
-		SessionID: dialogueSessionID,
-		UserID:    req.UserID,
-		Question:  req.Question,
-		Context:   context,
-	}
-
-	askResp, err := s.assistant.Ask(ctx, askReq)
+	answer, err := s.getAIResponse(ctx, session.ID, req.Question)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get AI response: %w", err)
 	}
 
-	// 保存助手消息
-	assistantMessage := session.AddMessage(entity.QAMessageRoleAssistant, askResp.Answer)
-	if err := s.qaRepo.CreateMessage(ctx, assistantMessage); err != nil {
+	assistantMsg := entity.NewQAMessage(session.ID, entity.QAMessageRoleAssistant, answer)
+	if err := s.qaRepo.CreateMessage(ctx, assistantMsg); err != nil {
 		return nil, fmt.Errorf("failed to save assistant message: %w", err)
 	}
 
-	// 更新会话
-	if err := s.qaRepo.UpdateSession(ctx, session); err != nil {
-		return nil, fmt.Errorf("failed to update session: %w", err)
-	}
-
-	// 构建响应
-	resp := &AskResponse{
-		SessionID:    session.ID,
-		Answer:       askResp.Answer,
-		Confidence:   askResp.Confidence,
-		Suggestions:  askResp.Suggestions,
-		RequiresMore: askResp.RequiresMore,
-	}
-
-	if askResp.Intent != nil {
-		resp.Intent = &IntentInfoResponse{
-			Type:       askResp.Intent.Type,
-			Name:       askResp.Intent.Name,
-			Confidence: askResp.Intent.Confidence,
-			Slots:      askResp.Intent.Slots,
-		}
-	}
-
-	return resp, nil
+	return &AskQuestionResponse{
+		SessionID: session.ID,
+		Answer:    answer,
+	}, nil
 }
 
-// GetSession 获取会话详情
-func (s *QAService) GetSession(ctx context.Context, sessionID, userID string) (*SessionDetailResponse, error) {
+func (s *QAService) getAIResponse(ctx context.Context, sessionID, question string) (string, error) {
+	if s.dialogueMgr == nil {
+		return "AI服务暂未配置，请检查系统设置。", nil
+	}
+
+	response, err := s.dialogueMgr.Process(ctx, sessionID, question)
+	if err != nil {
+		return "", fmt.Errorf("AI dialogue failed: %w", err)
+	}
+
+	return response.Content, nil
+}
+
+func (s *QAService) GetSession(ctx context.Context, sessionID string) (*entity.QASession, error) {
 	session, err := s.qaRepo.GetSessionWithMessages(ctx, sessionID)
 	if err != nil {
-		return nil, ErrSessionNotFound
+		return nil, fmt.Errorf("session not found: %w", err)
 	}
 
-	// 验证用户权限
-	if session.UserID != userID {
-		return nil, ErrUnauthorizedAccess
-	}
-
-	// 检查会话状态
-	if session.IsDeleted() {
-		return nil, ErrSessionDeleted
-	}
-
-	// 构建响应
-	messages := make([]*MessageInfo, 0, len(session.Messages))
-	for _, msg := range session.Messages {
-		messages = append(messages, &MessageInfo{
-			ID:        msg.ID,
-			SessionID: msg.SessionID,
-			Role:      string(msg.Role),
-			Content:   msg.Content,
-			CreatedAt: msg.CreatedAt.Format("2006-01-02 15:04:05"),
-		})
-	}
-
-	return &SessionDetailResponse{
-		ID:        session.ID,
-		UserID:    session.UserID,
-		Title:     session.Title,
-		Status:    int(session.Status),
-		CreatedAt: session.CreatedAt.Format("2006-01-02 15:04:05"),
-		UpdatedAt: session.UpdatedAt.Format("2006-01-02 15:04:05"),
-		Messages:  messages,
-	}, nil
+	return session, nil
 }
 
-// ListSessions 获取用户会话列表
-func (s *QAService) ListSessions(ctx context.Context, userID string, page, pageSize int) (*SessionListResponse, error) {
-	if page <= 0 {
-		page = 1
-	}
-	if pageSize <= 0 {
-		pageSize = 20
-	}
-
+func (s *QAService) ListUserSessions(ctx context.Context, userID string, page, pageSize int) ([]*entity.QASession, int64, error) {
 	sessions, total, err := s.qaRepo.ListSessionsByUserID(ctx, userID, nil, page, pageSize)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list sessions: %w", err)
+		return nil, 0, fmt.Errorf("failed to list sessions: %w", err)
 	}
-
-	// 构建响应
-	sessionInfos := make([]*SessionInfo, 0, len(sessions))
-	for _, session := range sessions {
-		sessionInfos = append(sessionInfos, &SessionInfo{
-			ID:        session.ID,
-			UserID:    session.UserID,
-			Title:     session.Title,
-			Status:    int(session.Status),
-			CreatedAt: session.CreatedAt.Format("2006-01-02 15:04:05"),
-			UpdatedAt: session.UpdatedAt.Format("2006-01-02 15:04:05"),
-		})
-	}
-
-	return &SessionListResponse{
-		Sessions: sessionInfos,
-		Total:    total,
-		Page:     page,
-		PageSize: pageSize,
-	}, nil
+	return sessions, total, nil
 }
 
-// DeleteSession 删除会话
-func (s *QAService) DeleteSession(ctx context.Context, sessionID, userID string) error {
+func (s *QAService) DeleteSession(ctx context.Context, sessionID string) error {
 	session, err := s.qaRepo.GetSessionByID(ctx, sessionID)
 	if err != nil {
-		return ErrSessionNotFound
+		return fmt.Errorf("session not found: %w", err)
 	}
 
-	// 验证用户权限
-	if session.UserID != userID {
-		return ErrUnauthorizedAccess
-	}
-
-	// 软删除会话
 	session.Delete()
-	if err := s.qaRepo.UpdateSession(ctx, session); err != nil {
-		return fmt.Errorf("failed to delete session: %w", err)
-	}
-
-	return nil
+	return s.qaRepo.UpdateSession(ctx, session)
 }
 
-// ArchiveSession 归档会话
-func (s *QAService) ArchiveSession(ctx context.Context, sessionID, userID string) error {
+func (s *QAService) ArchiveSession(ctx context.Context, sessionID string) error {
 	session, err := s.qaRepo.GetSessionByID(ctx, sessionID)
 	if err != nil {
-		return ErrSessionNotFound
+		return fmt.Errorf("session not found: %w", err)
 	}
 
-	// 验证用户权限
-	if session.UserID != userID {
-		return ErrUnauthorizedAccess
-	}
-
-	// 归档会话
 	session.Archive()
-	if err := s.qaRepo.UpdateSession(ctx, session); err != nil {
-		return fmt.Errorf("failed to archive session: %w", err)
-	}
-
-	return nil
+	return s.qaRepo.UpdateSession(ctx, session)
 }
 
-// buildConversationContext 构建对话上下文
-func (s *QAService) buildConversationContext(messages []*entity.QAMessage) *qa.ConversationContext {
-	context := &qa.ConversationContext{
-		Messages:  make([]*qa.ContextMessage, 0, len(messages)),
-		Variables: make(map[string]interface{}),
-	}
-
-	for _, msg := range messages {
-		context.Messages = append(context.Messages, &qa.ContextMessage{
-			Role:      string(msg.Role),
-			Content:   msg.Content,
-			Timestamp: msg.CreatedAt,
-		})
-	}
-
-	return context
+func (s *QAService) GetSessionHistory(ctx context.Context, sessionID string, page, pageSize int) ([]*entity.QAMessage, int64, error) {
+	return s.qaRepo.GetMessagesBySessionID(ctx, sessionID, page, pageSize)
 }

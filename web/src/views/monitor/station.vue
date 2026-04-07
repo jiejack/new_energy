@@ -39,7 +39,7 @@
                   {{ station.online ? '在线' : '离线' }}
                 </el-tag>
               </div>
-              <el-dropdown trigger="click" @command="(cmd) => handleCommand(cmd, station)">
+              <el-dropdown trigger="click" @command="(cmd: string) => handleCommand(cmd, station)">
                 <el-icon class="more-icon"><MoreFilled /></el-icon>
                 <template #dropdown>
                   <el-dropdown-menu>

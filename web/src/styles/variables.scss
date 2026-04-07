@@ -1,49 +1,90 @@
-// 主题色
-$primary-color: #409eff;
-$success-color: #67c23a;
-$warning-color: #e6a23c;
-$danger-color: #f56c6c;
-$info-color: #909399;
+// ============================================
+// 新能源监控系统 - 专业配色方案
+// ============================================
 
-// 文字颜色
-$text-primary: #303133;
-$text-regular: #606266;
-$text-secondary: #909399;
-$text-placeholder: #c0c4cc;
+// 主题色 - 新能源/电力行业特色
+// 主色调: 清洁能源绿 + 科技蓝
+$primary-color: #00d4aa; // 清洁能源绿 - 代表可持续发展
+$primary-light: #00f5c4;
+$primary-dark: #00b894;
 
-// 边框颜色
-$border-base: #dcdfe6;
-$border-light: #e4e7ed;
-$border-lighter: #ebeef5;
-$border-extra-light: #f2f6fc;
+$secondary-color: #0984e3; // 科技蓝 - 代表智能电网
+$secondary-light: #74b9ff;
+$secondary-dark: #0652dd;
 
-// 背景颜色
-$bg-white: #ffffff;
-$bg-page: #f5f7fa;
-$bg-base: #f5f7fa;
+// 功能色 - 电力行业标准
+$success-color: #00d4aa; // 正常运行 - 绿色
+$warning-color: #fdcb6e; // 预警 - 黄色
+$danger-color: #ff7675; // 故障/告警 - 红色
+$info-color: #74b9ff; // 信息 - 蓝色
 
-// 阴影
-$shadow-base: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
-$shadow-light: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+// 状态色 - 设备状态专用
+$status-online: #00d4aa; // 在线
+$status-offline: #636e72; // 离线
+$status-fault: #ff7675; // 故障
+$status-maintenance: #fdcb6e; // 维护中
+$status-standby: #74b9ff; // 待机
+
+// 文字颜色 - 深色主题优化
+$text-primary: #e5eaf3; // 主要文字
+$text-regular: #cfd3dc; // 常规文字
+$text-secondary: #a3a7b2; // 次要文字
+$text-placeholder: #6b7280; // 占位符
+$text-disabled: #4b5563; // 禁用状态
+
+// 边框颜色 - 深色主题
+$border-base: #3a4556;
+$border-light: #2d3748;
+$border-lighter: #1f2937;
+$border-extra-light: #1a202c;
+
+// 背景颜色 - 深色主题
+$bg-white: #1a1f2e;
+$bg-page: #0d1117;
+$bg-base: #161b22;
+$bg-dark: #0d1117;
+$bg-darker: #080b0f;
+
+// 渐变色 - 新能源特色
+$gradient-primary: linear-gradient(135deg, #00d4aa 0%, #0984e3 100%);
+$gradient-success: linear-gradient(135deg, #00d4aa 0%, #00b894 100%);
+$gradient-warning: linear-gradient(135deg, #fdcb6e 0%, #f39c12 100%);
+$gradient-danger: linear-gradient(135deg, #ff7675 0%, #d63031 100%);
+$gradient-dark: linear-gradient(135deg, #1a1f2e 0%, #0d1117 100%);
+
+// 阴影 - 深色主题优化
+$shadow-base: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 12px rgba(0, 212, 170, 0.1);
+$shadow-light: 0 4px 12px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 212, 170, 0.15);
+$shadow-dark: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 32px rgba(0, 212, 170, 0.2);
+$shadow-glow: 0 0 20px rgba(0, 212, 170, 0.3); // 发光效果
 
 // 圆角
-$border-radius-base: 4px;
-$border-radius-small: 2px;
-$border-radius-large: 8px;
+$border-radius-base: 8px;
+$border-radius-small: 4px;
+$border-radius-large: 12px;
+$border-radius-circle: 50%;
 
-// 字体大小
-$font-size-extra-small: 12px;
-$font-size-small: 13px;
+// 字体大小 - 优化层级
+$font-size-extra-small: 11px;
+$font-size-small: 12px;
 $font-size-base: 14px;
 $font-size-medium: 16px;
 $font-size-large: 18px;
-$font-size-extra-large: 20px;
+$font-size-extra-large: 22px;
+$font-size-title: 24px;
+$font-size-display: 32px;
 
-// 间距
+// 字体家族 - 数据可视化优化
+$font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+  'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+$font-family-number: 'DIN', 'Courier New', 'Monaco', 'Consolas', monospace; // 数字字体
+
+// 间距 - 8px 基准系统
 $spacing-mini: 4px;
 $spacing-small: 8px;
 $spacing-base: 16px;
 $spacing-large: 24px;
+$spacing-extra-large: 32px;
 
 // 布局尺寸
 $sidebar-width: 210px;

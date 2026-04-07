@@ -759,7 +759,12 @@ func (e *CronExpression) GetDescription() string {
 	// 周
 	if e.Weekday.Value != "*" && e.Weekday.Value != "?" {
 		weekdays := []string{"周日", "周一", "周二", "周三", "周四", "周五", "周六"}
-		desc += fmt.Sprintf("每%s ", weekdays[e.Weekday.Values[0]])
+		for k, v := range e.Weekday.Values {
+			if v {
+				desc += fmt.Sprintf("每%s ", weekdays[k])
+				break
+			}
+		}
 	}
 
 	return strings.TrimSpace(desc)

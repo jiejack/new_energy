@@ -723,7 +723,7 @@ func ln(x float64) float64 {
 	// 使用近似值
 	result := 0.0
 	for i := 1; i <= 100; i++ {
-		result += pow(-1, i+1) * pow(x-1, i) / float64(i)
+		result += pow(-1.0, float64(i+1)) * pow(x-1, float64(i)) / float64(i)
 	}
 	return result
 }

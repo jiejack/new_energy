@@ -321,7 +321,8 @@ import {
 } from '@/api/point'
 import { getAllDevices } from '@/api/device'
 import type { Point, PointType, DataType, Device } from '@/types'
-import type { FormRules, UploadInstance, UploadProps, UploadUserFile } from 'element-plus'
+import type { FormRules, UploadProps } from 'element-plus'
+import { pointTypeMapper, dataTypeMapper } from '@/utils/enums'
 
 const loading = ref(false)
 const tableData = ref<Point[]>([])
@@ -336,7 +337,6 @@ const currentPoint = ref<Point | null>(null)
 const realtimeData = ref<{ value: number; quality: number; timestamp: number } | null>(null)
 const importVisible = ref(false)
 const importLoading = ref(false)
-const uploadRef = ref<UploadInstance>()
 const uploadFile = ref<File | null>(null)
 
 const queryParams = reactive({
@@ -579,8 +579,8 @@ const handleImport = () => {
 }
 
 // 文件变化
-const handleFileChange: UploadProps['onChange'] = (uploadFile) => {
-  uploadFile.value = uploadFile.raw as File
+const handleFileChange: UploadProps['onChange'] = (file) => {
+  uploadFile.value = file.raw as File
 }
 
 // 文件超出限制
@@ -637,36 +637,9 @@ const handleSubmit = async (data: any) => {
   }
 }
 
-// 获取类型名称
-const getTypeName = (type?: PointType) => {
-  const typeMap: Record<PointType, string> = {
-    analog: '模拟量',
-    digital: '数字量',
-    pulse: '脉冲量'
-  }
-  return type ? typeMap[type] : '-'
-}
-
-// 获取类型标签类型
-const getTypeTagType = (type?: PointType) => {
-  const tagMap: Record<PointType, any> = {
-    analog: 'primary',
-    digital: 'success',
-    pulse: 'warning'
-  }
-  return type ? tagMap[type] : ''
-}
-
-// 获取数据类型名称
-const getDataTypeName = (dataType?: DataType) => {
-  const typeMap: Record<DataType, string> = {
-    float: '浮点数',
-    int: '整数',
-    bool: '布尔值',
-    string: '字符串'
-  }
-  return dataType ? typeMap[dataType] : '-'
-}
+const getTypeName = (type?: PointType) => pointTypeMapper.getLabel(type)
+const getTypeTagType = (type?: PointType) => pointTypeMapper.getTagType(type)
+const getDataTypeName = (dataType?: DataType) => dataTypeMapper.getLabel(dataType)
 
 onMounted(() => {
   fetchDeviceList()

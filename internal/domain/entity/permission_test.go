@@ -8,33 +8,33 @@ import (
 
 func TestNewPermission(t *testing.T) {
 	tests := []struct {
-		name string
-		code string
-		name string
-		want *Permission
+		testName string
+		code     string
+		permName string
+		want     *Permission
 	}{
 		{
-			name: "创建用户查看权限",
-			code: "user:read",
-			name: "查看用户",
+			testName: "创建用户查看权限",
+			code:     "user:read",
+			permName: "查看用户",
 			want: &Permission{
 				Code: "user:read",
 				Name: "查看用户",
 			},
 		},
 		{
-			name: "创建设备控制权限",
-			code: "device:control",
-			name: "设备控制",
+			testName: "创建设备控制权限",
+			code:     "device:control",
+			permName: "设备控制",
 			want: &Permission{
 				Code: "device:control",
 				Name: "设备控制",
 			},
 		},
 		{
-			name: "创建告警确认权限",
-			code: "alarm:ack",
-			name: "告警确认",
+			testName: "创建告警确认权限",
+			code:     "alarm:ack",
+			permName: "告警确认",
 			want: &Permission{
 				Code: "alarm:ack",
 				Name: "告警确认",
@@ -43,8 +43,8 @@ func TestNewPermission(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := NewPermission(tt.code, tt.name)
+		t.Run(tt.testName, func(t *testing.T) {
+			got := NewPermission(tt.code, tt.permName)
 			assert.Equal(t, tt.want.Code, got.Code)
 			assert.Equal(t, tt.want.Name, got.Name)
 		})

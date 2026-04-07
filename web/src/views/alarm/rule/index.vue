@@ -197,15 +197,17 @@ import {
   createAlarmRule,
   updateAlarmRule,
   deleteAlarmRule,
-} from '@/api/alarm'
+  type AlarmRule as ApiAlarmRule,
+} from '@/api/alarm-rule'
 import { getPointList } from '@/api/point'
 import type { Point, AlarmLevel } from '@/types'
 import dayjs from 'dayjs'
+import { alarmLevelMapper } from '@/utils/enums'
 
 interface AlarmRule {
-  id: number
+  id: string
   name: string
-  pointId: number
+  pointId: number | undefined
   pointName: string
   operator: string
   threshold: number
@@ -234,7 +236,7 @@ const pagination = reactive({
 })
 
 const ruleForm = reactive({
-  id: 0,
+  id: '',
   name: '',
   pointId: undefined as number | undefined,
   operator: '>' as string,
@@ -263,27 +265,8 @@ const rules: FormRules = {
   title: [{ required: true, message: '请输入告警标题', trigger: 'blur' }],
 }
 
-// 获取级别标签类型
-const getLevelTagType = (level: AlarmLevel): 'danger' | 'warning' | 'info' | '' => {
-  const typeMap: Record<AlarmLevel, 'danger' | 'warning' | 'info' | ''> = {
-    critical: 'danger',
-    major: 'warning',
-    minor: 'info',
-    warning: '',
-  }
-  return typeMap[level]
-}
-
-// 获取级别文本
-const getLevelText = (level: AlarmLevel): string => {
-  const textMap: Record<AlarmLevel, string> = {
-    critical: '严重',
-    major: '主要',
-    minor: '次要',
-    warning: '警告',
-  }
-  return textMap[level]
-}
+const getLevelTagType = (level: AlarmLevel) => alarmLevelMapper.getTagType(level)
+const getLevelText = (level: AlarmLevel) => alarmLevelMapper.getLabel(level)
 
 // 获取条件文本
 const getConditionText = (rule: AlarmRule): string => {
@@ -317,44 +300,26 @@ const fetchPointList = async () => {
 const fetchRuleList = async () => {
   loading.value = true
   try {
-    await getAlarmRuleList({
+    const result = await getAlarmRuleList({
       page: pagination.page,
       pageSize: pagination.pageSize,
     })
-    // 模拟数据
-    ruleList.value = [
-      {
-        id: 1,
-        name: '逆变器温度过高告警',
-        pointId: 1,
-        pointName: '逆变器温度',
-        operator: '>',
-        threshold: 80,
-        duration: 60,
-        level: 'critical',
-        title: '逆变器温度过高',
-        content: '{pointName}当前值{value}，超过阈值{threshold}',
-        notifyChannels: ['sms', 'email'],
-        enabled: true,
-        createdAt: '2024-01-01 10:00:00',
-      },
-      {
-        id: 2,
-        name: '功率异常告警',
-        pointId: 2,
-        pointName: '输出功率',
-        operator: '<',
-        threshold: 100,
-        duration: 300,
-        level: 'major',
-        title: '输出功率过低',
-        content: '{pointName}当前值{value}，低于阈值{threshold}',
-        notifyChannels: ['email'],
-        enabled: true,
-        createdAt: '2024-01-02 10:00:00',
-      },
-    ] as AlarmRule[]
-    pagination.total = 2
+    ruleList.value = result.list.map((rule: ApiAlarmRule) => ({
+      id: rule.id,
+      name: rule.name,
+      pointId: rule.point_id ? Number(rule.point_id) : undefined,
+      pointName: rule.point_id || '-',
+      operator: rule.condition.split(' ')[0] || '>',
+      threshold: rule.threshold,
+      duration: rule.duration,
+      level: ['critical', 'major', 'minor', 'warning'][rule.level - 1] as AlarmLevel || 'warning',
+      title: rule.name,
+      content: rule.description,
+      notifyChannels: rule.notify_channels || [],
+      enabled: rule.status === 1,
+      createdAt: rule.created_at,
+    }))
+    pagination.total = result.total
   } catch (error: any) {
     ElMessage.error(error.message || '获取规则列表失败')
   } finally {
@@ -366,7 +331,7 @@ const fetchRuleList = async () => {
 const handleAdd = () => {
   isEdit.value = false
   Object.assign(ruleForm, {
-    id: 0,
+    id: '',
     name: '',
     pointId: undefined,
     operator: '>',
@@ -419,7 +384,19 @@ const handleDelete = async (row: AlarmRule) => {
 // 状态变更
 const handleStatusChange = async (row: AlarmRule) => {
   try {
-    await updateAlarmRule(row.id, { enabled: row.enabled })
+    await updateAlarmRule(row.id, {
+      id: row.id,
+      name: row.name,
+      description: row.content,
+      type: 'threshold',
+      level: ['critical', 'major', 'minor', 'warning'].indexOf(row.level) + 1,
+      condition: row.operator,
+      threshold: row.threshold,
+      duration: row.duration,
+      point_id: row.pointId?.toString(),
+      notify_channels: row.notifyChannels,
+      notify_users: [],
+    })
     ElMessage.success(row.enabled ? '已启用' : '已禁用')
   } catch (error: any) {
     row.enabled = !row.enabled
@@ -470,17 +447,24 @@ const handleSubmit = async () => {
 
     submitLoading.value = true
     try {
-      const point = pointList.value.find((p) => p.id === ruleForm.pointId)
-      const data = {
-        ...ruleForm,
-        pointName: point?.name || '',
+      const apiData = {
+        name: ruleForm.name,
+        description: ruleForm.content,
+        type: 'threshold',
+        level: ['critical', 'major', 'minor', 'warning'].indexOf(ruleForm.level) + 1,
+        condition: ruleForm.operator,
+        threshold: ruleForm.threshold,
+        duration: ruleForm.duration,
+        point_id: ruleForm.pointId?.toString(),
+        notify_channels: ruleForm.notifyChannels,
+        notify_users: [],
       }
 
       if (isEdit.value) {
-        await updateAlarmRule(ruleForm.id, data)
+        await updateAlarmRule(ruleForm.id, { ...apiData, id: ruleForm.id })
         ElMessage.success('更新成功')
       } else {
-        await createAlarmRule(data)
+        await createAlarmRule(apiData)
         ElMessage.success('创建成功')
       }
 

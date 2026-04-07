@@ -16,10 +16,11 @@ import (
 )
 
 var (
-	ErrEmailConfigInvalid   = errors.New("email config is invalid")
-	ErrEmailRecipientEmpty  = errors.New("email recipient is empty")
+	ErrEmailConfigInvalid    = errors.New("email config is invalid")
+	ErrEmailRecipientEmpty   = errors.New("email recipient is empty")
 	ErrEmailSendFailed      = errors.New("email send failed")
 	ErrEmailTemplateInvalid = errors.New("email template is invalid")
+	ErrEmailRateLimitExceeded = errors.New("email rate limit exceeded")
 )
 
 // EmailNotifier 邮件通知器
@@ -550,7 +551,7 @@ func (e *EmailNotifier) RenderEmailTemplate(templateID string, data map[string]i
 			return nil, ErrEmailTemplateInvalid
 		}
 
-		templateContent, err := e.templateMgr.Get(templateID)
+		templateContent, err := e.templateMgr.Get(context.Background(), templateID)
 		if err != nil {
 			return nil, err
 		}

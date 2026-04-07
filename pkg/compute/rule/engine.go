@@ -273,9 +273,13 @@ func (e *RuleEngine) UnloadRule(ruleID string) error {
 
 	// 删除索引
 	if rule.PointID != "" {
-		e.removeFromSlice(&e.byPoint[rule.PointID], ruleID)
+		slice := e.byPoint[rule.PointID]
+		e.removeFromSlice(&slice, ruleID)
+		e.byPoint[rule.PointID] = slice
 	}
-	e.removeFromSlice(&e.byType[rule.Type], ruleID)
+	slice := e.byType[rule.Type]
+	e.removeFromSlice(&slice, ruleID)
+	e.byType[rule.Type] = slice
 
 	delete(e.rules, ruleID)
 
@@ -811,9 +815,13 @@ func (e *RuleEngine) validateRule(rule *Rule) error {
 func (e *RuleEngine) updateIndex(oldRule, newRule *Rule) {
 	// 删除旧索引
 	if oldRule.PointID != "" {
-		e.removeFromSlice(&e.byPoint[oldRule.PointID], oldRule.ID)
+		slice := e.byPoint[oldRule.PointID]
+		e.removeFromSlice(&slice, oldRule.ID)
+		e.byPoint[oldRule.PointID] = slice
 	}
-	e.removeFromSlice(&e.byType[oldRule.Type], oldRule.ID)
+	slice := e.byType[oldRule.Type]
+	e.removeFromSlice(&slice, oldRule.ID)
+	e.byType[oldRule.Type] = slice
 
 	// 添加新索引
 	if newRule.PointID != "" {

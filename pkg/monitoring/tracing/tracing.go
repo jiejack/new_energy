@@ -61,7 +61,7 @@ func NewTracerProvider(cfg *Config, logger *zap.Logger) (*TracerProvider, error)
 		logger.Info("tracing is disabled, using no-op tracer")
 		return &TracerProvider{
 			provider: nil,
-			tracer:   trace.NoopTracerProvider{}.Tracer(cfg.ServiceName),
+			tracer:   trace.NewNoopTracerProvider().Tracer(cfg.ServiceName),
 			config:   cfg,
 			logger:   logger,
 		}, nil
@@ -320,7 +320,7 @@ func (sb *SpanBuilder) Build(ctx context.Context, tp *TracerProvider) (context.C
 	}
 
 	for _, link := range sb.links {
-		opts = append(opts, trace.WithLink(link.SpanContext, link.Attributes...))
+		opts = append(opts, trace.WithLinks(trace.Link{SpanContext: link.SpanContext, Attributes: link.Attributes}))
 	}
 
 	ctx, span := tp.tracer.Start(ctx, sb.name, opts...)

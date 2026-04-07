@@ -1,0 +1,135 @@
+# Alertmanager 配置文件
+# 新能源监控系统
+
+global:
+  # SMTP 配置 (邮件通知)
+  smtp_smarthost: 'smtp.example.com:587'
+  smtp_from: 'alertmanager@example.com'
+  smtp_auth_username: 'alertmanager@example.com'
+  smtp_auth_password: 'your-password'
+  smtp_require_tls: true
+
+  # Slack 配置 (可选)
+  # slack_api_url: 'https://hooks.slack.com/services/xxx'
+
+  # 解决时间窗口
+  resolve_timeout: 5m
+
+# 告警模板
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# 路由配置
+route:
+  # 默认接收器
+  receiver: 'default-receiver'
+  
+  # 分组标签
+  group_by: ['alertname', 'cluster', 'service']
+  
+  # 首次告警等待时间
+  group_wait: 30s
+  
+  # 同组告警间隔时间
+  group_interval: 5m
+  
+  # 重复告警间隔时间
+  repeat_interval: 4h
+  
+  # 子路由配置
+  routes:
+    # 严重告警 - 立即通知
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      group_wait: 10s
+      repeat_interval: 1h
+      continue: true
+
+    # API 服务告警
+    - match:
+        service: api-server
+      receiver: 'api-team'
+      group_by: ['alertname', 'instance']
+      
+    # 数据库告警
+    - match:
+        service: postgresql
+      receiver: 'database-team'
+      group_by: ['alertname', 'instance']
+      
+    # 系统告警
+    - match:
+        component: system
+      receiver: 'ops-team'
+      group_by: ['alertname', 'instance']
+
+# 接收器配置
+receivers:
+  # 默认接收器
+  - name: 'default-receiver'
+    email_configs:
+      - to: 'team@example.com'
+        send_resolved: true
+        html: '{{ template "email.default.html" . }}'
+
+  # 严重告警接收器
+  - name: 'critical-alerts'
+    email_configs:
+      - to: 'oncall@example.com'
+        send_resolved: true
+    # Slack 配置 (可选)
+    # slack_configs:
+    #   - channel: '#critical-alerts'
+    #     send_resolved: true
+    #     title: '{{ template "slack.title" . }}'
+    #     text: '{{ template "slack.text" . }}'
+    # Webhook 配置 (可选)
+    # webhook_configs:
+    #   - url: 'http://webhook-server:5000/alerts'
+    #     send_resolved: true
+
+  # API 团队接收器
+  - name: 'api-team'
+    email_configs:
+      - to: 'api-team@example.com'
+        send_resolved: true
+
+  # 数据库团队接收器
+  - name: 'database-team'
+    email_configs:
+      - to: 'dba@example.com'
+        send_resolved: true
+
+  # 运维团队接收器
+  - name: 'ops-team'
+    email_configs:
+      - to: 'ops@example.com'
+        send_resolved: true
+
+# 抑制规则
+inhibit_rules:
+  # 如果服务宕机，抑制该服务的其他告警
+  - source_match:
+      severity: 'critical'
+      alertname: 'APIServiceDown'
+    target_match:
+      severity: 'warning'
+      service: 'api-server'
+    equal: ['instance']
+    
+  # 如果节点宕机，抑制该节点的其他告警
+  - source_match:
+      severity: 'critical'
+      alertname: 'NodeDown'
+    target_match:
+      severity: 'warning'
+    equal: ['instance']
+    
+  # 如果数据库宕机，抑制数据库相关的其他告警
+  - source_match:
+      severity: 'critical'
+      alertname: 'PostgreSQLDown'
+    target_match:
+      service: 'postgresql'
+    equal: ['instance']

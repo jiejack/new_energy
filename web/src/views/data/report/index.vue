@@ -207,7 +207,9 @@ import { ElMessage } from 'element-plus'
 import { Search, Download } from '@element-plus/icons-vue'
 import { echarts } from '@/plugins/echarts'
 import { getAllStations } from '@/api/station'
+import { generateReport, exportReport } from '@/api/report'
 import type { Station } from '@/types'
+import { deviceTypeMapper } from '@/utils/enums'
 
 interface ReportData {
   power: {
@@ -270,16 +272,8 @@ const reportTitle = computed(() => {
   }
 })
 
-// 获取设备类型名称
 const getDeviceTypeName = (type: string): string => {
-  const typeMap: Record<string, string> = {
-    inverter: '逆变器',
-    meter: '电表',
-    sensor: '传感器',
-    controller: '控制器',
-    combiner: '汇流箱',
-  }
-  return typeMap[type] || type
+  return deviceTypeMapper.getLabel(type as any) || type
 }
 
 // 格式化时长
@@ -309,12 +303,41 @@ const fetchStationList = async () => {
 const handleQuery = async () => {
   loading.value = true
   try {
-    // 模拟报表数据
+    let startTime: string
+    let endTime: string
+
+    switch (queryForm.reportType) {
+      case 'daily':
+        startTime = queryForm.date
+        endTime = queryForm.date
+        break
+      case 'monthly':
+        startTime = queryForm.month + '-01'
+        const monthDate = new Date(queryForm.month + '-01')
+        endTime = queryForm.month + '-' + new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).getDate()
+        break
+      case 'yearly':
+        startTime = queryForm.year + '-01-01'
+        endTime = queryForm.year + '-12-31'
+        break
+      default:
+        startTime = queryForm.date
+        endTime = queryForm.date
+    }
+
+    const apiData = await generateReport({
+      type: queryForm.reportType,
+      start_time: startTime,
+      end_time: endTime,
+      station_id: queryForm.stationId,
+    })
+
+    // 转换API数据到本地格式
     const mockData: ReportData = {
       power: {
-        total: 125680.5,
-        peak: 8500.2,
-        average: 5236.7,
+        total: apiData.summary?.total_power || 0,
+        peak: apiData.stations?.[0]?.total_power || 0,
+        average: apiData.summary?.total_power ? apiData.summary.total_power / (apiData.stations?.length || 1) : 0,
         maxPower: 1250.8,
       },
       deviceStats: [
@@ -347,7 +370,7 @@ const handleQuery = async () => {
         critical: 2,
         major: 5,
         minor: 12,
-        warning: 28,
+        warning: apiData.summary?.total_alarms || 0,
       },
       powerTrend: generateMockPowerTrend(),
       alarmDistribution: [
@@ -517,12 +540,55 @@ const renderCharts = () => {
 }
 
 // 导出报表
-const handleExport = () => {
+const handleExport = async () => {
   if (!reportData.value) {
     ElMessage.warning('暂无数据可导出')
     return
   }
-  ElMessage.success('报表导出功能开发中...')
+  try {
+    let startTime: string
+    let endTime: string
+
+    switch (queryForm.reportType) {
+      case 'daily':
+        startTime = queryForm.date
+        endTime = queryForm.date
+        break
+      case 'monthly':
+        startTime = queryForm.month + '-01'
+        const monthDate = new Date(queryForm.month + '-01')
+        endTime = queryForm.month + '-' + new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).getDate()
+        break
+      case 'yearly':
+        startTime = queryForm.year + '-01-01'
+        endTime = queryForm.year + '-12-31'
+        break
+      default:
+        startTime = queryForm.date
+        endTime = queryForm.date
+    }
+
+    const blob = await exportReport({
+      type: queryForm.reportType,
+      start_time: startTime,
+      end_time: endTime,
+      station_id: queryForm.stationId,
+      format: 'excel',
+    })
+
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `报表_${queryForm.date}.xlsx`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+
+    ElMessage.success('报表导出成功')
+  } catch (error: any) {
+    ElMessage.error(error.message || '导出失败')
+  }
 }
 
 // 处理窗口大小变化

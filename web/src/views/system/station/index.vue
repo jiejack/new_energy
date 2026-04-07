@@ -331,12 +331,12 @@ import {
   deleteStation,
   batchDeleteStations,
   updateStationStatus,
-  getStationStatistics,
-  getAllStations
+  getStationStatistics
 } from '@/api/station'
 import { getRegionTree } from '@/api/region'
 import type { Station, StationType, StationStatus, Region } from '@/types'
 import type { FormRules } from 'element-plus'
+import { stationTypeMapper, stationStatusMapper } from '@/utils/enums'
 
 const loading = ref(false)
 const tableData = ref<Station[]>([])
@@ -651,49 +651,10 @@ const handleSubmit = async (data: any) => {
   }
 }
 
-// 获取类型名称
-const getTypeName = (type?: StationType) => {
-  const typeMap: Record<StationType, string> = {
-    solar: '光伏',
-    wind: '风电',
-    hydro: '水电',
-    storage: '储能'
-  }
-  return type ? typeMap[type] : '-'
-}
-
-// 获取类型标签类型
-const getTypeTagType = (type?: StationType) => {
-  const tagMap: Record<StationType, any> = {
-    solar: 'warning',
-    wind: 'success',
-    hydro: 'primary',
-    storage: 'info'
-  }
-  return type ? tagMap[type] : ''
-}
-
-// 获取状态名称
-const getStatusName = (status?: StationStatus) => {
-  const statusMap: Record<StationStatus, string> = {
-    online: '在线',
-    offline: '离线',
-    maintenance: '维护',
-    fault: '故障'
-  }
-  return status ? statusMap[status] : '-'
-}
-
-// 获取状态标签类型
-const getStatusTagType = (status?: StationStatus) => {
-  const tagMap: Record<StationStatus, any> = {
-    online: 'success',
-    offline: 'info',
-    maintenance: 'warning',
-    fault: 'danger'
-  }
-  return status ? tagMap[status] : ''
-}
+const getTypeName = (type?: StationType) => stationTypeMapper.getLabel(type)
+const getTypeTagType = (type?: StationType) => stationTypeMapper.getTagType(type)
+const getStatusName = (status?: StationStatus) => stationStatusMapper.getLabel(status)
+const getStatusTagType = (status?: StationStatus) => stationStatusMapper.getTagType(status)
 
 onMounted(() => {
   fetchRegionTree()

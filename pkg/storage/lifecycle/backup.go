@@ -706,8 +706,10 @@ func (bm *BackupManager) doBackup(ctx context.Context, record *BackupRecord, pol
 	hashWriter := sha256.New()
 
 	if policy.Compression {
-		gzWriter := gzip.NewWriter(file)
-		gzWriter.Level = bm.config.CompressionLevel
+		gzWriter, err := gzip.NewWriterLevel(file, bm.config.CompressionLevel)
+		if err != nil {
+			return fmt.Errorf("failed to create gzip writer: %w", err)
+		}
 		defer gzWriter.Close()
 		writer = io.MultiWriter(gzWriter, hashWriter)
 	} else {

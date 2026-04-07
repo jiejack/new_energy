@@ -262,12 +262,12 @@ import {
   deleteDevice,
   batchDeleteDevices,
   updateDeviceStatus,
-  getDeviceRealtimeData,
-  getAllDevices
+  getDeviceRealtimeData
 } from '@/api/device'
 import { getAllStations } from '@/api/station'
 import type { Device, DeviceType, DeviceStatus, Station } from '@/types'
 import type { FormRules } from 'element-plus'
+import { deviceTypeMapper, deviceStatusMapper } from '@/utils/enums'
 
 const loading = ref(false)
 const tableData = ref<Device[]>([])
@@ -556,51 +556,10 @@ const handleSubmit = async (data: any) => {
   }
 }
 
-// 获取类型名称
-const getTypeName = (type?: DeviceType) => {
-  const typeMap: Record<DeviceType, string> = {
-    inverter: '逆变器',
-    meter: '电表',
-    sensor: '传感器',
-    controller: '控制器',
-    combiner: '汇流箱'
-  }
-  return type ? typeMap[type] : '-'
-}
-
-// 获取类型标签类型
-const getTypeTagType = (type?: DeviceType) => {
-  const tagMap: Record<DeviceType, any> = {
-    inverter: 'primary',
-    meter: 'success',
-    sensor: 'warning',
-    controller: 'danger',
-    combiner: 'info'
-  }
-  return type ? tagMap[type] : ''
-}
-
-// 获取状态名称
-const getStatusName = (status?: DeviceStatus) => {
-  const statusMap: Record<DeviceStatus, string> = {
-    online: '在线',
-    offline: '离线',
-    maintenance: '维护',
-    fault: '故障'
-  }
-  return status ? statusMap[status] : '-'
-}
-
-// 获取状态标签类型
-const getStatusTagType = (status?: DeviceStatus) => {
-  const tagMap: Record<DeviceStatus, any> = {
-    online: 'success',
-    offline: 'info',
-    maintenance: 'warning',
-    fault: 'danger'
-  }
-  return status ? tagMap[status] : ''
-}
+const getTypeName = (type?: DeviceType) => deviceTypeMapper.getLabel(type)
+const getTypeTagType = (type?: DeviceType) => deviceTypeMapper.getTagType(type)
+const getStatusName = (status?: DeviceStatus) => deviceStatusMapper.getLabel(status)
+const getStatusTagType = (status?: DeviceStatus) => deviceStatusMapper.getTagType(status)
 
 onMounted(() => {
   fetchStationList()

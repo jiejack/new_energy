@@ -6,7 +6,6 @@ import (
 	"regexp"
 	"strings"
 	"sync"
-	"time"
 )
 
 // ConfigType 配置类型

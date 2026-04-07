@@ -119,7 +119,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useAppStore } from '@/stores/app'
 import { asyncRoutes } from '@/router'
-import type { RouteRecordRaw } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()

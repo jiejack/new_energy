@@ -326,16 +326,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import type { AlarmLevel } from '@/types'
 import dayjs from 'dayjs'
+import {
+  getNotificationConfigs,
+  updateNotificationConfig,
+  enableNotificationConfig,
+  disableNotificationConfig,
+  testNotificationConfig,
+  type NotificationConfig,
+  type NotificationType,
+} from '@/api/notification'
 
-type ChannelType = 'sms' | 'email' | 'dingtalk'
+type ChannelType = 'sms' | 'email' | 'dingtalk' | 'webhook' | 'wechat'
 
 interface Channel {
-  id: number
+  id: string
   name: string
   type: ChannelType
   config: Record<string, any>
@@ -367,45 +376,10 @@ const templateDialogVisible = ref(false)
 const notifyRuleDialogVisible = ref(false)
 const isEditTemplate = ref(false)
 const isEditNotifyRule = ref(false)
+const loading = ref(false)
 
 // 渠道列表
-const channelList = ref<Channel[]>([
-  {
-    id: 1,
-    name: '短信通知',
-    type: 'sms',
-    config: {
-      accessKey: '',
-      accessSecret: '',
-      signature: '新能源监控',
-      templateCode: '',
-    },
-    enabled: true,
-  },
-  {
-    id: 2,
-    name: '邮件通知',
-    type: 'email',
-    config: {
-      smtpServer: 'smtp.example.com',
-      smtpPort: 465,
-      sender: 'noreply@example.com',
-      password: '',
-      useSSL: true,
-    },
-    enabled: true,
-  },
-  {
-    id: 3,
-    name: '钉钉通知',
-    type: 'dingtalk',
-    config: {
-      webhook: 'https://oapi.dingtalk.com/robot/send?access_token=xxx',
-      secret: '',
-    },
-    enabled: false,
-  },
-])
+const channelList = ref<Channel[]>([])
 
 // 模板列表
 const templateList = ref<Template[]>([
@@ -451,7 +425,7 @@ const notifyRuleList = ref<NotifyRule[]>([
 
 // 表单数据
 const channelForm = reactive<Channel>({
-  id: 0,
+  id: '',
   name: '',
   type: 'sms',
   config: {},
@@ -482,16 +456,20 @@ const getChannelTypeName = (type: ChannelType): string => {
     sms: '短信',
     email: '邮件',
     dingtalk: '钉钉',
+    webhook: 'Webhook',
+    wechat: '微信',
   }
   return nameMap[type]
 }
 
 // 获取渠道标签类型
-const getChannelTagType = (type: ChannelType): 'primary' | 'success' | 'warning' => {
-  const typeMap: Record<ChannelType, 'primary' | 'success' | 'warning'> = {
+const getChannelTagType = (type: ChannelType): 'primary' | 'success' | 'warning' | 'info' => {
+  const typeMap: Record<ChannelType, 'primary' | 'success' | 'warning' | 'info'> = {
     sms: 'primary',
     email: 'success',
     dingtalk: 'warning',
+    webhook: 'info',
+    wechat: 'success',
   }
   return typeMap[type]
 }
@@ -523,6 +501,25 @@ const formatTime = (time: string): string => {
   return dayjs(time).format('YYYY-MM-DD HH:mm:ss')
 }
 
+// 获取通知配置列表
+const fetchNotificationConfigs = async () => {
+  loading.value = true
+  try {
+    const configs = await getNotificationConfigs()
+    channelList.value = configs.map((config: NotificationConfig) => ({
+      id: config.id,
+      name: config.name,
+      type: config.type as ChannelType,
+      config: config.config,
+      enabled: config.enabled,
+    }))
+  } catch (error: any) {
+    ElMessage.error(error.message || '获取通知配置失败')
+  } finally {
+    loading.value = false
+  }
+}
+
 // 编辑渠道
 const handleEditChannel = (row: Channel) => {
   Object.assign(channelForm, row)
@@ -532,32 +529,51 @@ const handleEditChannel = (row: Channel) => {
 // 测试渠道
 const handleTestChannel = async (row: Channel) => {
   try {
-    await ElMessageBox.prompt('请输入测试接收地址', '测试通知', {
+    const { value } = await ElMessageBox.prompt('请输入测试接收地址', '测试通知', {
       confirmButtonText: '发送',
       cancelButtonText: '取消',
       inputPattern: row.type === 'email' ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/ : /^1[3-9]\d{9}$/,
       inputErrorMessage: row.type === 'email' ? '请输入正确的邮箱地址' : '请输入正确的手机号',
     })
+    await testNotificationConfig(row.type as NotificationType, value)
     ElMessage.success('测试通知已发送')
-  } catch (error) {
-    // 用户取消
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      ElMessage.error(error.message || '测试发送失败')
+    }
   }
 }
 
 // 切换渠道状态
 const handleToggleChannel = async (row: Channel) => {
-  row.enabled = !row.enabled
-  ElMessage.success(row.enabled ? '已启用' : '已禁用')
+  try {
+    if (row.enabled) {
+      await disableNotificationConfig(row.type as NotificationType)
+      row.enabled = false
+      ElMessage.success('已禁用')
+    } else {
+      await enableNotificationConfig(row.type as NotificationType)
+      row.enabled = true
+      ElMessage.success('已启用')
+    }
+  } catch (error: any) {
+    ElMessage.error(error.message || '操作失败')
+  }
 }
 
 // 保存渠道
-const handleSaveChannel = () => {
-  const index = channelList.value.findIndex((c) => c.id === channelForm.id)
-  if (index > -1) {
-    channelList.value[index] = { ...channelForm }
+const handleSaveChannel = async () => {
+  try {
+    await updateNotificationConfig(channelForm.type as NotificationType, channelForm.config)
+    const index = channelList.value.findIndex((c) => c.id === channelForm.id)
+    if (index > -1) {
+      channelList.value[index] = { ...channelForm }
+    }
+    channelDialogVisible.value = false
+    ElMessage.success('保存成功')
+  } catch (error: any) {
+    ElMessage.error(error.message || '保存失败')
   }
-  channelDialogVisible.value = false
-  ElMessage.success('保存成功')
 }
 
 // 新增模板
@@ -669,6 +685,11 @@ const handleSaveNotifyRule = () => {
   notifyRuleDialogVisible.value = false
   ElMessage.success('保存成功')
 }
+
+// 初始化
+onMounted(() => {
+  fetchNotificationConfigs()
+})
 </script>
 
 <style scoped lang="scss">

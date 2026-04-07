@@ -476,37 +476,72 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+/* ============================================
+   新能源监控系统 - Dashboard 样式
+   ============================================ */
 .dashboard-container {
   width: 100%;
   height: 100vh;
-  background: linear-gradient(135deg, #1a1f2e 0%, #0d1117 100%);
-  color: #e5eaf3;
+  background: linear-gradient(135deg, #0d1117 0%, #080b0f 100%);
+  color: $text-primary;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
+
+  /* 背景装饰 - 电网纹理 */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      linear-gradient(rgba(0, 212, 170, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 212, 170, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: 0;
+  }
 }
 
 // 顶部标题栏
 .dashboard-header {
   height: 60px;
-  background: linear-gradient(90deg, rgba(32, 45, 65, 0.95) 0%, rgba(20, 30, 48, 0.95) 100%);
-  border-bottom: 1px solid rgba(64, 158, 255, 0.3);
+  background: linear-gradient(90deg, rgba(26, 31, 46, 0.95) 0%, rgba(13, 17, 23, 0.95) 100%);
+  border-bottom: 1px solid rgba(0, 212, 170, 0.3);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  position: relative;
+  z-index: 10;
+
+  /* 顶部装饰线 */
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: $gradient-primary;
+    box-shadow: 0 0 10px rgba(0, 212, 170, 0.5);
+  }
 
   .header-left {
     .title {
       font-size: 24px;
       font-weight: bold;
-      background: linear-gradient(90deg, #409eff, #67c23a);
+      background: $gradient-primary;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
       margin: 0;
       letter-spacing: 2px;
+      text-shadow: 0 0 20px rgba(0, 212, 170, 0.3);
     }
   }
 
@@ -518,18 +553,19 @@ onUnmounted(() => {
       font-size: 16px;
 
       .date {
-        color: #909399;
+        color: $text-secondary;
       }
 
       .time {
         font-size: 24px;
         font-weight: bold;
-        color: #409eff;
-        font-family: 'Courier New', monospace;
+        color: $primary-color;
+        font-family: $font-family-number;
+        text-shadow: 0 0 10px rgba(0, 212, 170, 0.5);
       }
 
       .week {
-        color: #67c23a;
+        color: $success-color;
       }
     }
   }
@@ -542,19 +578,21 @@ onUnmounted(() => {
       cursor: pointer;
       padding: 5px 15px;
       border-radius: 20px;
-      transition: background-color 0.3s;
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
 
       &:hover {
-        background-color: rgba(255, 255, 255, 0.1);
+        background-color: rgba(0, 212, 170, 0.1);
+        border-color: rgba(0, 212, 170, 0.3);
       }
 
       .username {
-        color: #e5eaf3;
+        color: $text-primary;
         font-size: 14px;
       }
 
       .arrow {
-        color: #909399;
+        color: $text-secondary;
         font-size: 12px;
       }
     }
@@ -568,17 +606,39 @@ onUnmounted(() => {
   gap: 15px;
   padding: 15px;
   overflow: hidden;
+  position: relative;
+  z-index: 1;
 }
 
-// 面板通用样式
+// 面板通用样式 - 新能源监控专用
 .panel {
-  background: linear-gradient(135deg, rgba(32, 45, 65, 0.8) 0%, rgba(20, 30, 48, 0.9) 100%);
-  border: 1px solid rgba(64, 158, 255, 0.2);
-  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.85) 0%, rgba(13, 17, 23, 0.9) 100%);
+  border: 1px solid rgba(0, 212, 170, 0.2);
+  border-radius: $border-radius-base;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: $shadow-light;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  position: relative;
+
+  /* 面板发光效果 */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: $gradient-primary;
+    opacity: 0.5;
+  }
+
+  &:hover {
+    border-color: rgba(0, 212, 170, 0.4);
+    box-shadow: $shadow-glow;
+  }
 
   .panel-header {
     height: 40px;
@@ -586,24 +646,26 @@ onUnmounted(() => {
     align-items: center;
     justify-content: space-between;
     padding: 0 15px;
-    background: rgba(64, 158, 255, 0.1);
-    border-bottom: 1px solid rgba(64, 158, 255, 0.2);
+    background: rgba(0, 212, 170, 0.05);
+    border-bottom: 1px solid rgba(0, 212, 170, 0.15);
     flex-shrink: 0;
 
     .panel-title {
       font-size: 14px;
-      font-weight: bold;
-      color: #409eff;
+      font-weight: 600;
+      color: $primary-color;
       display: flex;
       align-items: center;
       gap: 8px;
+      letter-spacing: 0.5px;
 
       &::before {
         content: '';
         width: 3px;
         height: 14px;
-        background: linear-gradient(180deg, #409eff, #67c23a);
+        background: $gradient-primary;
         border-radius: 2px;
+        box-shadow: 0 0 8px rgba(0, 212, 170, 0.5);
       }
     }
 

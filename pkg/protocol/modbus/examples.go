@@ -71,6 +71,7 @@ func ExampleUsage() {
 	}
 
 	rtuMaster := NewMasterWithSerial(rtuConfig, serialConfig)
+	_ = rtuMaster // 示例代码，实际使用时需要连接
 
 	// 注意：实际使用时需要先打开串口
 	// rtuMaster.Connect(ctx)
@@ -83,6 +84,7 @@ func ExampleUsage() {
 	}
 
 	asciiMaster := NewMasterWithSerial(asciiConfig, serialConfig)
+	_ = asciiMaster // 示例代码，实际使用时需要连接
 
 	// 注意：实际使用时需要先打开串口
 	// asciiMaster.Connect(ctx)

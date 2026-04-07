@@ -114,6 +114,9 @@ function formatNumber(num: number) {
 </script>
 
 <style scoped lang="scss">
+/* ============================================
+   统计卡片 - 新能源监控专用样式
+   ============================================ */
 .stat-cards {
   .stat-grid {
     display: grid;
@@ -127,16 +130,30 @@ function formatNumber(num: number) {
     align-items: center;
     gap: 12px;
     padding: 15px;
-    background: rgba(32, 45, 65, 0.4);
-    border: 1px solid rgba(64, 158, 255, 0.2);
-    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(26, 31, 46, 0.6) 0%, rgba(13, 17, 23, 0.7) 100%);
+    border: 1px solid rgba(0, 212, 170, 0.2);
+    border-radius: $border-radius-base;
     overflow: hidden;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+
+    /* 顶部装饰线 */
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--card-gradient, $gradient-primary);
+      opacity: 0.8;
+    }
 
     &:hover {
-      background: rgba(64, 158, 255, 0.15);
-      border-color: rgba(64, 158, 255, 0.4);
+      background: linear-gradient(135deg, rgba(0, 212, 170, 0.15) 0%, rgba(9, 132, 227, 0.1) 100%);
+      border-color: rgba(0, 212, 170, 0.4);
       transform: translateY(-2px);
+      box-shadow: $shadow-glow;
     }
 
     .card-icon {
@@ -147,6 +164,25 @@ function formatNumber(num: number) {
       justify-content: center;
       border-radius: 10px;
       flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+
+      /* 图标发光效果 */
+      &::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      &:hover::after {
+        opacity: 1;
+      }
     }
 
     .card-content {
@@ -162,19 +198,27 @@ function formatNumber(num: number) {
         .value {
           font-size: 22px;
           font-weight: bold;
-          color: #e5eaf3;
-          font-family: 'DIN', 'Courier New', monospace;
+          color: $text-primary;
+          font-family: $font-family-number;
+          background: var(--card-gradient, $gradient-primary);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          letter-spacing: 0.5px;
         }
 
         .unit {
           font-size: 12px;
-          color: #909399;
+          color: $text-secondary;
+          font-weight: 500;
         }
       }
 
       .card-label {
         font-size: 12px;
-        color: #909399;
+        color: $text-secondary;
+        font-weight: 500;
+        letter-spacing: 0.5px;
       }
     }
 
@@ -185,8 +229,9 @@ function formatNumber(num: number) {
       width: 60px;
       height: 60px;
       border-radius: 50%;
-      opacity: 0.1;
+      opacity: 0.08;
       transform: translate(20px, -20px);
+      filter: blur(10px);
     }
 
     .progress-bar {
@@ -195,77 +240,105 @@ function formatNumber(num: number) {
       left: 0;
       right: 0;
       height: 3px;
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      overflow: hidden;
 
       .progress-fill {
         height: 100%;
+        background: var(--card-gradient, $gradient-primary);
         transition: width 0.5s ease;
+        box-shadow: 0 0 10px rgba(0, 212, 170, 0.5);
       }
     }
 
-    // 不同卡片的样式
+    // 不同卡片的样式 - 新能源主题
     &.capacity {
+      --card-gradient: linear-gradient(135deg, #00d4aa 0%, #00b894 100%);
+
       .card-icon {
-        background: linear-gradient(135deg, #409eff33, #409eff11);
-        color: #409eff;
+        background: linear-gradient(135deg, rgba(0, 212, 170, 0.2) 0%, rgba(0, 184, 148, 0.1) 100%);
+        color: #00d4aa;
+        box-shadow: 0 0 20px rgba(0, 212, 170, 0.3);
       }
 
       .card-decoration {
-        background: #409eff;
+        background: radial-gradient(circle, #00d4aa 0%, transparent 70%);
       }
     }
 
     &.power {
+      --card-gradient: linear-gradient(135deg, #00d4aa 0%, #0984e3 100%);
+
       .card-icon {
-        background: linear-gradient(135deg, #67c23a33, #67c23a11);
-        color: #67c23a;
+        background: linear-gradient(135deg, rgba(0, 212, 170, 0.2) 0%, rgba(9, 132, 227, 0.1) 100%);
+        color: #00d4aa;
+        box-shadow: 0 0 20px rgba(0, 212, 170, 0.3);
+        animation: pulse-glow 2s ease-in-out infinite;
       }
 
       .card-decoration {
-        background: #67c23a;
+        background: radial-gradient(circle, #00d4aa 0%, transparent 70%);
       }
     }
 
     &.energy {
+      --card-gradient: linear-gradient(135deg, #fdcb6e 0%, #f39c12 100%);
+
       .card-icon {
-        background: linear-gradient(135deg, #e6a23c33, #e6a23c11);
-        color: #e6a23c;
+        background: linear-gradient(135deg, rgba(253, 203, 110, 0.2) 0%, rgba(243, 156, 18, 0.1) 100%);
+        color: #fdcb6e;
+        box-shadow: 0 0 20px rgba(253, 203, 110, 0.3);
       }
 
       .card-decoration {
-        background: #e6a23c;
+        background: radial-gradient(circle, #fdcb6e 0%, transparent 70%);
       }
     }
 
     &.alarm {
+      --card-gradient: linear-gradient(135deg, #ff7675 0%, #d63031 100%);
+
       .card-icon {
-        background: linear-gradient(135deg, #f56c6c33, #f56c6c11);
-        color: #f56c6c;
+        background: linear-gradient(135deg, rgba(255, 118, 117, 0.2) 0%, rgba(214, 48, 49, 0.1) 100%);
+        color: #ff7675;
+        box-shadow: 0 0 20px rgba(255, 118, 117, 0.3);
       }
 
       .card-decoration {
-        background: #f56c6c;
+        background: radial-gradient(circle, #ff7675 0%, transparent 70%);
       }
     }
 
     &.online-rate {
       grid-column: span 2;
+      --card-gradient: linear-gradient(90deg, #00d4aa 0%, #0984e3 100%);
 
       .card-icon {
-        background: linear-gradient(135deg, #00d4ff33, #00d4ff11);
-        color: #00d4ff;
+        background: linear-gradient(135deg, rgba(0, 212, 170, 0.2) 0%, rgba(9, 132, 227, 0.1) 100%);
+        color: #00d4aa;
+        box-shadow: 0 0 20px rgba(0, 212, 170, 0.3);
       }
 
       .card-decoration {
-        background: #00d4ff;
+        background: radial-gradient(circle, #00d4aa 0%, transparent 70%);
       }
 
       .progress-bar {
         .progress-fill {
-          background: linear-gradient(90deg, #409eff, #67c23a);
+          box-shadow: 0 0 15px rgba(0, 212, 170, 0.6);
         }
       }
     }
+  }
+}
+
+/* 脉冲发光动画 */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(0, 212, 170, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(0, 212, 170, 0.5);
   }
 }
 

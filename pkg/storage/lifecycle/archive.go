@@ -547,8 +547,10 @@ func (da *DataArchiver) doArchive(ctx context.Context, task *ArchiveTask, policy
 	var hashWriter = sha256.New()
 
 	if policy.Compression {
-		gzWriter := gzip.NewWriter(file)
-		gzWriter.Level = da.config.CompressionLevel
+		gzWriter, err := gzip.NewWriterLevel(file, da.config.CompressionLevel)
+		if err != nil {
+			return fmt.Errorf("failed to create gzip writer: %w", err)
+		}
 		defer gzWriter.Close()
 		writer = io.MultiWriter(gzWriter, hashWriter)
 	} else {
@@ -860,8 +862,10 @@ func (da *DataArchiver) CompactArchives(ctx context.Context, policyID string) er
 
 	var mergedWriter io.Writer = mergedFile
 	if policy.Compression {
-		gzWriter := gzip.NewWriter(mergedFile)
-		gzWriter.Level = da.config.CompressionLevel
+		gzWriter, err := gzip.NewWriterLevel(mergedFile, da.config.CompressionLevel)
+		if err != nil {
+			return fmt.Errorf("failed to create gzip writer: %w", err)
+		}
 		defer gzWriter.Close()
 		mergedWriter = gzWriter
 	}

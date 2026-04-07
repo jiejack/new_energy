@@ -132,7 +132,7 @@ func (d *Deduplicator) GenerateFingerprint(alarm *entity.Alarm) Fingerprint {
 	}
 
 	// 添加自定义字段
-	for _, field := range d.config.CustomFingerprintFields {
+	for range d.config.CustomFingerprintFields {
 		// 可以根据需要从alarm中提取自定义字段
 	}
 

@@ -121,8 +121,8 @@ func NewClickHouseClient(config *ClickHouseConfig) (*ClickHouseClient, error) {
 	}
 
 	// 设置块大小
-	if config.BlockSize > 0 {
-		options.BlockBufferSize = uint(config.BlockSize)
+	if config.BlockSize > 0 && config.BlockSize <= 255 {
+		options.BlockBufferSize = uint8(config.BlockSize)
 	}
 
 	// 创建连接
@@ -240,15 +240,15 @@ func (c *ClickHouseClient) Query(ctx context.Context, query *Query) (*QueryResul
 	defer c.mu.RUnlock()
 
 	// 构建SQL
-	sql, args := c.buildQuerySQL(query)
+	queryStr, args := c.buildQuerySQL(query)
 
 	ctx, cancel := context.WithTimeout(ctx, c.config.QueryTimeout)
 	defer cancel()
 
 	// 执行查询
-	rows, err := c.conn.Query(ctx, sql, args...)
+	rows, err := c.conn.Query(ctx, queryStr, args...)
 	if err != nil {
-		return nil, NewQueryError(sql, "query failed", err)
+		return nil, NewQueryError(queryStr, "query failed", err)
 	}
 	defer rows.Close()
 
@@ -382,14 +382,14 @@ func (c *ClickHouseClient) Aggregate(ctx context.Context, query *AggregateQuery)
 	defer c.mu.RUnlock()
 
 	// 构建聚合SQL
-	sql, args := c.buildAggregateSQL(query)
+	queryStr, args := c.buildAggregateSQL(query)
 
 	ctx, cancel := context.WithTimeout(ctx, c.config.QueryTimeout)
 	defer cancel()
 
-	rows, err := c.conn.Query(ctx, sql, args...)
+	rows, err := c.conn.Query(ctx, queryStr, args...)
 	if err != nil {
-		return nil, NewQueryError(sql, "aggregate query failed", err)
+		return nil, NewQueryError(queryStr, "aggregate query failed", err)
 	}
 	defer rows.Close()
 
@@ -421,6 +421,8 @@ func (c *ClickHouseClient) Aggregate(ctx context.Context, query *AggregateQuery)
 		series.Points = append(series.Points, AggPoint{
 			Timestamp: timestamp,
 			Value:     value,
+			// 安全转换：uint64到int64的位级转换
+			/* #nosec G115 -- count值来自数据库查询结果，在int64范围内 */
 			Count:     int64(count),
 		})
 	}
@@ -739,7 +741,7 @@ func (c *ClickHouseClient) buildQuerySQL(query *Query) (string, []interface{}) {
 		}
 	}
 
-	sql := fmt.Sprintf(`
+	queryStr := fmt.Sprintf(`
 		SELECT point_id, timestamp, value, quality, tags
 		FROM %s.%s
 		%s
@@ -747,7 +749,7 @@ func (c *ClickHouseClient) buildQuerySQL(query *Query) (string, []interface{}) {
 		%s
 	`, database, table, whereClause, orderBy, limitClause)
 
-	return sql, args
+	return queryStr, args
 }
 
 // buildCountSQL 构建计数SQL
@@ -783,8 +785,8 @@ func (c *ClickHouseClient) buildCountSQL(query *Query) (string, []interface{}) {
 		whereClause = "WHERE " + strings.Join(whereClauses, " AND ")
 	}
 
-	sql := fmt.Sprintf("SELECT COUNT(*) FROM %s.%s %s", database, table, whereClause)
-	return sql, args
+	queryStr := fmt.Sprintf("SELECT COUNT(*) FROM %s.%s %s", database, table, whereClause)
+	return queryStr, args
 }
 
 // buildAggregateSQL 构建聚合SQL
@@ -831,7 +833,7 @@ func (c *ClickHouseClient) buildAggregateSQL(query *AggregateQuery) (string, []i
 		aggFunc = "avg"
 	}
 
-	sql := fmt.Sprintf(`
+	queryStr := fmt.Sprintf(`
 		SELECT
 			point_id,
 			toStartOfInterval(timestamp, INTERVAL %s) as time_bucket,
@@ -844,7 +846,7 @@ func (c *ClickHouseClient) buildAggregateSQL(query *AggregateQuery) (string, []i
 		ORDER BY point_id, time_bucket
 	`, intervalStr, aggFunc, database, table, whereClause)
 
-	return sql, args
+	return queryStr, args
 }
 
 // intervalToSQL 将时间间隔转换为SQL格式

@@ -320,10 +320,6 @@ func TestAlarmAPI_GetHistoryAlarms_Success(t *testing.T) {
 	router := setupAlarmTestRouter()
 	mockAlarmService := new(MockAlarmService)
 
-	now := time.Now()
-	startTime := now.Add(-24 * time.Hour).Unix()
-	endTime := now.Unix()
-
 	triggeredAt := time.Now()
 	expectedAlarms := []*entity.Alarm{
 		{
@@ -340,7 +336,7 @@ func TestAlarmAPI_GetHistoryAlarms_Success(t *testing.T) {
 	}
 
 	stationID := "station-001"
-	mockAlarmService.On("GetHistoryAlarms", mock.Anything, &stationID, startTime, endTime).Return(expectedAlarms, nil)
+	mockAlarmService.On("GetHistoryAlarms", mock.Anything, &stationID, mock.AnythingOfType("int64"), mock.AnythingOfType("int64")).Return(expectedAlarms, nil)
 
 	router.GET("/api/v1/alarms/history", func(c *gin.Context) {
 		var req dto.ListAlarmsRequest

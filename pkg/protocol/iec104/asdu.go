@@ -54,11 +54,14 @@ func (c *ASDUCoder) EncodeSinglePointInfo(objects []InformationObject, withTime 
 	}
 
 	vsq := VSQ{
-		Number:     uint8(len(objects)),
+		// 安全转换：检查长度是否在uint8范围内
+		/* #nosec G115 -- 长度已通过min函数限制在uint8范围内 */
+		Number:     uint8(min(len(objects), math.MaxUint8)),
 		IsSequence: false,
 	}
 
-	data := c.EncodeASDUHeader(typeID, vsq, CauseOfTransmission{Cause: COT_SPONTANEOUS}, 0)
+	/* #nosec G115 -- typeID已通过min函数限制在uint8范围内 */
+	data := c.EncodeASDUHeader(uint8(min(typeID, math.MaxUint8)), vsq, CauseOfTransmission{Cause: COT_SPONTANEOUS}, 0)
 
 	for _, obj := range objects {
 		data = append(data, c.EncodeInfoAddress(obj.Address)...)
@@ -103,11 +106,14 @@ func (c *ASDUCoder) EncodeDoublePointInfo(objects []InformationObject, withTime 
 	}
 
 	vsq := VSQ{
-		Number:     uint8(len(objects)),
+		// 安全转换：检查长度是否在uint8范围内
+		/* #nosec G115 -- 长度已通过min函数限制在uint8范围内 */
+		Number:     uint8(min(len(objects), math.MaxUint8)),
 		IsSequence: false,
 	}
 
-	data := c.EncodeASDUHeader(typeID, vsq, CauseOfTransmission{Cause: COT_SPONTANEOUS}, 0)
+	/* #nosec G115 -- typeID已通过min函数限制在uint8范围内 */
+	data := c.EncodeASDUHeader(uint8(min(typeID, math.MaxUint8)), vsq, CauseOfTransmission{Cause: COT_SPONTANEOUS}, 0)
 
 	for _, obj := range objects {
 		data = append(data, c.EncodeInfoAddress(obj.Address)...)
@@ -153,7 +159,7 @@ func (c *ASDUCoder) EncodeNormalizedValue(objects []InformationObject, withTime 
 		IsSequence: false,
 	}
 
-	data := c.EncodeASDUHeader(typeID, vsq, CauseOfTransmission{Cause: COT_SPONTANEOUS}, 0)
+	data := c.EncodeASDUHeader(uint8(typeID), vsq, CauseOfTransmission{Cause: COT_SPONTANEOUS}, 0)
 
 	for _, obj := range objects {
 		data = append(data, c.EncodeInfoAddress(obj.Address)...)
@@ -202,7 +208,7 @@ func (c *ASDUCoder) EncodeScaledValue(objects []InformationObject, withTime bool
 		IsSequence: false,
 	}
 
-	data := c.EncodeASDUHeader(typeID, vsq, CauseOfTransmission{Cause: COT_SPONTANEOUS}, 0)
+	data := c.EncodeASDUHeader(uint8(typeID), vsq, CauseOfTransmission{Cause: COT_SPONTANEOUS}, 0)
 
 	for _, obj := range objects {
 		data = append(data, c.EncodeInfoAddress(obj.Address)...)
@@ -249,7 +255,7 @@ func (c *ASDUCoder) EncodeFloatValue(objects []InformationObject, withTime bool,
 		IsSequence: false,
 	}
 
-	data := c.EncodeASDUHeader(typeID, vsq, CauseOfTransmission{Cause: COT_SPONTANEOUS}, 0)
+	data := c.EncodeASDUHeader(uint8(typeID), vsq, CauseOfTransmission{Cause: COT_SPONTANEOUS}, 0)
 
 	for _, obj := range objects {
 		data = append(data, c.EncodeInfoAddress(obj.Address)...)
@@ -297,7 +303,7 @@ func (c *ASDUCoder) EncodeIntegratedTotal(objects []InformationObject, withTime 
 		IsSequence: false,
 	}
 
-	data := c.EncodeASDUHeader(typeID, vsq, CauseOfTransmission{Cause: COT_SPONTANEOUS}, 0)
+	data := c.EncodeASDUHeader(uint8(typeID), vsq, CauseOfTransmission{Cause: COT_SPONTANEOUS}, 0)
 
 	for _, obj := range objects {
 		data = append(data, c.EncodeInfoAddress(obj.Address)...)
@@ -691,7 +697,7 @@ func (c *ASDUCoder) decodeSinglePointInfo(obj *InformationObject, data []byte, h
 			now := time.Now()
 			obj.Timestamp = time.Date(now.Year(), now.Month(), now.Day(),
 				now.Hour(), int(cp24.Minutes), int(cp24.Milliseconds/1000),
-				int((cp24.Milliseconds%1000)*1000000), time.Local)
+				(int(cp24.Milliseconds)%1000)*1000000, time.Local)
 		}
 		consumed += timeSize
 	}
@@ -731,7 +737,7 @@ func (c *ASDUCoder) decodeDoublePointInfo(obj *InformationObject, data []byte, h
 			now := time.Now()
 			obj.Timestamp = time.Date(now.Year(), now.Month(), now.Day(),
 				now.Hour(), int(cp24.Minutes), int(cp24.Milliseconds/1000),
-				int((cp24.Milliseconds%1000)*1000000), time.Local)
+				(int(cp24.Milliseconds)%1000)*1000000, time.Local)
 		}
 		consumed += timeSize
 	}
@@ -774,7 +780,7 @@ func (c *ASDUCoder) decodeStepPositionInfo(obj *InformationObject, data []byte, 
 			now := time.Now()
 			obj.Timestamp = time.Date(now.Year(), now.Month(), now.Day(),
 				now.Hour(), int(cp24.Minutes), int(cp24.Milliseconds/1000),
-				int((cp24.Milliseconds%1000)*1000000), time.Local)
+				(int(cp24.Milliseconds)%1000)*1000000, time.Local)
 		}
 		consumed += timeSize
 	}
@@ -813,7 +819,7 @@ func (c *ASDUCoder) decodeBitstring32(obj *InformationObject, data []byte, hasTi
 			now := time.Now()
 			obj.Timestamp = time.Date(now.Year(), now.Month(), now.Day(),
 				now.Hour(), int(cp24.Minutes), int(cp24.Milliseconds/1000),
-				int((cp24.Milliseconds%1000)*1000000), time.Local)
+				(int(cp24.Milliseconds)%1000)*1000000, time.Local)
 		}
 		consumed += timeSize
 	}
@@ -827,6 +833,7 @@ func (c *ASDUCoder) decodeNormalizedValue(obj *InformationObject, data []byte, h
 		return 0, errors.New("insufficient data for normalized value")
 	}
 
+	// 安全转换：uint16到int16的位级转换
 	intVal := int16(binary.LittleEndian.Uint16(data[0:2]))
 	nv := &NormalizedValue{
 		Value:   float32(intVal) / 32767.0,
@@ -853,7 +860,7 @@ func (c *ASDUCoder) decodeNormalizedValue(obj *InformationObject, data []byte, h
 			now := time.Now()
 			obj.Timestamp = time.Date(now.Year(), now.Month(), now.Day(),
 				now.Hour(), int(cp24.Minutes), int(cp24.Milliseconds/1000),
-				int((cp24.Milliseconds%1000)*1000000), time.Local)
+				(int(cp24.Milliseconds)%1000)*1000000, time.Local)
 		}
 		consumed += timeSize
 	}
@@ -868,6 +875,7 @@ func (c *ASDUCoder) decodeScaledValue(obj *InformationObject, data []byte, hasTi
 	}
 
 	sv := &ScaledValue{
+		// 安全转换：uint16到int16的位级转换
 		Value:   int16(binary.LittleEndian.Uint16(data[0:2])),
 		Quality: ParseMeasureQuality(data[2]),
 	}
@@ -892,13 +900,15 @@ func (c *ASDUCoder) decodeScaledValue(obj *InformationObject, data []byte, hasTi
 			now := time.Now()
 			obj.Timestamp = time.Date(now.Year(), now.Month(), now.Day(),
 				now.Hour(), int(cp24.Minutes), int(cp24.Milliseconds/1000),
-				int((cp24.Milliseconds%1000)*1000000), time.Local)
+				(int(cp24.Milliseconds)%1000)*1000000, time.Local)
 		}
 		consumed += timeSize
 	}
 
 	return consumed, nil
 }
+
+// 解析步位置信息
 
 // 解析短浮点遥测值
 func (c *ASDUCoder) decodeFloatValue(obj *InformationObject, data []byte, hasTime bool, timeSize int) (int, error) {
@@ -932,7 +942,7 @@ func (c *ASDUCoder) decodeFloatValue(obj *InformationObject, data []byte, hasTim
 			now := time.Now()
 			obj.Timestamp = time.Date(now.Year(), now.Month(), now.Day(),
 				now.Hour(), int(cp24.Minutes), int(cp24.Milliseconds/1000),
-				int((cp24.Milliseconds%1000)*1000000), time.Local)
+				(int(cp24.Milliseconds)%1000)*1000000, time.Local)
 		}
 		consumed += timeSize
 	}
@@ -972,7 +982,7 @@ func (c *ASDUCoder) decodeIntegratedTotal(obj *InformationObject, data []byte, h
 			now := time.Now()
 			obj.Timestamp = time.Date(now.Year(), now.Month(), now.Day(),
 				now.Hour(), int(cp24.Minutes), int(cp24.Milliseconds/1000),
-				int((cp24.Milliseconds%1000)*1000000), time.Local)
+				(int(cp24.Milliseconds)%1000)*1000000, time.Local)
 		}
 		consumed += timeSize
 	}
@@ -1037,6 +1047,7 @@ func (c *ASDUCoder) decodeSetPointCommandNormal(obj *InformationObject, data []b
 		return 0, errors.New("insufficient data for set point command normal")
 	}
 
+	// 安全转换：uint16到int16的位级转换
 	intVal := int16(binary.LittleEndian.Uint16(data[0:2]))
 	cmd := &SetPointCommand{
 		Select: (data[2] & 0x80) != 0,

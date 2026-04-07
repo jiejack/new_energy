@@ -1,0 +1,42 @@
+# Jaeger 分布式追踪配置
+# 新能源监控系统
+
+version: 2
+
+# 服务配置
+service:
+  name: jaeger
+  host: 0.0.0.0
+  ports:
+    collector:
+      http: 14268
+      grpc: 14250
+      udp: 6831
+    query:
+      http: 16686
+    admin:
+      http: 14269
+
+# 存储配置
+storage:
+  type: elasticsearch
+  elasticsearch:
+    server-urls: http://elasticsearch:9200
+    index-prefix: jaeger
+    username: ""
+    password: ""
+    sniffer: false
+    
+# 采样配置
+sampling:
+  type: probabilistic
+  param: 1.0  # 采样率 (0.0 - 1.0)，生产环境建议 0.1
+  
+# 日志配置
+logging:
+  level: info
+  
+# 指标配置
+metrics:
+  backend: prometheus
+  http-route: /metrics

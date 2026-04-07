@@ -99,7 +99,6 @@ func NewRedisClient(cfg RedisConfig) (*RedisClient, error) {
 		PoolTimeout:     cfg.PoolTimeout,
 		IdleTimeout:     cfg.IdleTimeout,
 		MaxConnAge:      cfg.MaxConnAge,
-		ConnMaxIdleTime: cfg.ConnMaxIdleTime,
 	})
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -394,11 +393,8 @@ const (
 
 func (r *RedisClient) SetRealtimeData(ctx context.Context, pointID string, value float64, timestamp int64) error {
 	key := RealtimeDataPrefix + pointID
-	data := map[string]interface{}{
-		"value":     value,
-		"timestamp": timestamp,
-	}
-	return r.HSet(ctx, key, "value", value, "timestamp", timestamp)
+	err := r.client.HSet(ctx, key, "value", value, "timestamp", timestamp).Err()
+	return err
 }
 
 func (r *RedisClient) GetRealtimeData(ctx context.Context, pointID string) (float64, int64, error) {

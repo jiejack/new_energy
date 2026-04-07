@@ -391,6 +391,7 @@ func (c *Connection) writeDirect(data []byte) error {
 	}
 
 	c.mu.Lock()
+	// 安全转换：int到uint64的转换，n不会为负数
 	c.stats.BytesSent += uint64(n)
 	c.stats.FramesSent++
 	c.mu.Unlock()
@@ -852,7 +853,7 @@ func (p *ConnectionPool) Get(name string) (*Connection, error) {
 	}
 
 	conn := NewConnection(config)
-	p.connections[name] = config
+	p.connections[name] = conn
 	return conn, nil
 }
 

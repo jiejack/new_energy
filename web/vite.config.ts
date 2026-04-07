@@ -31,10 +31,18 @@ export default defineConfig({
     chunkSizeWarningLimit: 1500,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vue: ['vue', 'vue-router', 'pinia'],
-          elementPlus: ['element-plus', '@element-plus/icons-vue'],
-          echarts: ['echarts'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('vue') || id.includes('vue-router') || id.includes('pinia')) {
+              return 'vue'
+            }
+            if (id.includes('element-plus') || id.includes('@element-plus/icons-vue')) {
+              return 'elementPlus'
+            }
+            if (id.includes('echarts')) {
+              return 'echarts'
+            }
+          }
         },
       },
     },
