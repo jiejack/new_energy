@@ -1,0 +1,69 @@
+# Gitleaks 配置文件
+title = "Gitleaks Configuration"
+
+# 全局配置
+[extend]
+# 使用默认规则集
+useDefault = true
+
+# 自定义规则
+[[rules]]
+id = "jwt-secret"
+description = "JWT Secret Key"
+regex = '''(?i)(jwt[_-]?secret|secret[_-]?key)['"]?\s*[:=]\s*['"]?[a-zA-Z0-9]{20,}'''
+tags = ["jwt", "secret"]
+
+[[rules]]
+id = "database-password"
+description = "Database Password"
+regex = '''(?i)(database[_-]?password|db[_-]?password|mysql[_-]?password|postgres[_-]?password)['"]?\s*[:=]\s*['"]?[^\s'"<>]{8,}'''
+tags = ["database", "password"]
+
+[[rules]]
+id = "api-key"
+description = "API Key"
+regex = '''(?i)(api[_-]?key|apikey)['"]?\s*[:=]\s*['"]?[a-zA-Z0-9]{20,}'''
+tags = ["api", "key"]
+
+[[rules]]
+id = "redis-password"
+description = "Redis Password"
+regex = '''(?i)(redis[_-]?password|redis[_-]?pass)['"]?\s*[:=]\s*['"]?[^\s'"<>]{8,}'''
+tags = ["redis", "password"]
+
+[[rules]]
+id = "kafka-password"
+description = "Kafka Password"
+regex = '''(?i)(kafka[_-]?password|kafka[_-]?pass)['"]?\s*[:=]\s*['"]?[^\s'"<>]{8,}'''
+tags = ["kafka", "password"]
+
+[[rules]]
+id = "nacos-password"
+description = "Nacos Password"
+regex = '''(?i)(nacos[_-]?password|nacos[_-]?pass)['"]?\s*[:=]\s*['"]?[^\s'"<>]{8,}'''
+tags = ["nacos", "password"]
+
+# 允许列表（白名单）
+[allowlist]
+description = "Global Allowlist"
+regexes = [
+    '''(?i)password\s*[:=]\s*['"]?\$\{''',  # 允许环境变量
+    '''(?i)password\s*[:=]\s*['"]?\$\(''',  # 允许命令替换
+]
+
+paths = [
+    '''^vendor/''',
+    '''^\.git/''',
+    '''^node_modules/''',
+    '''^web/node_modules/''',
+    '''^web/dist/''',
+    '''\.lock$''',
+    '''^go\.sum$''',
+    '''^package-lock\.json$''',
+    '''test_.*\.go$''',
+    '''_test\.go$''',
+    '''\.example$''',
+    '''\.sample$''',
+    '''config-test\.yaml$''',
+    '''config-dev\.yaml$''',
+]
