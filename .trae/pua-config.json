@@ -1,0 +1,151 @@
+{
+  "version": "1.0",
+  "name": "pua-config",
+  "description": "PUA技能配置 - 自动触发和阶段性启用",
+  
+  "enabled": true,
+  
+  "auto_trigger": {
+    "enabled": true,
+    "conditions": [
+      {
+        "type": "consecutive_failures",
+        "threshold": 2,
+        "intensity": "lite",
+        "description": "同一任务连续失败2次"
+      },
+      {
+        "type": "loop_detection",
+        "threshold": 3,
+        "intensity": "full",
+        "description": "相同操作重复3次"
+      },
+      {
+        "type": "passive_behavior",
+        "indicators": [
+          "not_searching",
+          "not_reading_source",
+          "waiting_for_input",
+          "expressing_limitation"
+        ],
+        "intensity": "full",
+        "description": "表现出被动行为"
+      },
+      {
+        "type": "giving_up",
+        "patterns": [
+          "无法完成",
+          "需要手动",
+          "cannot complete",
+          "unable to",
+          "I cannot"
+        ],
+        "intensity": "ultra",
+        "description": "表现出放弃倾向"
+      }
+    ]
+  },
+  
+  "phase_enforcement": {
+    "enabled": true,
+    "phases": [
+      {
+        "name": "code_review",
+        "trigger": "before_pr_submit",
+        "intensity": "lite",
+        "description": "PR提交前代码审查"
+      },
+      {
+        "name": "pre_deploy",
+        "trigger": "before_production_deploy",
+        "intensity": "full",
+        "description": "生产部署前验证"
+      },
+      {
+        "name": "bug_fix",
+        "trigger": "production_bug_fix",
+        "intensity": "full",
+        "description": "生产Bug修复"
+      },
+      {
+        "name": "security_fix",
+        "trigger": "security_vulnerability_fix",
+        "intensity": "ultra",
+        "description": "安全漏洞修复"
+      }
+    ]
+  },
+  
+  "intensity_levels": {
+    "lite": {
+      "style": "encouraging",
+      "features": [
+        "question_guidance",
+        "solution_hints"
+      ],
+      "max_duration": "15m",
+      "exit_on_success": true
+    },
+    "full": {
+      "style": "pressuring",
+      "features": [
+        "question_follow_up",
+        "solution_requirement",
+        "progress_tracking"
+      ],
+      "max_duration": "30m",
+      "exit_on_success": true
+    },
+    "ultra": {
+      "style": "high_pressure",
+      "features": [
+        "exhaustive_search",
+        "no_giving_up",
+        "result_oriented"
+      ],
+      "max_duration": "60m",
+      "exit_on_success": true
+    }
+  },
+  
+  "safety_controls": {
+    "exit_command": "/pua:off",
+    "max_session_duration": "60m",
+    "effect_check_interval": "10m",
+    "degradation_threshold": 3,
+    "human_intervention_prompt": true
+  },
+  
+  "effect_evaluation": {
+    "metrics": [
+      {
+        "name": "task_completion_rate",
+        "target": 0.8,
+        "evaluation_period": "1w"
+      },
+      {
+        "name": "time_efficiency",
+        "target_improvement": 0.2,
+        "evaluation_period": "1w"
+      },
+      {
+        "name": "user_satisfaction",
+        "target": 3.5,
+        "scale": 5,
+        "evaluation_period": "1m"
+      },
+      {
+        "name": "negative_feedback_rate",
+        "target": 0.1,
+        "evaluation_period": "1m"
+      }
+    ]
+  },
+  
+  "notifications": {
+    "on_trigger": true,
+    "on_intensity_change": true,
+    "on_exit": true,
+    "on_effect_check": true
+  }
+}

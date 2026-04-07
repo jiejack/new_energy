@@ -1,0 +1,121 @@
+# Harness Engineering 监控规则
+# 用于监控 Harness 层的验证、约束和性能指标
+
+groups:
+  - name: harness_validation
+    rules:
+      - alert: HarnessValidationFailed
+        expr: harness_validation_errors_total > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: harness
+        annotations:
+          summary: "Harness 验证失败"
+          description: "Harness 层验证错误数量: {{ $value }}"
+          
+      - alert: HarnessValidationLatencyHigh
+        expr: histogram_quantile(0.95, rate(harness_validation_duration_seconds_bucket[5m])) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: harness
+        annotations:
+          summary: "Harness 验证延迟过高"
+          description: "P95 验证延迟: {{ $value | humanizeDuration }}"
+          
+      - alert: HarnessConstraintViolations
+        expr: harness_constraint_violations_total > 0
+        for: 1m
+        labels:
+          severity: warning
+          component: harness
+        annotations:
+          summary: "Harness 约束违规"
+          description: "约束违规数量: {{ $value }}"
+          
+  - name: harness_performance
+    rules:
+      - alert: HarnessMemoryUsageHigh
+        expr: harness_memory_usage_bytes / 1024 / 1024 > 100
+        for: 5m
+        labels:
+          severity: warning
+          component: harness
+        annotations:
+          summary: "Harness 内存使用过高"
+          description: "内存使用: {{ $value | humanize }}MB"
+          
+      - alert: HarnessSnapshotPoolExhausted
+        expr: harness_snapshot_pool_available < 10
+        for: 2m
+        labels:
+          severity: warning
+          component: harness
+        annotations:
+          summary: "Harness 快照池即将耗尽"
+          description: "可用快照数: {{ $value }}"
+          
+  - name: api_performance
+    rules:
+      - alert: HighLatencyP95
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 0.2
+        for: 5m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "API P95 延迟超过阈值"
+          description: "P95 延迟: {{ $value | humanizeDuration }}"
+          
+      - alert: HighLatencyP99
+        expr: histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "API P99 延迟严重超标"
+          description: "P99 延迟: {{ $value | humanizeDuration }}"
+          
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.01
+        for: 5m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "API 错误率过高"
+          description: "5xx 错误率: {{ $value | humanizePercentage }}"
+          
+  - name: business_metrics
+    rules:
+      - alert: DataCollectionFailure
+        expr: rate(data_collection_errors_total[5m]) > 0
+        for: 2m
+        labels:
+          severity: critical
+          component: collector
+        annotations:
+          summary: "数据采集失败"
+          description: "采集错误率: {{ $value }}/s"
+          
+      - alert: AlarmProcessingBacklog
+        expr: alarm_queue_size > 100
+        for: 5m
+        labels:
+          severity: warning
+          component: alarm
+        annotations:
+          summary: "告警处理积压"
+          description: "队列大小: {{ $value }}"
+          
+      - alert: DeviceOfflineRate
+        expr: count(device_status == "offline") / count(device_status) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+          component: device
+        annotations:
+          summary: "设备离线率过高"
+          description: "离线率: {{ $value | humanizePercentage }}"
