@@ -205,6 +205,7 @@ func NewHTTPServer(
 	stationHandler *handler.StationHandler,
 	regionHandler *handler.RegionHandler,
 	pointHandler *handler.PointHandler,
+	operationLogHandler *handler.OperationLogHandler,
 ) *http.Server {
 	// 设置 Gin 模式
 	gin.SetMode(cfg.Server.Mode)
@@ -298,7 +299,24 @@ func NewHTTPServer(
 			points.PUT("/:id", pointHandler.UpdatePoint)
 			points.DELETE("/:id", pointHandler.DeletePoint)
 		}
+
+		// 操作日志路由
+		operationLogs := api.Group("/operation-logs")
+		{
+			operationLogs.GET("", operationLogHandler.ListLogs)
+			operationLogs.GET("/:id", operationLogHandler.GetLog)
+			operationLogs.POST("", operationLogHandler.CreateLog)
+			operationLogs.DELETE("/cleanup", operationLogHandler.DeleteOldLogs)
+		}
 	}
+
+	// WebSocket 路由
+	router.GET("/ws", func(c *gin.Context) {
+		// WebSocket 连接处理
+		c.JSON(http.StatusOK, gin.H{
+			"message": "WebSocket endpoint - upgrade required",
+		})
+	})
 
 	// 创建 HTTP 服务器
 	srv := &http.Server{
