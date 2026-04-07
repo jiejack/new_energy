@@ -1,0 +1,7 @@
+# ESLint ignore
+dist
+node_modules
+coverage
+*.min.js
+*.d.ts
+vendor
