@@ -83,6 +83,16 @@ jobs:
         run: |
           go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
 
+      - name: Check coverage threshold
+        run: |
+          COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+          echo "Total coverage: $COVERAGE%"
+          if [ $(echo "$COVERAGE < 70" | bc -l) -eq 1 ]; then
+            echo "::error::Coverage $COVERAGE% is below 70% threshold. TDD requires minimum 70% coverage."
+            exit 1
+          fi
+          echo "::notice::Coverage check passed: $COVERAGE%"
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
