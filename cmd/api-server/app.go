@@ -212,6 +212,7 @@ func NewHTTPServer(
 	exportHandler *handler.ExportHandler,
 	reportHandler *handler.ReportHandler,
 	operationLogHandler *handler.OperationLogHandler,
+	energyEfficiencyHandler *handler.EnergyEfficiencyHandler,
 ) *http.Server {
 	// 设置 Gin 模式
 	gin.SetMode(cfg.Server.Mode)
@@ -368,6 +369,22 @@ func NewHTTPServer(
 		{
 			reports.GET("", reportHandler.GenerateReport)
 			reports.GET("/export", reportHandler.ExportReport)
+		}
+		
+		// 能效分析路由
+		energyEfficiency := api.Group("/energy-efficiency")
+		{
+			energyEfficiency.POST("/records", energyEfficiencyHandler.CreateEnergyEfficiencyRecord)
+			energyEfficiency.POST("/records/batch", energyEfficiencyHandler.BatchCreateEnergyEfficiencyRecords)
+			energyEfficiency.GET("/records", energyEfficiencyHandler.ListEnergyEfficiencyRecords)
+			energyEfficiency.GET("/records/:id", energyEfficiencyHandler.GetEnergyEfficiencyRecord)
+			energyEfficiency.GET("/trend", energyEfficiencyHandler.GetEnergyEfficiencyTrend)
+			energyEfficiency.GET("/statistics", energyEfficiencyHandler.GetEnergyEfficiencyStatistics)
+			energyEfficiency.GET("/comparison", energyEfficiencyHandler.GetEnergyEfficiencyComparison)
+			energyEfficiency.POST("/analyses", energyEfficiencyHandler.CreateEnergyEfficiencyAnalysis)
+			energyEfficiency.GET("/analyses", energyEfficiencyHandler.ListEnergyEfficiencyAnalyses)
+			energyEfficiency.GET("/analyses/:id", energyEfficiencyHandler.GetEnergyEfficiencyAnalysis)
+			energyEfficiency.GET("/analyses/latest", energyEfficiencyHandler.GetLatestEnergyEfficiencyAnalysis)
 		}
 	}
 

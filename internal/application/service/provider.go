@@ -23,4 +23,5 @@ var ServiceSet = wire.NewSet(
 	NewExportService,
 	NewReportService,
 	NewOperationLogService,
+	NewEnergyEfficiencyService,
 )

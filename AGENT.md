@@ -25,8 +25,22 @@
 ### 来源摘要
 - [Andrej Karpathy LLM-wiki 概念](file:///workspace/doc/wiki/sources/karpathy-llm-wiki.md) - LLM-wiki 核心概念和三层架构
 
+### 实体文档
+- [Go 编程语言](file:///workspace/doc/wiki/entities/go-language.md) - Go 1.24+ 编程语言
+- [Gin Web 框架](file:///workspace/doc/wiki/entities/gin-framework.md) - Go Web 框架
+- [Vue 3 前端框架](file:///workspace/doc/wiki/entities/vue3-framework.md) - Vue.js 3.x 前端框架
+- [Excelize 库](file:///workspace/doc/wiki/entities/excelize-library.md) - Go Excel 文档操作库
+- [TypeScript 编程语言](file:///workspace/doc/wiki/entities/typescript-language.md) - TypeScript 5.0+ 编程语言
+
 ### 概念文档
 - [分层架构设计](file:///workspace/doc/wiki/concepts/layered-architecture.md) - 本项目的分层架构设计说明
+
+### 业务需求
+- [能效分析功能](file:///workspace/doc/wiki/requirements/energy-efficiency-analysis.md) - 能效分析功能需求文档
+- [碳排放监测功能](file:///workspace/doc/wiki/requirements/carbon-emission-monitoring.md) - 碳排放监测功能需求文档
+
+### 领域知识
+- [新能源行业知识](file:///workspace/doc/wiki/domains/new-energy-industry.md) - 新能源行业概述、技术、标准等
 
 ## 技能文档索引
 

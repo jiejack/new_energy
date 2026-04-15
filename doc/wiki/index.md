@@ -7,11 +7,11 @@
 ## 知识库结构
 
 ### 实体 (Entities)
-- [Vue 3](entities/vue3.md) - Vue.js 3.x 前端框架
-- [Go 1.24+](entities/golang.md) - Go 编程语言
-- [Gin 框架](entities/gin.md) - Go Web 框架
-- [Element Plus](entities/element-plus.md) - Vue 3 UI 组件库
-- [ECharts](entities/echarts.md) - 数据可视化库
+- [Go 编程语言](entities/go-language.md) - Go 1.24+ 编程语言
+- [Gin Web 框架](entities/gin-framework.md) - Go Web 框架
+- [Vue 3 前端框架](entities/vue3-framework.md) - Vue.js 3.x 前端框架
+- [Excelize 库](entities/excelize-library.md) - Go Excel 文档操作库
+- [TypeScript 编程语言](entities/typescript-language.md) - TypeScript 5.0+ 编程语言
 
 ### 概念 (Concepts)
 - [前后端分离架构](concepts/frontend-backend-separation.md)
@@ -35,11 +35,18 @@
 - [告警规则管理](requirements/alarm-rule-management.md)
 - [统计报表功能](requirements/report-function.md)
 - [前端优化设计](requirements/frontend-optimization.md)
+- [能效分析功能](requirements/energy-efficiency-analysis.md)
+- [碳排放监测功能](requirements/carbon-emission-monitoring.md)
 
 ### 来源摘要 (Sources)
 - [Andrej Karpathy LLM-wiki 概念](sources/karpathy-llm-wiki.md)
-- [新能源行业技术规范](sources/new-energy-standards.md)
+
+### 领域知识 (Domains)
+- [新能源行业知识](domains/new-energy-industry.md) - 新能源行业概述、技术、标准等
 
 ## 操作日志
 
 - [2026-04-15] init | 初始化知识库 - 创建知识库基础结构和索引文件
+- [2026-04-15] add | 添加技术实体页面 - Go、Gin、Vue3、Excelize、TypeScript
+- [2026-04-15] add | 添加业务需求文档 - 能效分析、碳排放监测
+- [2026-04-15] add | 添加领域知识 - 新能源行业知识
