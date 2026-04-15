@@ -213,6 +213,7 @@ func NewHTTPServer(
 	reportHandler *handler.ReportHandler,
 	operationLogHandler *handler.OperationLogHandler,
 	energyEfficiencyHandler *handler.EnergyEfficiencyHandler,
+	carbonEmissionHandler *handler.CarbonEmissionHandler,
 ) *http.Server {
 	// 设置 Gin 模式
 	gin.SetMode(cfg.Server.Mode)
@@ -385,6 +386,22 @@ func NewHTTPServer(
 			energyEfficiency.GET("/analyses", energyEfficiencyHandler.ListEnergyEfficiencyAnalyses)
 			energyEfficiency.GET("/analyses/:id", energyEfficiencyHandler.GetEnergyEfficiencyAnalysis)
 			energyEfficiency.GET("/analyses/latest", energyEfficiencyHandler.GetLatestEnergyEfficiencyAnalysis)
+		}
+		
+		// 碳排放监测路由
+		carbonEmission := api.Group("/carbon-emission")
+		{
+			carbonEmission.POST("/records", carbonEmissionHandler.CreateCarbonEmissionRecord)
+			carbonEmission.POST("/records/batch", carbonEmissionHandler.BatchCreateCarbonEmissionRecords)
+			carbonEmission.GET("/records", carbonEmissionHandler.ListCarbonEmissionRecords)
+			carbonEmission.GET("/records/:id", carbonEmissionHandler.GetCarbonEmissionRecord)
+			carbonEmission.GET("/trend", carbonEmissionHandler.GetCarbonEmissionTrend)
+			carbonEmission.GET("/statistics", carbonEmissionHandler.GetCarbonEmissionStatistics)
+			carbonEmission.GET("/comparison", carbonEmissionHandler.GetCarbonEmissionComparison)
+			carbonEmission.POST("/analyses", carbonEmissionHandler.CreateCarbonEmissionAnalysis)
+			carbonEmission.GET("/analyses", carbonEmissionHandler.ListCarbonEmissionAnalyses)
+			carbonEmission.GET("/analyses/:id", carbonEmissionHandler.GetCarbonEmissionAnalysis)
+			carbonEmission.GET("/analyses/latest", carbonEmissionHandler.GetLatestCarbonEmissionAnalysis)
 		}
 	}
 

@@ -21,4 +21,5 @@ var RepositorySet = wire.NewSet(
 	NewSystemConfigRepository,
 	NewNotificationConfigRepository,
 	NewEnergyEfficiencyRepository,
+	NewCarbonEmissionRepository,
 )

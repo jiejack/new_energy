@@ -22,4 +22,5 @@ var HandlerSet = wire.NewSet(
 	NewOperationLogHandler,
 	NewReportHandler,
 	NewEnergyEfficiencyHandler,
+	NewCarbonEmissionHandler,
 )

@@ -204,6 +204,38 @@ export const asyncRoutes: RouteRecordRaw[] = [
         ],
       },
       {
+        path: 'energy',
+        name: 'Energy',
+        redirect: '/energy/efficiency',
+        meta: {
+          title: '能源分析',
+          icon: 'Lightning',
+          requiresAuth: true,
+        },
+        children: [
+          {
+            path: 'efficiency',
+            name: 'EnergyEfficiency',
+            component: () => import('@/views/energy/efficiency/index.vue'),
+            meta: {
+              title: '能效分析',
+              icon: 'TrendCharts',
+              requiresAuth: true,
+            },
+          },
+          {
+            path: 'carbon',
+            name: 'CarbonEmission',
+            component: () => import('@/views/energy/carbon/index.vue'),
+            meta: {
+              title: '碳排放监测',
+              icon: 'Opportunity',
+              requiresAuth: true,
+            },
+          },
+        ],
+      },
+      {
         path: 'system',
         name: 'System',
         redirect: '/system/user',
