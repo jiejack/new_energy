@@ -1,0 +1,135 @@
+From 6a7f80c84ab8f4f168e9608444a300b3dc428f45 Mon Sep 17 00:00:00 2001
+From: jiejack <jiejack@sina.cn>
+Date: Wed, 15 Apr 2026 16:06:27 +0000
+Subject: [PATCH] =?UTF-8?q?feat:=20=E5=A6=82=E4=BD=95=E4=BD=BF=E7=94=A8?=
+ =?UTF-8?q?=E6=96=B0=E5=8A=9F=E8=83=BD?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Co-authored-by: traeagent <traeagent@users.noreply.github.com>
+---
+ web/src/api/config.ts | 17 ++++-------------
+ web/src/api/data.ts   | 18 +++++++++---------
+ 2 files changed, 13 insertions(+), 22 deletions(-)
+
+diff --git a/web/src/api/config.ts b/web/src/api/config.ts
+index f53f3fe..2ab836e 100644
+--- a/web/src/api/config.ts
++++ b/web/src/api/config.ts
+@@ -62,26 +62,17 @@ export interface AllConfigs {
+  * 获取所有配置
+  */
+ export function getAllConfigs(): Promise<AllConfigs> {
+-  return get('/v1/configs')
++  return get('/api/v1/configs')
+ }
+ 
+-/**
+- * 获取指定分类的配置
+- */
+ export function getConfigsByCategory(category: ConfigCategory): Promise<Record<string, any>> {
+-  return get(`/v1/configs/${category}`)
++  return get(`/api/v1/configs/${category}`)
+ }
+ 
+-/**
+- * 更新配置
+- */
+ export function updateConfig(category: string, key: string, value: any): Promise<void> {
+-  return put(`/v1/configs/${category}/${key}`, { value })
++  return put(`/api/v1/configs/${category}/${key}`, { value })
+ }
+ 
+-/**
+- * 批量更新配置
+- */
+ export function batchUpdateConfig(category: string, configs: Record<string, any>): Promise<void> {
+-  return put(`/v1/configs/${category}`, configs)
++  return put(`/api/v1/configs/${category}`, configs)
+ }
+diff --git a/web/src/api/data.ts b/web/src/api/data.ts
+index 3d839ad..a9ea427 100644
+--- a/web/src/api/data.ts
++++ b/web/src/api/data.ts
+@@ -5,7 +5,7 @@ import type { DataQuery, PointData, PageQuery, PageResult } from '@/types'
+  * 查询历史数据
+  */
+ export function queryHistoryData(params: DataQuery): Promise<PointData[]> {
+-  return post('/data/query', params)
++  return post('/api/v1/data/query', params)
+ }
+ 
+ /**
+@@ -16,7 +16,7 @@ export function queryRealtimeData(pointIds: number[]): Promise<Record<number, {
+   quality: number
+   timestamp: number
+ }>> {
+-  return post('/data/realtime', { pointIds })
++  return post('/api/v1/data/realtime', { pointIds })
+ }
+ 
+ /**
+@@ -31,7 +31,7 @@ export function getRealtimeData(params: PageQuery): Promise<PageResult<{
+   updateTime: string
+   status: string
+ }>> {
+-  return get('/data/realtime-list', params)
++  return get('/api/v1/data/realtime-list', params)
+ }
+ 
+ /**
+@@ -47,14 +47,14 @@ export function getStatistics(params: {
+   timestamp: string
+   values: Record<string, number>
+ }>> {
+-  return post('/data/statistics', params)
++  return post('/api/v1/data/statistics', params)
+ }
+ 
+ /**
+  * 导出数据
+  */
+ export function exportData(params: DataQuery & { format: 'csv' | 'excel' }): Promise<Blob> {
+-  return post('/data/export', params, { responseType: 'blob' })
++  return post('/api/v1/data/export', params, { responseType: 'blob' })
+ }
+ 
+ /**
+@@ -70,7 +70,7 @@ export function getStationPowerStatistics(params: {
+   power: number
+   energy: number
+ }>> {
+-  return get(`/stations/${params.stationId}/power-statistics`, params)
++  return get(`/api/v1/stations/${params.stationId}/power-statistics`, params)
+ }
+ 
+ /**
+@@ -87,7 +87,7 @@ export function getDeviceOperationStatistics(params: {
+   faultTime: number
+   availability: number
+ }> {
+-  return get(`/devices/${params.deviceId}/operation-statistics`, params)
++  return get(`/api/v1/devices/${params.deviceId}/operation-statistics`, params)
+ }
+ 
+ /**
+@@ -104,7 +104,7 @@ export function getComparisonData(params: {
+   current: PointData[]
+   compare: PointData[]
+ }> {
+-  return post('/data/comparison', params)
++  return post('/api/v1/data/comparison', params)
+ }
+ 
+ /**
+@@ -120,5 +120,5 @@ export function getAggregatedData(params: {
+   time: string
+   value: number
+ }>> {
+-  return get('/data/aggregated', params)
++  return get('/api/v1/data/aggregated', params)
+ }
+-- 
+2.43.0
+
