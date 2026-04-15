@@ -5,7 +5,7 @@ import type { DataQuery, PointData, PageQuery, PageResult } from '@/types'
  * 查询历史数据
  */
 export function queryHistoryData(params: DataQuery): Promise<PointData[]> {
-  return post('/data/query', params)
+  return post('/api/v1/data/query', params)
 }
 
 /**
@@ -16,7 +16,7 @@ export function queryRealtimeData(pointIds: number[]): Promise<Record<number, {
   quality: number
   timestamp: number
 }>> {
-  return post('/data/realtime', { pointIds })
+  return post('/api/v1/data/realtime', { pointIds })
 }
 
 /**
@@ -31,7 +31,7 @@ export function getRealtimeData(params: PageQuery): Promise<PageResult<{
   updateTime: string
   status: string
 }>> {
-  return get('/data/realtime-list', params)
+  return get('/api/v1/data/realtime-list', params)
 }
 
 /**
@@ -47,14 +47,14 @@ export function getStatistics(params: {
   timestamp: string
   values: Record<string, number>
 }>> {
-  return post('/data/statistics', params)
+  return post('/api/v1/data/statistics', params)
 }
 
 /**
  * 导出数据
  */
 export function exportData(params: DataQuery & { format: 'csv' | 'excel' }): Promise<Blob> {
-  return post('/data/export', params, { responseType: 'blob' })
+  return post('/api/v1/data/export', params, { responseType: 'blob' })
 }
 
 /**
@@ -70,7 +70,7 @@ export function getStationPowerStatistics(params: {
   power: number
   energy: number
 }>> {
-  return get(`/stations/${params.stationId}/power-statistics`, params)
+  return get(`/api/v1/stations/${params.stationId}/power-statistics`, params)
 }
 
 /**
@@ -87,7 +87,7 @@ export function getDeviceOperationStatistics(params: {
   faultTime: number
   availability: number
 }> {
-  return get(`/devices/${params.deviceId}/operation-statistics`, params)
+  return get(`/api/v1/devices/${params.deviceId}/operation-statistics`, params)
 }
 
 /**
@@ -104,7 +104,7 @@ export function getComparisonData(params: {
   current: PointData[]
   compare: PointData[]
 }> {
-  return post('/data/comparison', params)
+  return post('/api/v1/data/comparison', params)
 }
 
 /**
@@ -120,5 +120,5 @@ export function getAggregatedData(params: {
   time: string
   value: number
 }>> {
-  return get('/data/aggregated', params)
+  return get('/api/v1/data/aggregated', params)
 }

@@ -62,26 +62,17 @@ export interface AllConfigs {
  * 获取所有配置
  */
 export function getAllConfigs(): Promise<AllConfigs> {
-  return get('/v1/configs')
+  return get('/api/v1/configs')
 }
 
-/**
- * 获取指定分类的配置
- */
 export function getConfigsByCategory(category: ConfigCategory): Promise<Record<string, any>> {
-  return get(`/v1/configs/${category}`)
+  return get(`/api/v1/configs/${category}`)
 }
 
-/**
- * 更新配置
- */
 export function updateConfig(category: string, key: string, value: any): Promise<void> {
-  return put(`/v1/configs/${category}/${key}`, { value })
+  return put(`/api/v1/configs/${category}/${key}`, { value })
 }
 
-/**
- * 批量更新配置
- */
 export function batchUpdateConfig(category: string, configs: Record<string, any>): Promise<void> {
-  return put(`/v1/configs/${category}`, configs)
+  return put(`/api/v1/configs/${category}`, configs)
 }
