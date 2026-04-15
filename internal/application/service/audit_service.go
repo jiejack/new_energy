@@ -27,13 +27,6 @@ type LogOperationRequest struct {
 	UserAgent    string
 }
 
-type OperationLogListResponse struct {
-	Logs     []*entity.OperationLog `json:"logs"`
-	Total    int64                  `json:"total"`
-	Page     int                    `json:"page"`
-	PageSize int                    `json:"page_size"`
-}
-
 func (s *AuditService) LogOperation(ctx context.Context, req *LogOperationRequest) error {
 	log := entity.NewOperationLog(req.UserID, req.Username, req.Action)
 	
@@ -55,13 +48,44 @@ func (s *AuditService) GetLog(ctx context.Context, id string) (*entity.Operation
 }
 
 func (s *AuditService) ListLogs(ctx context.Context, userID *string, action *string, startTime, endTime int64, page, pageSize int) (*OperationLogListResponse, error) {
-	logs, total, err := s.logRepo.List(ctx, userID, action, startTime, endTime, page, pageSize)
+	query := &repository.OperationLogQuery{
+		Page:      page,
+		PageSize:  pageSize,
+		StartTime: startTime,
+		EndTime:   endTime,
+	}
+	
+	if userID != nil {
+		query.UserID = *userID
+	}
+	
+	if action != nil {
+		query.Action = *action
+	}
+	
+	logs, total, err := s.logRepo.List(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list logs: %w", err)
 	}
 
+	list := make([]*OperationLogResponse, len(logs))
+	for i, log := range logs {
+		list[i] = &OperationLogResponse{
+			ID:           log.ID,
+			UserID:       log.UserID,
+			Username:     log.Username,
+			Action:       log.Action,
+			ResourceType: log.ResourceType,
+			ResourceID:   log.ResourceID,
+			Details:      log.Details,
+			IPAddress:    log.IPAddress,
+			UserAgent:    log.UserAgent,
+			CreatedAt:    log.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		}
+	}
+
 	return &OperationLogListResponse{
-		Logs:     logs,
+		List:     list,
 		Total:    total,
 		Page:     page,
 		PageSize: pageSize,
@@ -69,13 +93,35 @@ func (s *AuditService) ListLogs(ctx context.Context, userID *string, action *str
 }
 
 func (s *AuditService) GetUserLogs(ctx context.Context, userID string, page, pageSize int) (*OperationLogListResponse, error) {
-	logs, total, err := s.logRepo.GetByUserID(ctx, userID, page, pageSize)
+	query := &repository.OperationLogQuery{
+		Page:      page,
+		PageSize:  pageSize,
+		UserID:    userID,
+	}
+	
+	logs, total, err := s.logRepo.List(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user logs: %w", err)
 	}
 
+	list := make([]*OperationLogResponse, len(logs))
+	for i, log := range logs {
+		list[i] = &OperationLogResponse{
+			ID:           log.ID,
+			UserID:       log.UserID,
+			Username:     log.Username,
+			Action:       log.Action,
+			ResourceType: log.ResourceType,
+			ResourceID:   log.ResourceID,
+			Details:      log.Details,
+			IPAddress:    log.IPAddress,
+			UserAgent:    log.UserAgent,
+			CreatedAt:    log.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		}
+	}
+
 	return &OperationLogListResponse{
-		Logs:     logs,
+		List:     list,
 		Total:    total,
 		Page:     page,
 		PageSize: pageSize,

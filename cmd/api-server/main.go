@@ -20,10 +20,12 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-var (
-	Version   = "dev"
-	BuildTime = "unknown"
+var ( 
+	Version   = "dev" 
+	BuildTime = "unknown" 
 )
+
+
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -1796,6 +1798,371 @@ func changePassword(c *gin.Context) {
 	})
 }
 
+// enableAlarmRule 启用告警规则
+// @Summary 启用告警规则
+// @Description 启用指定告警规则
+// @Tags 告警管理
+// @Accept json
+// @Produce json
+// @Param id path string true "告警规则ID"
+// @Success 200 {object} dto.Response{data=dto.AlarmRuleResponse}
+// @Failure 404 {object} dto.ErrorResponse
+// @Router /alarm-rules/{id}/enable [post]
+func enableAlarmRule(c *gin.Context) {
+	c.JSON(http.StatusOK, dto.Response{
+		Code:      0,
+		Message:   "success",
+		Data:      dto.AlarmRuleResponse{ID: c.Param("id")},
+		Timestamp: time.Now().Unix(),
+	})
+}
+
+// disableAlarmRule 禁用告警规则
+// @Summary 禁用告警规则
+// @Description 禁用指定告警规则
+// @Tags 告警管理
+// @Accept json
+// @Produce json
+// @Param id path string true "告警规则ID"
+// @Success 200 {object} dto.Response{data=dto.AlarmRuleResponse}
+// @Failure 404 {object} dto.ErrorResponse
+// @Router /alarm-rules/{id}/disable [post]
+func disableAlarmRule(c *gin.Context) {
+	c.JSON(http.StatusOK, dto.Response{
+		Code:      0,
+		Message:   "success",
+		Data:      dto.AlarmRuleResponse{ID: c.Param("id")},
+		Timestamp: time.Now().Unix(),
+	})
+}
+
+// listAlarmRules 获取告警规则列表
+// @Summary 获取告警规则列表
+// @Description 获取所有告警规则的列表
+// @Tags 告警管理
+// @Accept json
+// @Produce json
+// @Success 200 {object} dto.Response{data=[]dto.AlarmRuleResponse}
+// @Failure 500 {object} dto.ErrorResponse
+// @Router /alarm-rules [get]
+func listAlarmRules(c *gin.Context) {
+	c.JSON(http.StatusOK, dto.Response{
+		Code:      0,
+		Message:   "success",
+		Data:      []dto.AlarmRuleResponse{},
+		Timestamp: time.Now().Unix(),
+	})
+}
+
+// createAlarmRule 创建告警规则
+// @Summary 创建告警规则
+// @Description 创建新的告警规则
+// @Tags 告警管理
+// @Accept json
+// @Produce json
+// @Param rule body dto.CreateAlarmRuleRequest true "告警规则信息"
+// @Success 201 {object} dto.Response{data=dto.AlarmRuleResponse}
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 500 {object} dto.ErrorResponse
+// @Router /alarm-rules [post]
+func createAlarmRule(c *gin.Context) {
+	c.JSON(http.StatusCreated, dto.Response{
+		Code:      0,
+		Message:   "success",
+		Data:      dto.AlarmRuleResponse{},
+		Timestamp: time.Now().Unix(),
+	})
+}
+
+// getAlarmRule 获取告警规则详情
+// @Summary 获取告警规则详情
+// @Description 根据ID获取告警规则详细信息
+// @Tags 告警管理
+// @Accept json
+// @Produce json
+// @Param id path string true "告警规则ID"
+// @Success 200 {object} dto.Response{data=dto.AlarmRuleResponse}
+// @Failure 404 {object} dto.ErrorResponse
+// @Router /alarm-rules/{id} [get]
+func getAlarmRule(c *gin.Context) {
+	c.JSON(http.StatusOK, dto.Response{
+		Code:      0,
+		Message:   "success",
+		Data:      dto.AlarmRuleResponse{ID: c.Param("id")},
+		Timestamp: time.Now().Unix(),
+	})
+}
+
+// updateAlarmRule 更新告警规则
+// @Summary 更新告警规则
+// @Description 更新告警规则信息
+// @Tags 告警管理
+// @Accept json
+// @Produce json
+// @Param id path string true "告警规则ID"
+// @Param rule body dto.UpdateAlarmRuleRequest true "告警规则信息"
+// @Success 200 {object} dto.Response{data=dto.AlarmRuleResponse}
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Router /alarm-rules/{id} [put]
+func updateAlarmRule(c *gin.Context) {
+	c.JSON(http.StatusOK, dto.Response{
+		Code:      0,
+		Message:   "success",
+		Data:      dto.AlarmRuleResponse{ID: c.Param("id")},
+		Timestamp: time.Now().Unix(),
+	})
+}
+
+// deleteAlarmRule 删除告警规则
+// @Summary 删除告警规则
+// @Description 删除指定告警规则
+// @Tags 告警管理
+// @Accept json
+// @Produce json
+// @Param id path string true "告警规则ID"
+// @Success 204 "No Content"
+// @Failure 404 {object} dto.ErrorResponse
+// @Router /alarm-rules/{id} [delete]
+func deleteAlarmRule(c *gin.Context) {
+	c.JSON(http.StatusNoContent, nil)
+}
+
+// listNotificationConfigs 获取通知配置列表
+// @Summary 获取通知配置列表
+// @Description 获取所有通知配置的列表
+// @Tags 告警管理
+// @Accept json
+// @Produce json
+// @Success 200 {object} dto.Response{data=[]dto.NotificationConfigResponse}
+// @Failure 500 {object} dto.ErrorResponse
+// @Router /notification-configs [get]
+func listNotificationConfigs(c *gin.Context) {
+	c.JSON(http.StatusOK, dto.Response{
+		Code:      0,
+		Message:   "success",
+		Data:      []dto.NotificationConfigResponse{},
+		Timestamp: time.Now().Unix(),
+	})
+}
+
+// getNotificationConfig 获取通知配置详情
+// @Summary 获取通知配置详情
+// @Description 根据类型获取通知配置详细信息
+// @Tags 告警管理
+// @Accept json
+// @Produce json
+// @Param type path string true "通知类型"
+// @Success 200 {object} dto.Response{data=dto.NotificationConfigResponse}
+// @Failure 404 {object} dto.ErrorResponse
+// @Router /notification-configs/{type} [get]
+func getNotificationConfig(c *gin.Context) {
+	c.JSON(http.StatusOK, dto.Response{
+		Code:      0,
+		Message:   "success",
+		Data:      dto.NotificationConfigResponse{Type: c.Param("type")},
+		Timestamp: time.Now().Unix(),
+	})
+}
+
+// updateNotificationConfig 更新通知配置
+// @Summary 更新通知配置
+// @Description 更新通知配置信息
+// @Tags 告警管理
+// @Accept json
+// @Produce json
+// @Param type path string true "通知类型"
+// @Param config body dto.UpdateNotificationConfigRequest true "通知配置信息"
+// @Success 200 {object} dto.Response{data=dto.NotificationConfigResponse}
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Router /notification-configs/{type} [put]
+func updateNotificationConfig(c *gin.Context) {
+	c.JSON(http.StatusOK, dto.Response{
+		Code:      0,
+		Message:   "success",
+		Data:      dto.NotificationConfigResponse{Type: c.Param("type")},
+		Timestamp: time.Now().Unix(),
+	})
+}
+
+// enableNotificationConfig 启用通知配置
+// @Summary 启用通知配置
+// @Description 启用指定通知配置
+// @Tags 告警管理
+// @Accept json
+// @Produce json
+// @Param type path string true "通知类型"
+// @Success 200 {object} dto.Response{data=dto.NotificationConfigResponse}
+// @Failure 404 {object} dto.ErrorResponse
+// @Router /notification-configs/{type}/enable [post]
+func enableNotificationConfig(c *gin.Context) {
+	c.JSON(http.StatusOK, dto.Response{
+		Code:      0,
+		Message:   "success",
+		Data:      dto.NotificationConfigResponse{Type: c.Param("type")},
+		Timestamp: time.Now().Unix(),
+	})
+}
+
+// disableNotificationConfig 禁用通知配置
+// @Summary 禁用通知配置
+// @Description 禁用指定通知配置
+// @Tags 告警管理
+// @Accept json
+// @Produce json
+// @Param type path string true "通知类型"
+// @Success 200 {object} dto.Response{data=dto.NotificationConfigResponse}
+// @Failure 404 {object} dto.ErrorResponse
+// @Router /notification-configs/{type}/disable [post]
+func disableNotificationConfig(c *gin.Context) {
+	c.JSON(http.StatusOK, dto.Response{
+		Code:      0,
+		Message:   "success",
+		Data:      dto.NotificationConfigResponse{Type: c.Param("type")},
+		Timestamp: time.Now().Unix(),
+	})
+}
+
+// testNotificationConfig 测试通知配置
+// @Summary 测试通知配置
+// @Description 测试指定通知配置
+// @Tags 告警管理
+// @Accept json
+// @Produce json
+// @Param type path string true "通知类型"
+// @Success 200 {object} dto.Response
+// @Failure 404 {object} dto.ErrorResponse
+// @Router /notification-configs/{type}/test [post]
+func testNotificationConfig(c *gin.Context) {
+	c.JSON(http.StatusOK, dto.Response{
+		Code:      0,
+		Message:   "success",
+		Timestamp: time.Now().Unix(),
+	})
+}
+
+// generateReport 生成报表
+// @Summary 生成报表
+// @Description 生成指定时间段的报表
+// @Tags 报表管理
+// @Accept json
+// @Produce json
+// @Param type query string false "报表类型"
+// @Param start_time query string false "开始时间"
+// @Param end_time query string false "结束时间"
+// @Param station_id query string false "厂站ID"
+// @Success 200 {object} dto.Response{data=dto.ReportResponse}
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 500 {object} dto.ErrorResponse
+// @Router /reports [get]
+func generateReport(c *gin.Context) {
+	c.JSON(http.StatusOK, dto.Response{
+		Code:      0,
+		Message:   "success",
+		Data:      dto.ReportResponse{},
+		Timestamp: time.Now().Unix(),
+	})
+}
+
+// exportReport 导出报表
+// @Summary 导出报表
+// @Description 导出指定时间段的报表
+// @Tags 报表管理
+// @Accept json
+// @Produce json
+// @Param type query string false "报表类型"
+// @Param start_time query string false "开始时间"
+// @Param end_time query string false "结束时间"
+// @Param station_id query string false "厂站ID"
+// @Param format query string false "导出格式"
+// @Success 200 {object} dto.Response
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 500 {object} dto.ErrorResponse
+// @Router /reports/export [get]
+func exportReport(c *gin.Context) {
+	c.JSON(http.StatusOK, dto.Response{
+		Code:      0,
+		Message:   "success",
+		Timestamp: time.Now().Unix(),
+	})
+}
+
+// listOperationLogs 获取操作日志列表
+// @Summary 获取操作日志列表
+// @Description 获取所有操作日志的列表
+// @Tags 系统管理
+// @Accept json
+// @Produce json
+// @Param user_id query string false "用户ID"
+// @Param action query string false "操作类型"
+// @Param start_time query int false "开始时间戳"
+// @Param end_time query int false "结束时间戳"
+// @Param page query int false "页码"
+// @Param page_size query int false "每页数量"
+// @Success 200 {object} dto.PagedResponse{data=[]dto.OperationLogResponse}
+// @Failure 500 {object} dto.ErrorResponse
+// @Router /operation-logs [get]
+func listOperationLogs(c *gin.Context) {
+	c.JSON(http.StatusOK, dto.PagedResponse{
+		Code:      0,
+		Message:   "success",
+		Data:      []dto.OperationLogResponse{},
+		Timestamp: time.Now().Unix(),
+		Page:      1,
+		PageSize:  20,
+		Total:     0,
+	})
+}
+
+// uploadAvatar 上传头像
+// @Summary 上传头像
+// @Description 上传用户头像
+// @Tags 用户管理
+// @Accept multipart/form-data
+// @Produce json
+// @Param avatar formData file true "头像文件"
+// @Success 200 {object} dto.Response{data=dto.AvatarResponse}
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 500 {object} dto.ErrorResponse
+// @Router /profile/avatar [post]
+func uploadAvatar(c *gin.Context) {
+	c.JSON(http.StatusOK, dto.Response{
+		Code:    0,
+		Message: "success",
+		Data: dto.AvatarResponse{
+			Avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=admin",
+		},
+		Timestamp: time.Now().Unix(),
+	})
+}
+
+// updatePreferences 更新偏好设置
+// @Summary 更新偏好设置
+// @Description 更新当前用户的偏好设置
+// @Tags 用户管理
+// @Accept json
+// @Produce json
+// @Param preferences body dto.UpdatePreferencesRequest true "偏好设置信息"
+// @Success 200 {object} dto.Response{data=dto.PreferencesResponse}
+// @Failure 400 {object} dto.ErrorResponse
+// @Router /profile/preferences [put]
+func updatePreferences(c *gin.Context) {
+	c.JSON(http.StatusOK, dto.Response{
+		Code:    0,
+		Message: "success",
+		Data: dto.PreferencesResponse{
+			Theme:           "light",
+			Language:        "zh-CN",
+			Timezone:        "Asia/Shanghai",
+			NotifyEnabled:   true,
+			NotifyTypes:     []string{"alarm", "system"},
+			DashboardLayout: "default",
+		},
+		Timestamp: time.Now().Unix(),
+	})
+}
+
 // getProfile 获取当前用户信息
 // @Summary 获取当前用户信息
 // @Description 获取当前登录用户的信息
@@ -1878,573 +2245,5 @@ func getPreferences(c *gin.Context) {
 	})
 }
 
-// updatePreferences 更新偏好设置
-// @Summary 更新偏好设置
-// @Description 更新当前用户的偏好设置
-// @Tags 用户管理
-// @Accept json
-// @Produce json
-// @Param preferences body dto.UpdatePreferencesRequest true "偏好设置"
-// @Success 200 {object} dto.Response{data=dto.PreferencesResponse}
-// @Failure 400 {object} dto.ErrorResponse
-// @Router /profile/preferences [put]
-func updatePreferences(c *gin.Context) {
-	c.JSON(http.StatusOK, dto.Response{
-		Code:    0,
-		Message: "success",
-		Data: dto.PreferencesResponse{
-			Theme:           "light",
-			Language:        "zh-CN",
-			Timezone:        "Asia/Shanghai",
-			NotifyEnabled:   true,
-			NotifyTypes:     []string{"alarm", "system"},
-			DashboardLayout: "default",
-		},
-		Timestamp: time.Now().Unix(),
-	})
-}
 
-// uploadAvatar 上传头像
-// @Summary 上传头像
-// @Description 上传用户头像
-// @Tags 用户管理
-// @Accept json
-// @Produce json
-// @Param avatar body dto.UploadAvatarRequest true "头像信息"
-// @Success 200 {object} dto.Response{data=dto.UploadAvatarResponse}
-// @Failure 400 {object} dto.ErrorResponse
-// @Router /profile/avatar [post]
-func uploadAvatar(c *gin.Context) {
-	c.JSON(http.StatusOK, dto.Response{
-		Code:    0,
-		Message: "success",
-		Data: dto.UploadAvatarResponse{
-			Avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=admin",
-		},
-		Timestamp: time.Now().Unix(),
-	})
-}
 
-// AlarmRuleResponse 告警规则响应
-type AlarmRuleResponse struct {
-	ID             string   `json:"id"`
-	Name           string   `json:"name"`
-	Description    string   `json:"description"`
-	Type           string   `json:"type"`
-	Level          int      `json:"level"`
-	Condition      string   `json:"condition"`
-	Threshold      float64  `json:"threshold"`
-	Duration       int      `json:"duration"`
-	PointID        *string  `json:"point_id,omitempty"`
-	DeviceID       *string  `json:"device_id,omitempty"`
-	StationID      *string  `json:"station_id,omitempty"`
-	NotifyChannels []string `json:"notify_channels"`
-	NotifyUsers    []string `json:"notify_users"`
-	Status         int      `json:"status"`
-	CreatedAt      string   `json:"created_at"`
-	UpdatedAt      string   `json:"updated_at"`
-}
-
-// listAlarmRules 获取告警规则列表
-// @Summary 获取告警规则列表
-// @Description 获取所有告警规则的列表，支持分页和过滤
-// @Tags 告警规则管理
-// @Accept json
-// @Produce json
-// @Param type query string false "规则类型"
-// @Param level query int false "告警级别"
-// @Param status query int false "状态"
-// @Param page query int false "页码" default(1)
-// @Param page_size query int false "每页数量" default(10)
-// @Success 200 {object} dto.PagedResponse{data=[]AlarmRuleResponse}
-// @Failure 500 {object} dto.ErrorResponse
-// @Router /alarm-rules [get]
-func listAlarmRules(c *gin.Context) {
-	rules := []AlarmRuleResponse{
-		{
-			ID:             "rule_001",
-			Name:           "温度超限告警",
-			Description:    "设备温度超过设定阈值时触发",
-			Type:           "limit",
-			Level:          3,
-			Condition:      "temperature > threshold",
-			Threshold:      80,
-			Duration:       60,
-			NotifyChannels: []string{"email", "sms"},
-			NotifyUsers:    []string{"admin", "operator"},
-			Status:         1,
-			CreatedAt:      time.Now().Add(-24 * time.Hour).Format("2006-01-02 15:04:05"),
-			UpdatedAt:      time.Now().Format("2006-01-02 15:04:05"),
-		},
-		{
-			ID:             "rule_002",
-			Name:           "功率异常告警",
-			Description:    "设备功率低于正常范围时触发",
-			Type:           "limit",
-			Level:          2,
-			Condition:      "power < threshold",
-			Threshold:      0.8,
-			Duration:       120,
-			NotifyChannels: []string{"email"},
-			NotifyUsers:    []string{"operator"},
-			Status:         1,
-			CreatedAt:      time.Now().Add(-12 * time.Hour).Format("2006-01-02 15:04:05"),
-			UpdatedAt:      time.Now().Format("2006-01-02 15:04:05"),
-		},
-		{
-			ID:             "rule_003",
-			Name:           "通信中断告警",
-			Description:    "设备通信中断超过设定时间时触发",
-			Type:           "trend",
-			Level:          4,
-			Condition:      "offline_duration > threshold",
-			Threshold:      300,
-			Duration:       0,
-			NotifyChannels: []string{"email", "sms", "webhook"},
-			NotifyUsers:    []string{"admin", "operator", "maintenance"},
-			Status:         1,
-			CreatedAt:      time.Now().Add(-6 * time.Hour).Format("2006-01-02 15:04:05"),
-			UpdatedAt:      time.Now().Format("2006-01-02 15:04:05"),
-		},
-	}
-
-	c.JSON(http.StatusOK, dto.PagedResponse{
-		Code:      0,
-		Message:   "success",
-		Data:      rules,
-		Timestamp: time.Now().Unix(),
-		Page:      1,
-		PageSize:  10,
-		Total:     int64(len(rules)),
-	})
-}
-
-// createAlarmRule 创建告警规则
-// @Summary 创建告警规则
-// @Description 创建新的告警规则
-// @Tags 告警规则管理
-// @Accept json
-// @Produce json
-// @Param rule body object true "告警规则信息"
-// @Success 201 {object} dto.Response{data=AlarmRuleResponse}
-// @Failure 400 {object} dto.ErrorResponse
-// @Failure 500 {object} dto.ErrorResponse
-// @Router /alarm-rules [post]
-func createAlarmRule(c *gin.Context) {
-	c.JSON(http.StatusCreated, dto.Response{
-		Code:      0,
-		Message:   "success",
-		Data:      AlarmRuleResponse{ID: "rule_new"},
-		Timestamp: time.Now().Unix(),
-	})
-}
-
-// getAlarmRule 获取告警规则详情
-// @Summary 获取告警规则详情
-// @Description 根据ID获取告警规则详细信息
-// @Tags 告警规则管理
-// @Accept json
-// @Produce json
-// @Param id path string true "告警规则ID"
-// @Success 200 {object} dto.Response{data=AlarmRuleResponse}
-// @Failure 404 {object} dto.ErrorResponse
-// @Router /alarm-rules/{id} [get]
-func getAlarmRule(c *gin.Context) {
-	c.JSON(http.StatusOK, dto.Response{
-		Code:      0,
-		Message:   "success",
-		Data:      AlarmRuleResponse{ID: c.Param("id")},
-		Timestamp: time.Now().Unix(),
-	})
-}
-
-// updateAlarmRule 更新告警规则
-// @Summary 更新告警规则
-// @Description 更新告警规则信息
-// @Tags 告警规则管理
-// @Accept json
-// @Produce json
-// @Param id path string true "告警规则ID"
-// @Param rule body object true "告警规则信息"
-// @Success 200 {object} dto.Response{data=AlarmRuleResponse}
-// @Failure 400 {object} dto.ErrorResponse
-// @Failure 404 {object} dto.ErrorResponse
-// @Router /alarm-rules/{id} [put]
-func updateAlarmRule(c *gin.Context) {
-	c.JSON(http.StatusOK, dto.Response{
-		Code:      0,
-		Message:   "success",
-		Data:      AlarmRuleResponse{ID: c.Param("id")},
-		Timestamp: time.Now().Unix(),
-	})
-}
-
-// deleteAlarmRule 删除告警规则
-// @Summary 删除告警规则
-// @Description 删除指定告警规则
-// @Tags 告警规则管理
-// @Accept json
-// @Produce json
-// @Param id path string true "告警规则ID"
-// @Success 200 {object} dto.Response
-// @Failure 404 {object} dto.ErrorResponse
-// @Router /alarm-rules/{id} [delete]
-func deleteAlarmRule(c *gin.Context) {
-	c.JSON(http.StatusOK, dto.Response{
-		Code:      0,
-		Message:   "success",
-		Timestamp: time.Now().Unix(),
-	})
-}
-
-// NotificationConfigResponse 通知配置响应
-type NotificationConfigResponse struct {
-	ID      string                 `json:"id"`
-	Type    string                 `json:"type"`
-	Name    string                 `json:"name"`
-	Config  map[string]interface{} `json:"config"`
-	Enabled bool                   `json:"enabled"`
-}
-
-// listNotificationConfigs 获取通知配置列表
-// @Summary 获取通知配置列表
-// @Description 获取所有通知配置
-// @Tags 通知配置管理
-// @Accept json
-// @Produce json
-// @Success 200 {object} dto.Response{data=[]NotificationConfigResponse}
-// @Failure 500 {object} dto.ErrorResponse
-// @Router /notification-configs [get]
-func listNotificationConfigs(c *gin.Context) {
-	configs := []NotificationConfigResponse{
-		{
-			ID:   "notif_001",
-			Type: "email",
-			Name: "邮件通知",
-			Config: map[string]interface{}{
-				"smtp_host": "smtp.example.com",
-				"smtp_port": 465,
-				"username":  "alert@example.com",
-				"from":      "alert@example.com",
-				"use_tls":   true,
-			},
-			Enabled: false,
-		},
-		{
-			ID:   "notif_002",
-			Type: "sms",
-			Name: "短信通知",
-			Config: map[string]interface{}{
-				"access_key": "",
-				"secret_key": "",
-				"sign_name":  "新能源监控",
-			},
-			Enabled: false,
-		},
-		{
-			ID:   "notif_003",
-			Type: "webhook",
-			Name: "Webhook通知",
-			Config: map[string]interface{}{
-				"url":    "",
-				"method": "POST",
-			},
-			Enabled: false,
-		},
-		{
-			ID:   "notif_004",
-			Type: "wechat",
-			Name: "微信通知",
-			Config: map[string]interface{}{
-				"corp_id":  "",
-				"agent_id": "",
-			},
-			Enabled: false,
-		},
-	}
-
-	c.JSON(http.StatusOK, dto.Response{
-		Code:      0,
-		Message:   "success",
-		Data:      configs,
-		Timestamp: time.Now().Unix(),
-	})
-}
-
-// getNotificationConfig 获取通知配置详情
-// @Summary 获取通知配置详情
-// @Description 根据类型获取通知配置
-// @Tags 通知配置管理
-// @Accept json
-// @Produce json
-// @Param type path string true "通知类型"
-// @Success 200 {object} dto.Response{data=NotificationConfigResponse}
-// @Failure 404 {object} dto.ErrorResponse
-// @Router /notification-configs/{type} [get]
-func getNotificationConfig(c *gin.Context) {
-	notifType := c.Param("type")
-	c.JSON(http.StatusOK, dto.Response{
-		Code:    0,
-		Message: "success",
-		Data: NotificationConfigResponse{
-			ID:   "notif_" + notifType,
-			Type: notifType,
-			Name: notifType + "通知",
-		},
-		Timestamp: time.Now().Unix(),
-	})
-}
-
-// updateNotificationConfig 更新通知配置
-// @Summary 更新通知配置
-// @Description 更新指定类型的通知配置
-// @Tags 通知配置管理
-// @Accept json
-// @Produce json
-// @Param type path string true "通知类型"
-// @Param config body object true "配置信息"
-// @Success 200 {object} dto.Response{data=NotificationConfigResponse}
-// @Failure 400 {object} dto.ErrorResponse
-// @Failure 404 {object} dto.ErrorResponse
-// @Router /notification-configs/{type} [put]
-func updateNotificationConfig(c *gin.Context) {
-	notifType := c.Param("type")
-	c.JSON(http.StatusOK, dto.Response{
-		Code:    0,
-		Message: "success",
-		Data: NotificationConfigResponse{
-			ID:   "notif_" + notifType,
-			Type: notifType,
-		},
-		Timestamp: time.Now().Unix(),
-	})
-}
-
-// enableNotificationConfig 启用通知配置
-// @Summary 启用通知配置
-// @Description 启用指定类型的通知配置
-// @Tags 通知配置管理
-// @Accept json
-// @Produce json
-// @Param type path string true "通知类型"
-// @Success 200 {object} dto.Response
-// @Failure 404 {object} dto.ErrorResponse
-// @Router /notification-configs/{type}/enable [post]
-func enableNotificationConfig(c *gin.Context) {
-	c.JSON(http.StatusOK, dto.Response{
-		Code:      0,
-		Message:   "success",
-		Timestamp: time.Now().Unix(),
-	})
-}
-
-// disableNotificationConfig 禁用通知配置
-// @Summary 禁用通知配置
-// @Description 禁用指定类型的通知配置
-// @Tags 通知配置管理
-// @Accept json
-// @Produce json
-// @Param type path string true "通知类型"
-// @Success 200 {object} dto.Response
-// @Failure 404 {object} dto.ErrorResponse
-// @Router /notification-configs/{type}/disable [post]
-func disableNotificationConfig(c *gin.Context) {
-	c.JSON(http.StatusOK, dto.Response{
-		Code:      0,
-		Message:   "success",
-		Timestamp: time.Now().Unix(),
-	})
-}
-
-// testNotificationConfig 测试通知配置
-// @Summary 测试通知配置
-// @Description 测试指定类型的通知配置是否可用
-// @Tags 通知配置管理
-// @Accept json
-// @Produce json
-// @Param type path string true "通知类型"
-// @Success 200 {object} dto.Response
-// @Failure 400 {object} dto.ErrorResponse
-// @Failure 404 {object} dto.ErrorResponse
-// @Router /notification-configs/{type}/test [post]
-func testNotificationConfig(c *gin.Context) {
-	c.JSON(http.StatusOK, dto.Response{
-		Code:      0,
-		Message:   "Test successful",
-		Timestamp: time.Now().Unix(),
-	})
-}
-
-// generateReport 生成统计报表
-// @Summary 生成统计报表
-// @Description 根据条件生成电站统计报表
-// @Tags 报表管理
-// @Accept json
-// @Produce json
-// @Param type query string false "报表类型" Enums(daily, weekly, monthly)
-// @Param start_time query string false "开始时间"
-// @Param end_time query string false "结束时间"
-// @Param station_id query string false "电站ID"
-// @Success 200 {object} dto.Response
-// @Failure 400 {object} dto.ErrorResponse
-// @Router /reports [get]
-func generateReport(c *gin.Context) {
-	reportType := c.DefaultQuery("type", "daily")
-	startTime := c.DefaultQuery("start_time", time.Now().AddDate(0, -1, 0).Format("2006-01-02"))
-	endTime := c.DefaultQuery("end_time", time.Now().Format("2006-01-02"))
-
-	report := map[string]interface{}{
-		"type":       reportType,
-		"start_time": startTime,
-		"end_time":   endTime,
-		"stations": []map[string]interface{}{
-			{
-				"station_id":   "station_001",
-				"station_name": "光伏电站A",
-				"total_power":  125000,
-				"yoy_change":   12.5,
-				"mom_change":   5.2,
-				"alarm_count":  15,
-				"online_rate":  99.5,
-			},
-			{
-				"station_id":   "station_002",
-				"station_name": "风电场B",
-				"total_power":  89000,
-				"yoy_change":   8.3,
-				"mom_change":   -2.1,
-				"alarm_count":  8,
-				"online_rate":  98.2,
-			},
-		},
-		"summary": map[string]interface{}{
-			"total_power":     214000,
-			"total_alarms":    23,
-			"avg_online_rate": 98.85,
-		},
-	}
-
-	c.JSON(http.StatusOK, dto.Response{
-		Code:      0,
-		Message:   "success",
-		Data:      report,
-		Timestamp: time.Now().Unix(),
-	})
-}
-
-// exportReport 导出报表
-// @Summary 导出报表
-// @Description 导出报表为Excel或CSV格式
-// @Tags 报表管理
-// @Accept json
-// @Produce octet-stream
-// @Param type query string false "报表类型"
-// @Param format query string false "导出格式" Enums(excel, csv)
-// @Success 200 {file} file
-// @Failure 400 {object} dto.ErrorResponse
-// @Router /reports/export [get]
-func exportReport(c *gin.Context) {
-	format := c.DefaultQuery("format", "excel")
-	filename := fmt.Sprintf("report_%s.%s", time.Now().Format("20060102150405"), format)
-
-	if format == "csv" {
-		c.Header("Content-Type", "text/csv")
-		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
-		c.String(http.StatusOK, "电站名称,发电量(kWh),同比,环比,告警数,在线率\n")
-		return
-	}
-
-	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
-	c.JSON(http.StatusOK, dto.Response{
-		Code:    0,
-		Message: "Export successful",
-	})
-}
-
-// OperationLogResponse 操作日志响应
-type OperationLogResponse struct {
-	ID         string `json:"id"`
-	UserID     string `json:"user_id"`
-	Username   string `json:"username"`
-	Method     string `json:"method"`
-	Path       string `json:"path"`
-	Action     string `json:"action"`
-	Resource   string `json:"resource"`
-	ResourceID string `json:"resource_id"`
-	RequestIP  string `json:"request_ip"`
-	Status     int    `json:"status"`
-	Duration   int64  `json:"duration"`
-	CreatedAt  string `json:"created_at"`
-}
-
-// listOperationLogs 获取操作日志列表
-// @Summary 获取操作日志列表
-// @Description 获取系统操作日志列表，支持分页和过滤
-// @Tags 操作日志
-// @Accept json
-// @Produce json
-// @Param user_id query string false "用户ID"
-// @Param action query string false "操作类型"
-// @Param start_time query string false "开始时间"
-// @Param end_time query string false "结束时间"
-// @Param page query int false "页码" default(1)
-// @Param page_size query int false "每页数量" default(20)
-// @Success 200 {object} dto.PagedResponse{data=[]OperationLogResponse}
-// @Failure 500 {object} dto.ErrorResponse
-// @Router /operation-logs [get]
-func listOperationLogs(c *gin.Context) {
-	logs := []OperationLogResponse{
-		{
-			ID:         "log_001",
-			UserID:     "user_001",
-			Username:   "admin",
-			Method:     "POST",
-			Path:       "/api/v1/stations",
-			Action:     "create",
-			Resource:   "station",
-			ResourceID: "station_new",
-			RequestIP:  "192.168.1.100",
-			Status:     200,
-			Duration:   45,
-			CreatedAt:  time.Now().Add(-1 * time.Hour).Format("2006-01-02 15:04:05"),
-		},
-		{
-			ID:         "log_002",
-			UserID:     "user_001",
-			Username:   "admin",
-			Method:     "PUT",
-			Path:       "/api/v1/devices/device_001",
-			Action:     "update",
-			Resource:   "device",
-			ResourceID: "device_001",
-			RequestIP:  "192.168.1.100",
-			Status:     200,
-			Duration:   32,
-			CreatedAt:  time.Now().Add(-2 * time.Hour).Format("2006-01-02 15:04:05"),
-		},
-		{
-			ID:        "log_003",
-			UserID:    "user_002",
-			Username:  "operator",
-			Method:    "POST",
-			Path:      "/api/v1/auth/login",
-			Action:    "login",
-			Resource:  "auth",
-			RequestIP: "192.168.1.101",
-			Status:    200,
-			Duration:  128,
-			CreatedAt: time.Now().Add(-3 * time.Hour).Format("2006-01-02 15:04:05"),
-		},
-	}
-
-	c.JSON(http.StatusOK, dto.PagedResponse{
-		Code:      0,
-		Message:   "success",
-		Data:      logs,
-		Timestamp: time.Now().Unix(),
-		Page:      1,
-		PageSize:  20,
-		Total:     int64(len(logs)),
-	})
-}

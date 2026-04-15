@@ -202,9 +202,15 @@ func NewHTTPServer(
 	userHandler *handler.UserHandler,
 	deviceHandler *handler.DeviceHandler,
 	alarmHandler *handler.AlarmHandler,
+	alarmRuleHandler *handler.AlarmRuleHandler,
 	stationHandler *handler.StationHandler,
 	regionHandler *handler.RegionHandler,
 	pointHandler *handler.PointHandler,
+	qaHandler *handler.QAHandler,
+	configHandler *handler.ConfigHandler,
+	notificationConfigHandler *handler.NotificationConfigHandler,
+	exportHandler *handler.ExportHandler,
+	reportHandler *handler.ReportHandler,
 	operationLogHandler *handler.OperationLogHandler,
 ) *http.Server {
 	// 设置 Gin 模式
@@ -307,6 +313,13 @@ func NewHTTPServer(
 			operationLogs.GET("/:id", operationLogHandler.GetLog)
 			operationLogs.POST("", operationLogHandler.CreateLog)
 			operationLogs.DELETE("/cleanup", operationLogHandler.DeleteOldLogs)
+		}
+
+		// 报表路由
+		reports := api.Group("/reports")
+		{
+			reports.GET("", reportHandler.GenerateReport)
+			reports.GET("/export", reportHandler.ExportReport)
 		}
 	}
 

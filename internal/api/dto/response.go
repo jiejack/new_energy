@@ -240,6 +240,11 @@ type UploadAvatarResponse struct {
 	Avatar string `json:"avatar"`
 }
 
+// AvatarResponse 头像响应
+type AvatarResponse struct {
+	Avatar string `json:"avatar"`
+}
+
 // StationStatisticsResponse 厂站统计响应
 type StationStatisticsResponse struct {
 	DeviceCount       int `json:"device_count" example:"25"`
@@ -248,4 +253,58 @@ type StationStatisticsResponse struct {
 	AlarmCount        int     `json:"alarm_count" example:"5"`
 	Power             float64 `json:"power" example:"4500.0"`
 	Energy            float64 `json:"energy" example:"28500.0"`
+}
+
+// AlarmRuleResponse 告警规则响应
+type AlarmRuleResponse struct {
+	ID             string   `json:"id"`
+	Name           string   `json:"name"`
+	Description    string   `json:"description"`
+	Type           string   `json:"type"`
+	Level          int      `json:"level"`
+	Condition      string   `json:"condition"`
+	Threshold      float64  `json:"threshold"`
+	Duration       int      `json:"duration"`
+	PointID        *string  `json:"point_id,omitempty"`
+	DeviceID       *string  `json:"device_id,omitempty"`
+	StationID      *string  `json:"station_id,omitempty"`
+	NotifyChannels []string `json:"notify_channels"`
+	NotifyUsers    []string `json:"notify_users"`
+	Status         int      `json:"status"`
+	CreatedAt      string   `json:"created_at"`
+	UpdatedAt      string   `json:"updated_at"`
+}
+
+// NotificationConfigResponse 通知配置响应
+type NotificationConfigResponse struct {
+	ID      string                 `json:"id"`
+	Type    string                 `json:"type"`
+	Name    string                 `json:"name"`
+	Config  map[string]interface{} `json:"config"`
+	Enabled bool                   `json:"enabled"`
+}
+
+// ReportResponse 报表响应
+type ReportResponse struct {
+	Type       string                   `json:"type"`
+	StartTime  string                   `json:"start_time"`
+	EndTime    string                   `json:"end_time"`
+	Stations   []map[string]interface{} `json:"stations"`
+	Summary    map[string]interface{}   `json:"summary"`
+}
+
+// OperationLogResponse 操作日志响应
+type OperationLogResponse struct {
+	ID         string `json:"id"`
+	UserID     string `json:"user_id"`
+	Username   string `json:"username"`
+	Method     string `json:"method"`
+	Path       string `json:"path"`
+	Action     string `json:"action"`
+	Resource   string `json:"resource"`
+	ResourceID string `json:"resource_id"`
+	RequestIP  string `json:"request_ip"`
+	Status     int    `json:"status"`
+	Duration   int64  `json:"duration"`
+	CreatedAt  string `json:"created_at"`
 }

@@ -20,4 +20,5 @@ var HandlerSet = wire.NewSet(
 	NewNotificationConfigHandler,
 	NewExportHandler,
 	NewOperationLogHandler,
+	NewReportHandler,
 )

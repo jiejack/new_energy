@@ -48,9 +48,4 @@ type PermissionRepository interface {
 	ExistsByCode(ctx context.Context, code string) (bool, error)
 }
 
-type OperationLogRepository interface {
-	Create(ctx context.Context, log *entity.OperationLog) error
-	GetByID(ctx context.Context, id string) (*entity.OperationLog, error)
-	List(ctx context.Context, userID *string, action *string, startTime, endTime int64, page, pageSize int) ([]*entity.OperationLog, int64, error)
-	GetByUserID(ctx context.Context, userID string, page, pageSize int) ([]*entity.OperationLog, int64, error)
-}
+
