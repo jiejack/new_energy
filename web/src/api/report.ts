@@ -30,9 +30,9 @@ export interface ReportData {
 }
 
 export function generateReport(params: ReportParams): Promise<ReportData> {
-  return get('/reports', params)
+  return get('/api/v1/reports', params)
 }
 
 export function exportReport(params: ReportParams & { format?: 'excel' | 'csv' }): Promise<Blob> {
-  return get('/reports/export', params, { responseType: 'blob' })
+  return get('/api/v1/reports/export', params, { responseType: 'blob' })
 }

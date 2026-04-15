@@ -197,6 +197,8 @@ import {
   createAlarmRule,
   updateAlarmRule,
   deleteAlarmRule,
+  enableAlarmRule,
+  disableAlarmRule,
   type AlarmRule as ApiAlarmRule,
 } from '@/api/alarm-rule'
 import { getPointList } from '@/api/point'
@@ -384,19 +386,11 @@ const handleDelete = async (row: AlarmRule) => {
 // 状态变更
 const handleStatusChange = async (row: AlarmRule) => {
   try {
-    await updateAlarmRule(row.id, {
-      id: row.id,
-      name: row.name,
-      description: row.content,
-      type: 'threshold',
-      level: ['critical', 'major', 'minor', 'warning'].indexOf(row.level) + 1,
-      condition: row.operator,
-      threshold: row.threshold,
-      duration: row.duration,
-      point_id: row.pointId?.toString(),
-      notify_channels: row.notifyChannels,
-      notify_users: [],
-    })
+    if (row.enabled) {
+      await enableAlarmRule(row.id)
+    } else {
+      await disableAlarmRule(row.id)
+    }
     ElMessage.success(row.enabled ? '已启用' : '已禁用')
   } catch (error: any) {
     row.enabled = !row.enabled

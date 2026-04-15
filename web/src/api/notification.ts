@@ -40,25 +40,25 @@ export interface WechatConfig {
 }
 
 export function getNotificationConfigs(): Promise<NotificationConfig[]> {
-  return get('/notification-configs')
+  return get('/api/v1/notification-configs')
 }
 
 export function getNotificationConfig(type: NotificationType): Promise<NotificationConfig> {
-  return get(`/notification-configs/${type}`)
+  return get(`/api/v1/notification-configs/${type}`)
 }
 
 export function updateNotificationConfig(type: NotificationType, config: Record<string, any>): Promise<NotificationConfig> {
-  return put(`/notification-configs/${type}`, config)
+  return put(`/api/v1/notification-configs/${type}`, config)
 }
 
 export function enableNotificationConfig(type: NotificationType): Promise<void> {
-  return post(`/notification-configs/${type}/enable`)
+  return post(`/api/v1/notification-configs/${type}/enable`)
 }
 
 export function disableNotificationConfig(type: NotificationType): Promise<void> {
-  return post(`/notification-configs/${type}/disable`)
+  return post(`/api/v1/notification-configs/${type}/disable`)
 }
 
 export function testNotificationConfig(type: NotificationType, testTarget?: string): Promise<{ success: boolean; message: string }> {
-  return post(`/notification-configs/${type}/test`, { test_target: testTarget })
+  return post(`/api/v1/notification-configs/${type}/test`, { test_target: testTarget })
 }

@@ -1,4 +1,4 @@
-import { get, post, del } from '@/utils/request'
+import { get, post, put, del } from '@/utils/request'
 import type { PageQuery, PageResult } from '@/types'
 
 export interface AlarmRule {
@@ -35,30 +35,40 @@ export interface CreateAlarmRuleRequest {
   notify_users: string[]
 }
 
-export interface UpdateAlarmRuleRequest extends CreateAlarmRuleRequest {
-  id: string
+export interface UpdateAlarmRuleRequest extends Partial<CreateAlarmRuleRequest> {
+  id?: string
+  status?: number
 }
 
 export function getAlarmRuleList(params?: PageQuery & {
   type?: string
   level?: number
   status?: number
+  station_id?: string
 }): Promise<PageResult<AlarmRule>> {
-  return get('/alarm-rules', params)
+  return get('/api/v1/alarm-rules', params)
 }
 
 export function getAlarmRule(id: string): Promise<AlarmRule> {
-  return get(`/alarm-rules/${id}`)
+  return get(`/api/v1/alarm-rules/${id}`)
 }
 
 export function createAlarmRule(data: CreateAlarmRuleRequest): Promise<AlarmRule> {
-  return post('/alarm-rules', data)
+  return post('/api/v1/alarm-rules', data)
 }
 
 export function updateAlarmRule(id: string, data: UpdateAlarmRuleRequest): Promise<AlarmRule> {
-  return post(`/alarm-rules/${id}`, { ...data, _method: 'PUT' })
+  return put(`/api/v1/alarm-rules/${id}`, data)
 }
 
 export function deleteAlarmRule(id: string): Promise<void> {
-  return del(`/alarm-rules/${id}`)
+  return del(`/api/v1/alarm-rules/${id}`)
+}
+
+export function enableAlarmRule(id: string): Promise<void> {
+  return post(`/api/v1/alarm-rules/${id}/enable`)
+}
+
+export function disableAlarmRule(id: string): Promise<void> {
+  return post(`/api/v1/alarm-rules/${id}/disable`)
 }

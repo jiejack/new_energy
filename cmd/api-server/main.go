@@ -345,6 +345,8 @@ func setupRouter() *gin.Engine {
 		api.GET("/alarm-rules/:id", getAlarmRule)
 		api.PUT("/alarm-rules/:id", updateAlarmRule)
 		api.DELETE("/alarm-rules/:id", deleteAlarmRule)
+		api.POST("/alarm-rules/:id/enable", enableAlarmRule)
+		api.POST("/alarm-rules/:id/disable", disableAlarmRule)
 
 		// Notification config management
 		api.GET("/notification-configs", listNotificationConfigs)

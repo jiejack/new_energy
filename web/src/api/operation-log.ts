@@ -27,25 +27,25 @@ export interface OperationLogQuery extends PageQuery {
 }
 
 export function getOperationLogs(params: OperationLogQuery): Promise<PageResult<OperationLog>> {
-  return get('/operation-logs', params)
+  return get('/api/v1/operation-logs', params)
 }
 
 export function getOperationLog(id: string): Promise<OperationLog> {
-  return get(`/operation-logs/${id}`)
+  return get(`/api/v1/operation-logs/${id}`)
 }
 
 export function deleteOperationLog(id: string): Promise<void> {
-  return del(`/operation-logs/${id}`)
+  return del(`/api/v1/operation-logs/${id}`)
 }
 
 export function batchDeleteOperationLogs(ids: string[]): Promise<void> {
-  return post('/operation-logs/batch-delete', { ids })
+  return post('/api/v1/operation-logs/batch-delete', { ids })
 }
 
 export function clearOperationLogs(beforeDate?: string): Promise<void> {
-  return post('/operation-logs/clear', { before_date: beforeDate })
+  return post('/api/v1/operation-logs/clear', { before_date: beforeDate })
 }
 
 export function exportOperationLogs(params: OperationLogQuery): Promise<Blob> {
-  return get('/operation-logs/export', params, { responseType: 'blob' })
+  return get('/api/v1/operation-logs/export', params, { responseType: 'blob' })
 }

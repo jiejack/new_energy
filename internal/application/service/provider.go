@@ -11,6 +11,7 @@ var ServiceSet = wire.NewSet(
 	NewUserService,
 	NewDeviceService,
 	NewAlarmService,
+	NewAlarmRuleService,
 	NewStationService,
 	NewRegionService,
 	NewPointService,
@@ -18,4 +19,8 @@ var ServiceSet = wire.NewSet(
 	NewAuditService,
 	NewQAService,
 	NewConfigService,
+	NewNotificationConfigService,
+	NewExportService,
+	NewReportService,
+	NewOperationLogService,
 )

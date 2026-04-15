@@ -13,9 +13,11 @@ var RepositorySet = wire.NewSet(
 	NewDeviceRepository,
 	NewPointRepository,
 	NewAlarmRepository,
+	NewAlarmRuleRepository,
 	NewRoleRepository,
 	NewPermissionRepository,
 	NewOperationLogRepository,
 	NewQARepository,
 	NewSystemConfigRepository,
+	NewNotificationConfigRepository,
 )

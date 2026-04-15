@@ -11,9 +11,13 @@ var HandlerSet = wire.NewSet(
 	NewUserHandler,
 	NewDeviceHandler,
 	NewAlarmHandler,
+	NewAlarmRuleHandler,
 	NewStationHandler,
 	NewRegionHandler,
 	NewPointHandler,
 	NewQAHandler,
 	NewConfigHandler,
+	NewNotificationConfigHandler,
+	NewExportHandler,
+	NewOperationLogHandler,
 )
