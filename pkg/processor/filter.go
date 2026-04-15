@@ -60,6 +60,7 @@ func NewMovingAverageFilter(config MovingAverageFilterConfig) *MovingAverageFilt
 		name:   config.Name,
 		window: config.Window,
 		values: make([]float64, config.Window),
+		logger: config.Logger,
 	}
 }
 
@@ -152,6 +153,7 @@ func NewMedianFilter(config MedianFilterConfig) *MedianFilter {
 		name:   config.Name,
 		window: config.Window,
 		values: make([]float64, config.Window),
+		logger: config.Logger,
 	}
 }
 
@@ -256,6 +258,7 @@ func NewKalmanFilter(config KalmanFilterConfig) *KalmanFilter {
 		measureNoise: config.MeasureNoise,
 		estimate:     config.InitialValue,
 		errorCov:     1.0,
+		logger:       config.Logger,
 	}
 }
 
@@ -348,6 +351,7 @@ func NewLimitFilter(config LimitFilterConfig) *LimitFilter {
 	return &LimitFilter{
 		name:      config.Name,
 		maxChange: config.MaxChange,
+		logger:    config.Logger,
 	}
 }
 
@@ -453,6 +457,7 @@ func NewExponentialSmoothingFilter(config ExponentialSmoothingFilterConfig) *Exp
 		name:     config.Name,
 		alpha:    config.Alpha,
 		estimate: config.InitialValue,
+		logger:   config.Logger,
 	}
 }
 
@@ -882,6 +887,7 @@ func NewMedianFilterOptimized(name string, window int, logger *zap.Logger) *Medi
 		maxHeap: maxH,
 		minHeap: minH,
 		values:  make([]float64, window),
+		logger:  logger,
 	}
 }
 

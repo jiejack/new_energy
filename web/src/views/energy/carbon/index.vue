@@ -397,10 +397,9 @@ const renderCharts = () => {
   }
   
   if (reductionProgressChartRef.value) {
-    const progress = carbonData.value.reductionProgress || { target: 300, actual: 150, remaining: 150 }
-    const percentage = Math.min((progress.actual / progress.target) * 100, 100)
-    
-    reductionProgressChart = echarts.init(reductionProgressChartRef.value)
+		const progress = carbonData.value.reductionProgress || { target: 300, actual: 150, remaining: 150 }
+		
+		reductionProgressChart = echarts.init(reductionProgressChartRef.value)
     reductionProgressChart.setOption({
       tooltip: {
         formatter: '{a} <br/>{b}: {c} tCO₂'

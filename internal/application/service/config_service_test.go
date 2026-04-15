@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/new-energy-monitoring/internal/domain/entity"
+	"github.com/new-energy-monitoring/internal/domain/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"gorm.io/gorm"
@@ -111,14 +112,17 @@ func (m *MockOperationLogRepositoryForConfigService) GetByID(ctx context.Context
 	return args.Get(0).(*entity.OperationLog), args.Error(1)
 }
 
-func (m *MockOperationLogRepositoryForConfigService) List(ctx context.Context, userID *string, action *string, startTime, endTime int64, page, pageSize int) ([]*entity.OperationLog, int64, error) {
-	args := m.Called(ctx, userID, action, startTime, endTime, page, pageSize)
+func (m *MockOperationLogRepositoryForConfigService) List(ctx context.Context, query *repository.OperationLogQuery) ([]*entity.OperationLog, int64, error) {
+	args := m.Called(ctx, query)
+	if args.Get(0) == nil {
+		return nil, args.Get(1).(int64), args.Error(2)
+	}
 	return args.Get(0).([]*entity.OperationLog), args.Get(1).(int64), args.Error(2)
 }
 
-func (m *MockOperationLogRepositoryForConfigService) GetByUserID(ctx context.Context, userID string, page, pageSize int) ([]*entity.OperationLog, int64, error) {
-	args := m.Called(ctx, userID, page, pageSize)
-	return args.Get(0).([]*entity.OperationLog), args.Get(1).(int64), args.Error(2)
+func (m *MockOperationLogRepositoryForConfigService) DeleteBefore(ctx context.Context, before int64) (int64, error) {
+	args := m.Called(ctx, before)
+	return args.Get(0).(int64), args.Error(1)
 }
 
 func TestConfigService_CreateConfig_Success(t *testing.T) {

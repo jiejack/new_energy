@@ -191,6 +191,13 @@ type TriggerChain struct {
 
 // NewTriggerManager 创建触发器管理器
 func NewTriggerManager(executor ComputeExecutor) *TriggerManager {
+	var log *zap.Logger
+	if logger.Log != nil {
+		log = logger.Named("trigger-manager")
+	} else {
+		log = zap.NewNop()
+	}
+	
 	tm := &TriggerManager{
 		triggers:   make(map[string]*Trigger),
 		byPoint:    make(map[string][]string),
@@ -198,7 +205,7 @@ func NewTriggerManager(executor ComputeExecutor) *TriggerManager {
 		chains:     make(map[string]*TriggerChain),
 		executor:   executor,
 		eventQueue: make(chan *TriggerEvent, 10000),
-		logger:     logger.Named("trigger-manager"),
+		logger:     log,
 	}
 	tm.ctx, tm.cancelFunc = context.WithCancel(context.Background())
 	return tm

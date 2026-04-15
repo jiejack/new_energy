@@ -1,0 +1,239 @@
+package handler
+
+import (
+	"net/http"
+	"strconv"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/new-energy-monitoring/internal/api/dto"
+	"github.com/new-energy-monitoring/internal/application/service"
+	"github.com/new-energy-monitoring/internal/domain/entity"
+)
+
+type CarbonEmissionHandler struct {
+	ceService *service.CarbonEmissionService
+}
+
+func NewCarbonEmissionHandler(ceService *service.CarbonEmissionService) *CarbonEmissionHandler {
+	return &CarbonEmissionHandler{ceService: ceService}
+}
+
+func (h *CarbonEmissionHandler) CreateCarbonEmissionRecord(c *gin.Context) {
+	var req service.CreateCarbonEmissionRecordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Code: 400, Message: err.Error()})
+		return
+	}
+
+	userID := c.GetString("user_id")
+	record, err := h.ceService.CreateRecord(c.Request.Context(), &req, userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: 500, Message: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.Response{Code: 0, Message: "success", Data: record})
+}
+
+func (h *CarbonEmissionHandler) BatchCreateCarbonEmissionRecords(c *gin.Context) {
+	var req struct {
+		Records []*service.CreateCarbonEmissionRecordRequest `json:"records" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Code: 400, Message: err.Error()})
+		return
+	}
+
+	userID := c.GetString("user_id")
+	records, err := h.ceService.BatchCreateRecords(c.Request.Context(), req.Records, userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: 500, Message: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.Response{Code: 0, Message: "success", Data: records})
+}
+
+func (h *CarbonEmissionHandler) GetCarbonEmissionRecord(c *gin.Context) {
+	id := c.Param("id")
+	record, err := h.ceService.GetRecord(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, dto.ErrorResponse{Code: 404, Message: "Carbon emission record not found"})
+		return
+	}
+	c.JSON(http.StatusOK, dto.Response{Code: 0, Message: "success", Data: record})
+}
+
+func (h *CarbonEmissionHandler) ListCarbonEmissionRecords(c *gin.Context) {
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
+
+	req := &service.QueryCarbonEmissionRecordsRequest{
+		Page:     page,
+		PageSize: pageSize,
+	}
+
+	if stationID := c.Query("station_id"); stationID != "" {
+		req.StationID = &stationID
+	}
+	if startDate := c.Query("start_date"); startDate != "" {
+		req.StartDate = &startDate
+	}
+	if endDate := c.Query("end_date"); endDate != "" {
+		req.EndDate = &endDate
+	}
+	if status := c.Query("status"); status != "" {
+		s := entity.CarbonEmissionStatus(status)
+		req.Status = &s
+	}
+
+	records, total, err := h.ceService.ListRecords(c.Request.Context(), req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: 500, Message: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.Response{
+		Code:    0,
+		Message: "success",
+		Data: gin.H{
+			"items":      records,
+			"total":      total,
+			"page":       page,
+			"page_size":  pageSize,
+		},
+	})
+}
+
+func (h *CarbonEmissionHandler) GetCarbonEmissionTrend(c *gin.Context) {
+	stationID := c.Query("station_id")
+	periodType := c.DefaultQuery("period_type", "monthly")
+	startDate := c.DefaultQuery("start_date", time.Now().AddDate(0, -6, 0).Format("2006-01-02"))
+	endDate := c.DefaultQuery("end_date", time.Now().Format("2006-01-02"))
+
+	trendData, err := h.ceService.GetTrendData(c.Request.Context(), stationID, periodType, startDate, endDate)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: 500, Message: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.Response{Code: 0, Message: "success", Data: trendData})
+}
+
+func (h *CarbonEmissionHandler) GetCarbonEmissionStatistics(c *gin.Context) {
+	stationID := c.Query("station_id")
+	periodType := c.DefaultQuery("period_type", "monthly")
+	startDate := c.DefaultQuery("start_date", time.Now().AddDate(0, -1, 0).Format("2006-01-02"))
+	endDate := c.DefaultQuery("end_date", time.Now().Format("2006-01-02"))
+
+	stats, err := h.ceService.GetStatistics(c.Request.Context(), stationID, periodType, startDate, endDate)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: 500, Message: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.Response{Code: 0, Message: "success", Data: stats})
+}
+
+func (h *CarbonEmissionHandler) GetCarbonEmissionComparison(c *gin.Context) {
+	stationID := c.Query("station_id")
+	periodType := c.DefaultQuery("period_type", "monthly")
+	currentPeriodStart := c.DefaultQuery("current_period_start", time.Now().AddDate(0, -1, 0).Format("2006-01-02"))
+	currentPeriodEnd := c.DefaultQuery("current_period_end", time.Now().Format("2006-01-02"))
+	comparePeriodStart := c.Query("compare_period_start")
+	comparePeriodEnd := c.Query("compare_period_end")
+
+	comparison, err := h.ceService.GetComparisonData(c.Request.Context(), stationID, periodType, currentPeriodStart, currentPeriodEnd, comparePeriodStart, comparePeriodEnd)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: 500, Message: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.Response{Code: 0, Message: "success", Data: comparison})
+}
+
+func (h *CarbonEmissionHandler) CreateCarbonEmissionAnalysis(c *gin.Context) {
+	var req struct {
+		StationID   int       `json:"station_id" binding:"required"`
+		AnalysisDate string   `json:"analysis_date" binding:"required"`
+		AnalysisType string   `json:"analysis_type" binding:"required"`
+		PeriodType  string    `json:"period_type" binding:"required"`
+		PeriodStart string    `json:"period_start" binding:"required"`
+		PeriodEnd   string    `json:"period_end" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Code: 400, Message: err.Error()})
+		return
+	}
+
+	userID := c.GetString("user_id")
+	analysis, err := h.ceService.CreateAnalysis(c.Request.Context(), req.StationID, req.AnalysisDate, req.AnalysisType, req.PeriodType, req.PeriodStart, req.PeriodEnd, userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: 500, Message: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.Response{Code: 0, Message: "success", Data: analysis})
+}
+
+func (h *CarbonEmissionHandler) ListCarbonEmissionAnalyses(c *gin.Context) {
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
+
+	req := &service.QueryCarbonEmissionAnalysesRequest{
+		Page:     page,
+		PageSize: pageSize,
+	}
+
+	if stationID := c.Query("station_id"); stationID != "" {
+		req.StationID = &stationID
+	}
+	if startDate := c.Query("start_date"); startDate != "" {
+		req.StartDate = &startDate
+	}
+	if endDate := c.Query("end_date"); endDate != "" {
+		req.EndDate = &endDate
+	}
+	if status := c.Query("status"); status != "" {
+		req.Status = &status
+	}
+
+	analyses, total, err := h.ceService.ListAnalyses(c.Request.Context(), req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: 500, Message: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.Response{
+		Code:    0,
+		Message: "success",
+		Data: gin.H{
+			"items":      analyses,
+			"total":      total,
+			"page":       page,
+			"page_size":  pageSize,
+		},
+	})
+}
+
+func (h *CarbonEmissionHandler) GetCarbonEmissionAnalysis(c *gin.Context) {
+	id := c.Param("id")
+	analysis, err := h.ceService.GetAnalysis(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, dto.ErrorResponse{Code: 404, Message: "Carbon emission analysis not found"})
+		return
+	}
+	c.JSON(http.StatusOK, dto.Response{Code: 0, Message: "success", Data: analysis})
+}
+
+func (h *CarbonEmissionHandler) GetLatestCarbonEmissionAnalysis(c *gin.Context) {
+	stationID := c.Query("station_id")
+
+	analysis, err := h.ceService.GetLatestAnalysis(c.Request.Context(), stationID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, dto.ErrorResponse{Code: 404, Message: "No analysis found"})
+		return
+	}
+	c.JSON(http.StatusOK, dto.Response{Code: 0, Message: "success", Data: analysis})
+}

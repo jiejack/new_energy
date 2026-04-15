@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/new-energy-monitoring/internal/domain/entity"
+	"github.com/new-energy-monitoring/internal/domain/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -28,20 +29,17 @@ func (m *MockAuditOperationLogRepository) GetByID(ctx context.Context, id string
 	return args.Get(0).(*entity.OperationLog), args.Error(1)
 }
 
-func (m *MockAuditOperationLogRepository) List(ctx context.Context, userID *string, action *string, startTime, endTime int64, page, pageSize int) ([]*entity.OperationLog, int64, error) {
-	args := m.Called(ctx, userID, action, startTime, endTime, page, pageSize)
+func (m *MockAuditOperationLogRepository) List(ctx context.Context, query *repository.OperationLogQuery) ([]*entity.OperationLog, int64, error) {
+	args := m.Called(ctx, query)
 	if args.Get(0) == nil {
 		return nil, args.Get(1).(int64), args.Error(2)
 	}
 	return args.Get(0).([]*entity.OperationLog), args.Get(1).(int64), args.Error(2)
 }
 
-func (m *MockAuditOperationLogRepository) GetByUserID(ctx context.Context, userID string, page, pageSize int) ([]*entity.OperationLog, int64, error) {
-	args := m.Called(ctx, userID, page, pageSize)
-	if args.Get(0) == nil {
-		return nil, args.Get(1).(int64), args.Error(2)
-	}
-	return args.Get(0).([]*entity.OperationLog), args.Get(1).(int64), args.Error(2)
+func (m *MockAuditOperationLogRepository) DeleteBefore(ctx context.Context, before int64) (int64, error) {
+	args := m.Called(ctx, before)
+	return args.Get(0).(int64), args.Error(1)
 }
 
 func TestNewAuditService(t *testing.T) {
@@ -236,8 +234,27 @@ func TestAuditService_ListLogs(t *testing.T) {
 			mockRepo := new(MockAuditOperationLogRepository)
 			service := NewAuditService(mockRepo)
 
-			mockRepo.On("List", mock.Anything, tt.userID, tt.action, tt.startTime, tt.endTime, tt.page, tt.pageSize).
-				Return(tt.mockLogs, tt.mockTotal, tt.mockErr)
+			expectedQuery := &repository.OperationLogQuery{
+				Page:      tt.page,
+				PageSize:  tt.pageSize,
+				StartTime: tt.startTime,
+				EndTime:   tt.endTime,
+			}
+			if tt.userID != nil {
+				expectedQuery.UserID = *tt.userID
+			}
+			if tt.action != nil {
+				expectedQuery.Action = *tt.action
+			}
+
+			mockRepo.On("List", mock.Anything, mock.MatchedBy(func(q *repository.OperationLogQuery) bool {
+				return q.Page == expectedQuery.Page &&
+					q.PageSize == expectedQuery.PageSize &&
+					q.UserID == expectedQuery.UserID &&
+					q.Action == expectedQuery.Action &&
+					q.StartTime == expectedQuery.StartTime &&
+					q.EndTime == expectedQuery.EndTime
+			})).Return(tt.mockLogs, tt.mockTotal, tt.mockErr)
 
 			resp, err := service.ListLogs(context.Background(), tt.userID, tt.action, tt.startTime, tt.endTime, tt.page, tt.pageSize)
 
@@ -247,7 +264,7 @@ func TestAuditService_ListLogs(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.NotNil(t, resp)
-				assert.Equal(t, tt.mockLogs, resp.Logs)
+				assert.Len(t, resp.List, len(tt.mockLogs))
 				assert.Equal(t, tt.mockTotal, resp.Total)
 				assert.Equal(t, tt.page, resp.Page)
 				assert.Equal(t, tt.pageSize, resp.PageSize)
@@ -308,8 +325,17 @@ func TestAuditService_GetUserLogs(t *testing.T) {
 			mockRepo := new(MockAuditOperationLogRepository)
 			service := NewAuditService(mockRepo)
 
-			mockRepo.On("GetByUserID", mock.Anything, tt.userID, tt.page, tt.pageSize).
-				Return(tt.mockLogs, tt.mockTotal, tt.mockErr)
+			expectedQuery := &repository.OperationLogQuery{
+				Page:     tt.page,
+				PageSize: tt.pageSize,
+				UserID:   tt.userID,
+			}
+
+			mockRepo.On("List", mock.Anything, mock.MatchedBy(func(q *repository.OperationLogQuery) bool {
+				return q.Page == expectedQuery.Page &&
+					q.PageSize == expectedQuery.PageSize &&
+					q.UserID == expectedQuery.UserID
+			})).Return(tt.mockLogs, tt.mockTotal, tt.mockErr)
 
 			resp, err := service.GetUserLogs(context.Background(), tt.userID, tt.page, tt.pageSize)
 
@@ -319,7 +345,7 @@ func TestAuditService_GetUserLogs(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.NotNil(t, resp)
-				assert.Equal(t, tt.mockLogs, resp.Logs)
+				assert.Len(t, resp.List, len(tt.mockLogs))
 				assert.Equal(t, tt.mockTotal, resp.Total)
 			}
 			mockRepo.AssertExpectations(t)

@@ -13,6 +13,11 @@ var (
 	Sugar *zap.SugaredLogger
 )
 
+func init() {
+	Log = zap.NewNop()
+	Sugar = Log.Sugar()
+}
+
 type Config struct {
 	Level  string
 	Format string

@@ -456,24 +456,24 @@ func (dg *DependencyGraph) HasCycle(nodeID string, dependencies []string) bool {
 	visited := make(map[string]bool)
 	recStack := make(map[string]bool)
 
-	// 临时添加节点
-	originalDeps := dg.nodes[nodeID]
-	dg.nodes[nodeID] = dependencies
-	defer func() {
-		dg.nodes[nodeID] = originalDeps
-	}()
+	// 创建临时图副本，避免修改原数据
+	tempNodes := make(map[string][]string)
+	for k, v := range dg.nodes {
+		tempNodes[k] = v
+	}
+	tempNodes[nodeID] = dependencies
 
-	return dg.hasCycleDFS(nodeID, visited, recStack)
+	return dg.hasCycleDFSWithGraph(nodeID, visited, recStack, tempNodes)
 }
 
-// hasCycleDFS 深度优先搜索检测循环
-func (dg *DependencyGraph) hasCycleDFS(nodeID string, visited, recStack map[string]bool) bool {
+// hasCycleDFSWithGraph 使用给定的图进行深度优先搜索检测循环
+func (dg *DependencyGraph) hasCycleDFSWithGraph(nodeID string, visited, recStack map[string]bool, nodes map[string][]string) bool {
 	visited[nodeID] = true
 	recStack[nodeID] = true
 
-	for _, depID := range dg.nodes[nodeID] {
+	for _, depID := range nodes[nodeID] {
 		if !visited[depID] {
-			if dg.hasCycleDFS(depID, visited, recStack) {
+			if dg.hasCycleDFSWithGraph(depID, visited, recStack, nodes) {
 				return true
 			}
 		} else if recStack[depID] {
@@ -484,6 +484,8 @@ func (dg *DependencyGraph) hasCycleDFS(nodeID string, visited, recStack map[stri
 	recStack[nodeID] = false
 	return false
 }
+
+
 
 // GetTopologicalOrder 获取拓扑排序
 func (dg *DependencyGraph) GetTopologicalOrder() [][]string {

@@ -3,6 +3,7 @@ package iec61850
 
 import (
 	"errors"
+	"math"
 	"time"
 )
 
