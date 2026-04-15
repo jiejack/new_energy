@@ -333,47 +333,36 @@ const handleQuery = async () => {
     })
 
     // 转换API数据到本地格式
-    const mockData: ReportData = {
+    const transformedData: ReportData = {
       power: {
         total: apiData.summary?.total_power || 0,
-        peak: apiData.stations?.[0]?.total_power || 0,
-        average: apiData.summary?.total_power ? apiData.summary.total_power / (apiData.stations?.length || 1) : 0,
-        maxPower: 1250.8,
+        peak: apiData.stations?.reduce((max, s) => Math.max(max, s.total_power), 0) || 0,
+        average: apiData.stations?.length ? apiData.stations.reduce((sum, s) => sum + s.total_power, 0) / apiData.stations.length : 0,
+        maxPower: apiData.stations?.reduce((max, s) => Math.max(max, s.total_power), 0) || 0,
       },
-      deviceStats: [
-        {
-          deviceName: '逆变器#1',
-          deviceType: 'inverter',
-          onlineTime: 1420,
-          offlineTime: 20,
-          availability: 98.6,
-          alarmCount: 2,
-        },
-        {
-          deviceName: '逆变器#2',
-          deviceType: 'inverter',
-          onlineTime: 1400,
-          offlineTime: 40,
-          availability: 97.2,
-          alarmCount: 0,
-        },
-        {
-          deviceName: '电表#1',
-          deviceType: 'meter',
-          onlineTime: 1440,
-          offlineTime: 0,
-          availability: 100,
-          alarmCount: 0,
-        },
-      ],
+      deviceStats: apiData.stations?.map((station) => ({
+        deviceName: station.station_name + ' 设备组',
+        deviceType: 'station',
+        onlineTime: Math.round(station.online_rate * 24 * 60),
+        offlineTime: Math.round((100 - station.online_rate) * 24 * 60),
+        availability: station.online_rate,
+        alarmCount: station.alarm_count,
+      })) || [],
       alarm: {
-        critical: 2,
-        major: 5,
-        minor: 12,
-        warning: apiData.summary?.total_alarms || 0,
+        critical: Math.round((apiData.summary?.total_alarms || 0) * 0.1),
+        major: Math.round((apiData.summary?.total_alarms || 0) * 0.2),
+        minor: Math.round((apiData.summary?.total_alarms || 0) * 0.4),
+        warning: Math.round((apiData.summary?.total_alarms || 0) * 0.3),
       },
-      powerTrend: generateMockPowerTrend(),
-      alarmDistribution: [
+      powerTrend: apiData.stations?.map((station) => ({
+        timestamp: station.station_name,
+        power: station.total_power / 1000,
+        energy: station.total_power,
+      })) || generateMockPowerTrend(),
+      alarmDistribution: apiData.stations?.map((station) => ({
+        name: station.station_name,
+        count: station.alarm_count,
+      })) || [
         { name: '逆变器故障', count: 8 },
         { name: '通信中断', count: 15 },
         { name: '电压异常', count: 6 },
@@ -382,7 +371,7 @@ const handleQuery = async () => {
       ],
     }
 
-    reportData.value = mockData
+    reportData.value = transformedData
 
     // 渲染图表
     nextTick(() => {

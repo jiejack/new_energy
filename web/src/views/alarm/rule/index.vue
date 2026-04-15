@@ -188,7 +188,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
@@ -230,6 +230,14 @@ const isEdit = ref(false)
 const ruleList = ref<AlarmRule[]>([])
 const pointList = ref<Point[]>([])
 const formRef = ref<FormInstance>()
+
+const pointMap = computed(() => {
+  const map = new Map<number | string, string>()
+  pointList.value.forEach((point) => {
+    map.set(point.id, point.name)
+  })
+  return map
+})
 
 const pagination = reactive({
   page: 1,
@@ -310,7 +318,7 @@ const fetchRuleList = async () => {
       id: rule.id,
       name: rule.name,
       pointId: rule.point_id ? Number(rule.point_id) : undefined,
-      pointName: rule.point_id || '-',
+      pointName: rule.point_id ? (pointMap.value.get(rule.point_id) || rule.point_id) : '-',
       operator: rule.condition.split(' ')[0] || '>',
       threshold: rule.threshold,
       duration: rule.duration,

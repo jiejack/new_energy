@@ -315,6 +315,54 @@ func NewHTTPServer(
 			operationLogs.DELETE("/cleanup", operationLogHandler.DeleteOldLogs)
 		}
 
+		// 告警规则路由
+		alarmRules := api.Group("/alarm-rules")
+		{
+			alarmRules.GET("", alarmRuleHandler.ListAlarmRules)
+			alarmRules.POST("", alarmRuleHandler.CreateAlarmRule)
+			alarmRules.GET("/:id", alarmRuleHandler.GetAlarmRule)
+			alarmRules.PUT("/:id", alarmRuleHandler.UpdateAlarmRule)
+			alarmRules.DELETE("/:id", alarmRuleHandler.DeleteAlarmRule)
+			alarmRules.POST("/:id/enable", alarmRuleHandler.EnableAlarmRule)
+			alarmRules.POST("/:id/disable", alarmRuleHandler.DisableAlarmRule)
+		}
+
+		// 系统配置路由
+		configs := api.Group("/configs")
+		{
+			configs.GET("", configHandler.GetAllConfigs)
+			configs.GET("/list", configHandler.ListConfigs)
+			configs.POST("", configHandler.CreateConfig)
+			configs.POST("/batch", configHandler.BatchUpdateConfigs)
+			configs.GET("/:category", configHandler.GetConfigsByCategory)
+			configs.GET("/:category/:key", configHandler.GetConfig)
+			configs.PUT("/:category/:key", configHandler.UpdateConfig)
+			configs.DELETE("/:category/:key", configHandler.DeleteConfig)
+		}
+
+		// 通知配置路由
+		notificationConfigs := api.Group("/notification-configs")
+		{
+			notificationConfigs.GET("", notificationConfigHandler.GetAllConfigs)
+			notificationConfigs.GET("/:type", notificationConfigHandler.GetConfigByType)
+			notificationConfigs.PUT("/:type", notificationConfigHandler.UpdateConfig)
+			notificationConfigs.POST("/:type/enable", notificationConfigHandler.EnableConfig)
+			notificationConfigs.POST("/:type/disable", notificationConfigHandler.DisableConfig)
+			notificationConfigs.POST("/:type/test", notificationConfigHandler.TestConfig)
+		}
+
+		// QA路由
+		qa := api.Group("/qa")
+		{
+			qa.POST("/sessions", qaHandler.CreateSession)
+			qa.GET("/sessions", qaHandler.ListSessions)
+			qa.GET("/sessions/:id", qaHandler.GetSession)
+			qa.DELETE("/sessions/:id", qaHandler.DeleteSession)
+			qa.POST("/sessions/:id/archive", qaHandler.ArchiveSession)
+			qa.GET("/sessions/:id/history", qaHandler.GetHistory)
+			qa.POST("/ask", qaHandler.Ask)
+		}
+
 		// 报表路由
 		reports := api.Group("/reports")
 		{

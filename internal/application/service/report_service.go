@@ -1,9 +1,12 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"time"
+
+	"github.com/xuri/excelize/v2"
 )
 
 type ReportService struct{}
@@ -122,7 +125,88 @@ func (s *ReportService) ExportReport(ctx context.Context, req *ReportRequest, fo
 
 func (s *ReportService) exportExcel(report *ReportResponse, req *ReportRequest) ([]byte, string, error) {
 	filename := fmt.Sprintf("report_%s_%s.xlsx", req.Type, time.Now().Format("20060102150405"))
-	return []byte{}, filename, nil
+	
+	f := excelize.NewFile()
+	defer func() {
+		_ = f.Close()
+	}()
+	
+	sheetName := "报表数据"
+	index, err := f.NewSheet(sheetName)
+	if err != nil {
+		return nil, filename, fmt.Errorf("failed to create sheet: %w", err)
+	}
+	
+	f.SetActiveSheet(index)
+	if err := f.DeleteSheet("Sheet1"); err != nil {
+		return nil, filename, fmt.Errorf("failed to delete default sheet: %w", err)
+	}
+	
+	headers := []string{"电站ID", "电站名称", "发电量(kWh)", "同比(%)", "环比(%)", "告警数", "在线率(%)"}
+	for i, header := range headers {
+		cell, _ := excelize.CoordinatesToCellName(i+1, 1)
+		if err := f.SetCellValue(sheetName, cell, header); err != nil {
+			return nil, filename, fmt.Errorf("failed to set header: %w", err)
+		}
+	}
+	
+	style, err := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{
+			Bold: true,
+		},
+		Fill: excelize.Fill{
+			Type:    "pattern",
+			Color:   []string{"#E6F3FF"},
+			Pattern: 1,
+		},
+	})
+	if err != nil {
+		return nil, filename, fmt.Errorf("failed to create style: %w", err)
+	}
+	
+	if err := f.SetRowStyle(sheetName, 1, 1, style); err != nil {
+		return nil, filename, fmt.Errorf("failed to apply style: %w", err)
+	}
+	
+	for i, station := range report.Stations {
+		row := i + 2
+		cells := []interface{}{
+			station.StationID,
+			station.StationName,
+			station.TotalPower,
+			station.YoYChange,
+			station.MoMChange,
+			station.AlarmCount,
+			station.OnlineRate,
+		}
+		for j, cell := range cells {
+			cellName, _ := excelize.CoordinatesToCellName(j+1, row)
+			if err := f.SetCellValue(sheetName, cellName, cell); err != nil {
+				return nil, filename, fmt.Errorf("failed to set cell value: %w", err)
+			}
+		}
+	}
+	
+	summaryRow := len(report.Stations) + 3
+	if err := f.SetCellValue(sheetName, fmt.Sprintf("A%d", summaryRow), "总计"); err != nil {
+		return nil, filename, fmt.Errorf("failed to set summary title: %w", err)
+	}
+	if err := f.SetCellValue(sheetName, fmt.Sprintf("C%d", summaryRow), report.Summary.TotalPower); err != nil {
+		return nil, filename, fmt.Errorf("failed to set total power: %w", err)
+	}
+	if err := f.SetCellValue(sheetName, fmt.Sprintf("F%d", summaryRow), report.Summary.TotalAlarms); err != nil {
+		return nil, filename, fmt.Errorf("failed to set total alarms: %w", err)
+	}
+	if err := f.SetCellValue(sheetName, fmt.Sprintf("G%d", summaryRow), report.Summary.AvgOnlineRate); err != nil {
+		return nil, filename, fmt.Errorf("failed to set avg online rate: %w", err)
+	}
+	
+	buf := new(bytes.Buffer)
+	if err := f.Write(buf); err != nil {
+		return nil, filename, fmt.Errorf("failed to write excel: %w", err)
+	}
+	
+	return buf.Bytes(), filename, nil
 }
 
 func (s *ReportService) exportCSV(report *ReportResponse, req *ReportRequest) ([]byte, string, error) {
