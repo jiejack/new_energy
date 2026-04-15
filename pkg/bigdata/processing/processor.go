@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/new-energy-monitoring/pkg/bigdata"
+	"github.com/new-energy-monitoring/pkg/bigdata/types"
 )
 
-// BasicProcessor 实现了Processing接口，提供基本的数据处理功能
+// BasicProcessor 实现了types.Processing接口，提供基本的数据处理功能
 type BasicProcessor struct {
-	config bigdata.ProcessingConfig
+	config types.ProcessingConfig
 }
 
 // NewBasicProcessor 创建一个新的基本处理器实例
@@ -18,10 +18,10 @@ func NewBasicProcessor() *BasicProcessor {
 }
 
 // Init 初始化处理器
-func (p *BasicProcessor) Init(config bigdata.ProcessingConfig) error {
+func (p *BasicProcessor) Init(config types.ProcessingConfig) error {
 	if config.Type != "basic" {
-		return &bigdata.Error{
-			Code:    bigdata.ErrCodeInvalidConfig,
+		return &types.Error{
+			Code:    types.ErrCodeInvalidConfig,
 			Message: fmt.Sprintf("invalid processing type: %s, expected basic", config.Type),
 		}
 	}
@@ -31,7 +31,7 @@ func (p *BasicProcessor) Init(config bigdata.ProcessingConfig) error {
 }
 
 // Process 处理批量数据
-func (p *BasicProcessor) Process(data *bigdata.BatchData) (*bigdata.BatchData, error) {
+func (p *BasicProcessor) Process(data *types.BatchData) (*types.BatchData, error) {
 	if data == nil || len(data.DataPoints) == 0 {
 		return data, nil
 	}
@@ -40,9 +40,9 @@ func (p *BasicProcessor) Process(data *bigdata.BatchData) (*bigdata.BatchData, e
 	processedPoints := p.processDataPoints(data.DataPoints)
 
 	// 创建新的批量数据
-	processedData := &bigdata.BatchData{
+	processedData := &types.BatchData{
 		DataPoints: processedPoints,
-		Metadata: bigdata.Metadata{
+		Metadata: types.Metadata{
 			Source:      data.Metadata.Source,
 			BatchID:     fmt.Sprintf("%s-processed", data.Metadata.BatchID),
 			Timestamp:   time.Now(),
@@ -59,12 +59,12 @@ func (p *BasicProcessor) Process(data *bigdata.BatchData) (*bigdata.BatchData, e
 }
 
 // processDataPoints 处理数据点
-func (p *BasicProcessor) processDataPoints(dataPoints []*bigdata.DataPoint) []*bigdata.DataPoint {
-	var processedPoints []*bigdata.DataPoint
+func (p *BasicProcessor) processDataPoints(dataPoints []*types.DataPoint) []*types.DataPoint {
+	var processedPoints []*types.DataPoint
 
 	for _, point := range dataPoints {
 		// 复制数据点
-		processedPoint := &bigdata.DataPoint{
+		processedPoint := &types.DataPoint{
 			Timestamp:  point.Timestamp,
 			DeviceID:   point.DeviceID,
 			Metric:     point.Metric,
@@ -97,7 +97,7 @@ func (p *BasicProcessor) processDataPoints(dataPoints []*bigdata.DataPoint) []*b
 }
 
 // processSinglePoint 处理单个数据点
-func (p *BasicProcessor) processSinglePoint(point *bigdata.DataPoint) {
+func (p *BasicProcessor) processSinglePoint(point *types.DataPoint) {
 	// 1. 数据清洗
 	p.cleanData(point)
 
@@ -109,7 +109,7 @@ func (p *BasicProcessor) processSinglePoint(point *bigdata.DataPoint) {
 }
 
 // cleanData 清洗数据
-func (p *BasicProcessor) cleanData(point *bigdata.DataPoint) {
+func (p *BasicProcessor) cleanData(point *types.DataPoint) {
 	// 处理异常值
 	if point.Value < 0 {
 		point.Value = 0
@@ -132,7 +132,7 @@ func (p *BasicProcessor) cleanData(point *bigdata.DataPoint) {
 }
 
 // transformData 转换数据
-func (p *BasicProcessor) transformData(point *bigdata.DataPoint) {
+func (p *BasicProcessor) transformData(point *types.DataPoint) {
 	// 根据指标类型进行转换
 	switch point.Metric {
 	case "power":
@@ -164,7 +164,7 @@ func (p *BasicProcessor) transformData(point *bigdata.DataPoint) {
 }
 
 // enhanceData 增强数据
-func (p *BasicProcessor) enhanceData(point *bigdata.DataPoint) {
+func (p *BasicProcessor) enhanceData(point *types.DataPoint) {
 	// 添加时间特征
 	point.Attributes["hour"] = point.Timestamp.Hour()
 	point.Attributes["day_of_week"] = point.Timestamp.Weekday()
@@ -190,7 +190,7 @@ func (p *BasicProcessor) enhanceData(point *bigdata.DataPoint) {
 }
 
 // calculateDataQuality 计算数据质量
-func (p *BasicProcessor) calculateDataQuality(point *bigdata.DataPoint) float64 {
+func (p *BasicProcessor) calculateDataQuality(point *types.DataPoint) float64 {
 	quality := 1.0
 
 	// 检查值是否合理

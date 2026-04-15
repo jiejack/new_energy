@@ -6,12 +6,12 @@ import (
 	"sort"
 	"time"
 
-	"github.com/new-energy-monitoring/pkg/bigdata"
+	"github.com/new-energy-monitoring/pkg/bigdata/types"
 )
 
-// BasicAnalyzer 实现了Analysis接口，提供基本的数据分析功能
+// BasicAnalyzer 实现了types.Analysis接口，提供基本的数据分析功能
 type BasicAnalyzer struct {
-	config bigdata.AnalysisConfig
+	config types.AnalysisConfig
 }
 
 // NewBasicAnalyzer 创建一个新的基本分析器实例
@@ -20,10 +20,10 @@ func NewBasicAnalyzer() *BasicAnalyzer {
 }
 
 // Init 初始化分析器
-func (a *BasicAnalyzer) Init(config bigdata.AnalysisConfig) error {
+func (a *BasicAnalyzer) Init(config types.AnalysisConfig) error {
 	if config.Type != "basic" {
-		return &bigdata.Error{
-			Code:    bigdata.ErrCodeInvalidConfig,
+		return &types.Error{
+			Code:    types.ErrCodeInvalidConfig,
 			Message: fmt.Sprintf("invalid analysis type: %s, expected basic", config.Type),
 		}
 	}
@@ -48,10 +48,10 @@ func (a *BasicAnalyzer) Execute(query string) (interface{}, error) {
 }
 
 // Process 处理批量数据
-func (a *BasicAnalyzer) Process(data *bigdata.BatchData) (interface{}, error) {
+func (a *BasicAnalyzer) Process(data *types.BatchData) (interface{}, error) {
 	if data == nil || len(data.DataPoints) == 0 {
-		return nil, &bigdata.Error{
-			Code:    bigdata.ErrCodeAnalysisError,
+		return nil, &types.Error{
+			Code:    types.ErrCodeAnalysisError,
 			Message: "no data to process",
 		}
 	}
@@ -80,7 +80,7 @@ func (a *BasicAnalyzer) Process(data *bigdata.BatchData) (interface{}, error) {
 }
 
 // calculateStats 计算基本统计信息
-func (a *BasicAnalyzer) calculateStats(dataPoints []*bigdata.DataPoint) map[string]float64 {
+func (a *BasicAnalyzer) calculateStats(dataPoints []*types.DataPoint) map[string]float64 {
 	if len(dataPoints) == 0 {
 		return nil
 	}
@@ -136,7 +136,7 @@ func (a *BasicAnalyzer) calculateStats(dataPoints []*bigdata.DataPoint) map[stri
 }
 
 // groupByDeviceAndMetric 按设备和指标分组分析
-func (a *BasicAnalyzer) groupByDeviceAndMetric(dataPoints []*bigdata.DataPoint) map[string]map[string]map[string]float64 {
+func (a *BasicAnalyzer) groupByDeviceAndMetric(dataPoints []*types.DataPoint) map[string]map[string]map[string]float64 {
 	groups := make(map[string]map[string]map[string]float64)
 
 	for _, point := range dataPoints {
@@ -176,13 +176,13 @@ func (a *BasicAnalyzer) groupByDeviceAndMetric(dataPoints []*bigdata.DataPoint) 
 }
 
 // analyzeTimeSeries 分析时间序列数据
-func (a *BasicAnalyzer) analyzeTimeSeries(dataPoints []*bigdata.DataPoint) map[string]interface{} {
+func (a *BasicAnalyzer) analyzeTimeSeries(dataPoints []*types.DataPoint) map[string]interface{} {
 	// 按设备和指标分组
-	groups := make(map[string]map[string][]*bigdata.DataPoint)
+	groups := make(map[string]map[string][]*types.DataPoint)
 
 	for _, point := range dataPoints {
 		if _, ok := groups[point.DeviceID]; !ok {
-			groups[point.DeviceID] = make(map[string][]*bigdata.DataPoint)
+			groups[point.DeviceID] = make(map[string][]*types.DataPoint)
 		}
 		groups[point.DeviceID][point.Metric] = append(groups[point.DeviceID][point.Metric], point)
 	}
@@ -226,7 +226,7 @@ func (a *BasicAnalyzer) analyzeTimeSeries(dataPoints []*bigdata.DataPoint) map[s
 }
 
 // calculateTrend 计算时间序列趋势
-func (a *BasicAnalyzer) calculateTrend(points []*bigdata.DataPoint) float64 {
+func (a *BasicAnalyzer) calculateTrend(points []*types.DataPoint) float64 {
 	if len(points) < 2 {
 		return 0
 	}
@@ -249,7 +249,7 @@ func (a *BasicAnalyzer) calculateTrend(points []*bigdata.DataPoint) float64 {
 }
 
 // calculateVolatility 计算时间序列波动率
-func (a *BasicAnalyzer) calculateVolatility(points []*bigdata.DataPoint) float64 {
+func (a *BasicAnalyzer) calculateVolatility(points []*types.DataPoint) float64 {
 	if len(points) < 2 {
 		return 0
 	}
@@ -282,7 +282,7 @@ func (a *BasicAnalyzer) calculateVolatility(points []*bigdata.DataPoint) float64
 }
 
 // detectAnomalies 检测时间序列异常
-func (a *BasicAnalyzer) detectAnomalies(points []*bigdata.DataPoint) []map[string]interface{} {
+func (a *BasicAnalyzer) detectAnomalies(points []*types.DataPoint) []map[string]interface{} {
 	if len(points) < 3 {
 		return []map[string]interface{}{}
 	}

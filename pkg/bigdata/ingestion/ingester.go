@@ -5,36 +5,36 @@ import (
 	"sync"
 	"time"
 
-	"github.com/new-energy-monitoring/pkg/bigdata"
+	"github.com/new-energy-monitoring/pkg/bigdata/types"
 )
 
-// BasicIngester 实现了Ingestion接口，提供基本的数据摄取功能
+// BasicIngester 实现了types.Ingestion接口，提供基本的数据摄取功能
 type BasicIngester struct {
-	config     bigdata.IngestionConfig
+	config     types.IngestionConfig
 	running    bool
-	dataChan   chan *bigdata.BatchData
+	dataChan   chan *types.BatchData
 	stopChan   chan struct{}
 	wg         sync.WaitGroup
 	handlers   []DataHandler
 }
 
 // DataHandler 数据处理函数类型
-type DataHandler func(data *bigdata.BatchData)
+type DataHandler func(data *types.BatchData)
 
 // NewBasicIngester 创建一个新的基本摄取器实例
 func NewBasicIngester() *BasicIngester {
 	return &BasicIngester{
-		dataChan: make(chan *bigdata.BatchData, 100),
+		dataChan: make(chan *types.BatchData, 100),
 		stopChan: make(chan struct{}),
 		handlers: make([]DataHandler, 0),
 	}
 }
 
 // Init 初始化摄取器
-func (i *BasicIngester) Init(config bigdata.IngestionConfig) error {
+func (i *BasicIngester) Init(config types.IngestionConfig) error {
 	if config.Type != "basic" {
-		return &bigdata.Error{
-			Code:    bigdata.ErrCodeInvalidConfig,
+		return &types.Error{
+			Code:    types.ErrCodeInvalidConfig,
 			Message: fmt.Sprintf("invalid ingestion type: %s, expected basic", config.Type),
 		}
 	}
@@ -46,8 +46,8 @@ func (i *BasicIngester) Init(config bigdata.IngestionConfig) error {
 // Start 启动摄取器
 func (i *BasicIngester) Start() error {
 	if i.running {
-		return &bigdata.Error{
-			Code:    bigdata.ErrCodeIngestionError,
+		return &types.Error{
+			Code:    types.ErrCodeIngestionError,
 			Message: "ingester already running",
 		}
 	}
@@ -64,8 +64,8 @@ func (i *BasicIngester) Start() error {
 // Stop 停止摄取器
 func (i *BasicIngester) Stop() error {
 	if !i.running {
-		return &bigdata.Error{
-			Code:    bigdata.ErrCodeIngestionError,
+		return &types.Error{
+			Code:    types.ErrCodeIngestionError,
 			Message: "ingester not running",
 		}
 	}
@@ -95,10 +95,10 @@ func (i *BasicIngester) RegisterHandler(handler DataHandler) {
 }
 
 // Ingest 摄取数据
-func (i *BasicIngester) Ingest(data *bigdata.BatchData) error {
+func (i *BasicIngester) Ingest(data *types.BatchData) error {
 	if !i.running {
-		return &bigdata.Error{
-			Code:    bigdata.ErrCodeIngestionError,
+		return &types.Error{
+			Code:    types.ErrCodeIngestionError,
 			Message: "ingester not running",
 		}
 	}
@@ -107,13 +107,13 @@ func (i *BasicIngester) Ingest(data *bigdata.BatchData) error {
 	case i.dataChan <- data:
 		return nil
 	case <-i.stopChan:
-		return &bigdata.Error{
-			Code:    bigdata.ErrCodeIngestionError,
+		return &types.Error{
+			Code:    types.ErrCodeIngestionError,
 			Message: "ingester stopped",
 		}
 	default:
-		return &bigdata.Error{
-			Code:    bigdata.ErrCodeIngestionError,
+		return &types.Error{
+			Code:    types.ErrCodeIngestionError,
 			Message: "data channel full",
 		}
 	}
@@ -151,7 +151,7 @@ func (i *BasicIngester) processData() {
 }
 
 // handleData 处理单个数据批次
-func (i *BasicIngester) handleData(data *bigdata.BatchData) {
+func (i *BasicIngester) handleData(data *types.BatchData) {
 	// 记录处理开始时间
 	startTime := time.Now()
 
@@ -161,7 +161,7 @@ func (i *BasicIngester) handleData(data *bigdata.BatchData) {
 	}
 
 	// 记录处理时间
-	processingTime := time.Since(startTime)
+	_ = time.Since(startTime)
 	
 	// 可以在这里添加日志记录
 	// fmt.Printf("Processed batch %s with %d data points in %v\n", data.Metadata.BatchID, data.Metadata.RecordCount, processingTime)

@@ -3,6 +3,9 @@ package bigdata
 import (
 	"testing"
 	"time"
+
+	"github.com/new-energy-monitoring/pkg/bigdata/types"
+	"github.com/new-energy-monitoring/pkg/bigdata/visualization"
 )
 
 func TestBigDataService(t *testing.T) {
@@ -10,7 +13,7 @@ func TestBigDataService(t *testing.T) {
 	service := NewBigDataService()
 
 	// 配置
-	storageConfig := StorageConfig{
+	storageConfig := types.StorageConfig{
 		Type:     "clickhouse",
 		Host:     "localhost",
 		Port:     9000,
@@ -21,7 +24,7 @@ func TestBigDataService(t *testing.T) {
 		Options:  map[string]interface{}{"secure": false},
 	}
 
-	analysisConfig := AnalysisConfig{
+	analysisConfig := types.AnalysisConfig{
 		Type:    "basic",
 		Master:  "local",
 		AppName: "test-analysis",
@@ -29,21 +32,21 @@ func TestBigDataService(t *testing.T) {
 		Memory:  "1g",
 	}
 
-	visualizationConfig := VisualizationConfig{
+	visualizationConfig := types.VisualizationConfig{
 		Type:   "basic",
 		Host:   "localhost",
 		Port:   3000,
 		APIKey: "test-key",
 	}
 
-	processingConfig := ProcessingConfig{
+	processingConfig := types.ProcessingConfig{
 		Type:        "basic",
 		WindowSize:  "10s",
 		SlideSize:   "5s",
 		Parallelism: 1,
 	}
 
-	ingestionConfig := IngestionConfig{
+	ingestionConfig := types.IngestionConfig{
 		Type:       "basic",
 		Topic:      "test-topic",
 		Broker:     "localhost:9092",
@@ -93,6 +96,21 @@ func TestBigDataService(t *testing.T) {
 	}
 
 	// 测试数据可视化
+	// 先创建仪表板
+	if vis, ok := service.visualization.(*visualization.BasicVisualizer); ok {
+		err = vis.CreateDashboard("test-dashboard", []types.Panel{
+			{
+				ID:    "test-panel",
+				Title: "Test Panel",
+				Type:  "graph",
+			},
+		})
+		if err != nil {
+			t.Fatalf("Failed to create dashboard: %v", err)
+		}
+	}
+
+	// 然后更新面板
 	err = service.Visualize("test-dashboard", "test-panel", map[string]interface{}{"test": "data"})
 	if err != nil {
 		t.Fatalf("Failed to visualize data: %v", err)
@@ -111,8 +129,8 @@ func TestBigDataService(t *testing.T) {
 	}
 }
 
-func createTestData() *BatchData {
-	dataPoints := []*DataPoint{
+func createTestData() *types.BatchData {
+	dataPoints := []*types.DataPoint{
 		{
 			Timestamp: time.Now(),
 			DeviceID:  "SOL-001",
@@ -139,9 +157,9 @@ func createTestData() *BatchData {
 		},
 	}
 
-	return &BatchData{
+	return &types.BatchData{
 		DataPoints: dataPoints,
-		Metadata: Metadata{
+		Metadata: types.Metadata{
 			Source:      "test",
 			BatchID:     "test-batch-1",
 			Timestamp:   time.Now(),

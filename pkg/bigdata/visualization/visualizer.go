@@ -4,27 +4,27 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/new-energy-monitoring/pkg/bigdata"
+	"github.com/new-energy-monitoring/pkg/bigdata/types"
 )
 
-// BasicVisualizer 实现了Visualization接口，提供基本的可视化功能
+// BasicVisualizer 实现了types.Visualization接口，提供基本的可视化功能
 type BasicVisualizer struct {
-	config bigdata.VisualizationConfig
-	dashboards map[string][]bigdata.Panel
+	config types.VisualizationConfig
+	dashboards map[string][]types.Panel
 }
 
 // NewBasicVisualizer 创建一个新的基本可视化器实例
 func NewBasicVisualizer() *BasicVisualizer {
 	return &BasicVisualizer{
-		dashboards: make(map[string][]bigdata.Panel),
+		dashboards: make(map[string][]types.Panel),
 	}
 }
 
 // Init 初始化可视化器
-func (v *BasicVisualizer) Init(config bigdata.VisualizationConfig) error {
+func (v *BasicVisualizer) Init(config types.VisualizationConfig) error {
 	if config.Type != "basic" {
-		return &bigdata.Error{
-			Code:    bigdata.ErrCodeInvalidConfig,
+		return &types.Error{
+			Code:    types.ErrCodeInvalidConfig,
 			Message: fmt.Sprintf("invalid visualization type: %s, expected basic", config.Type),
 		}
 	}
@@ -34,10 +34,10 @@ func (v *BasicVisualizer) Init(config bigdata.VisualizationConfig) error {
 }
 
 // CreateDashboard 创建仪表板
-func (v *BasicVisualizer) CreateDashboard(name string, panels []bigdata.Panel) error {
+func (v *BasicVisualizer) CreateDashboard(name string, panels []types.Panel) error {
 	if name == "" {
-		return &bigdata.Error{
-			Code:    bigdata.ErrCodeVisualizationError,
+		return &types.Error{
+			Code:    types.ErrCodeVisualizationError,
 			Message: "dashboard name cannot be empty",
 		}
 	}
@@ -56,8 +56,8 @@ func (v *BasicVisualizer) CreateDashboard(name string, panels []bigdata.Panel) e
 // UpdatePanel 更新面板数据
 func (v *BasicVisualizer) UpdatePanel(dashboardID, panelID string, data interface{}) error {
 	if _, ok := v.dashboards[dashboardID]; !ok {
-		return &bigdata.Error{
-			Code:    bigdata.ErrCodeVisualizationError,
+		return &types.Error{
+			Code:    types.ErrCodeVisualizationError,
 			Message: fmt.Sprintf("dashboard %s not found", dashboardID),
 		}
 	}
@@ -74,8 +74,8 @@ func (v *BasicVisualizer) UpdatePanel(dashboardID, panelID string, data interfac
 	}
 
 	if !found {
-		return &bigdata.Error{
-			Code:    bigdata.ErrCodeVisualizationError,
+		return &types.Error{
+			Code:    types.ErrCodeVisualizationError,
 			Message: fmt.Sprintf("panel %s not found in dashboard %s", panelID, dashboardID),
 		}
 	}
@@ -85,12 +85,12 @@ func (v *BasicVisualizer) UpdatePanel(dashboardID, panelID string, data interfac
 }
 
 // GetDashboard 获取仪表板
-func (v *BasicVisualizer) GetDashboard(dashboardID string) ([]bigdata.Panel, error) {
+func (v *BasicVisualizer) GetDashboard(dashboardID string) ([]types.Panel, error) {
 	if panels, ok := v.dashboards[dashboardID]; ok {
 		return panels, nil
 	}
-	return nil, &bigdata.Error{
-		Code:    bigdata.ErrCodeVisualizationError,
+	return nil, &types.Error{
+		Code:    types.ErrCodeVisualizationError,
 		Message: fmt.Sprintf("dashboard %s not found", dashboardID),
 	}
 }
@@ -111,7 +111,7 @@ func (v *BasicVisualizer) Close() error {
 }
 
 // GenerateTimeSeriesChart 生成时间序列图表数据
-func (v *BasicVisualizer) GenerateTimeSeriesChart(dataPoints []*bigdata.DataPoint) map[string]interface{} {
+func (v *BasicVisualizer) GenerateTimeSeriesChart(dataPoints []*types.DataPoint) map[string]interface{} {
 	timestamps := make([]string, len(dataPoints))
 	values := make([]float64, len(dataPoints))
 

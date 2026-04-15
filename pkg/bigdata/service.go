@@ -7,16 +7,17 @@ import (
 	"github.com/new-energy-monitoring/pkg/bigdata/ingestion"
 	"github.com/new-energy-monitoring/pkg/bigdata/processing"
 	"github.com/new-energy-monitoring/pkg/bigdata/storage"
+	"github.com/new-energy-monitoring/pkg/bigdata/types"
 	"github.com/new-energy-monitoring/pkg/bigdata/visualization"
 )
 
-// BigDataServiceImpl 实现了BigDataService接口
+// BigDataServiceImpl 实现了types.BigDataService接口
 type BigDataServiceImpl struct {
-	storage       Storage
-	analysis      Analysis
-	visualization Visualization
-	processing    Processing
-	ingestion     ingestion.Ingestion
+	storage       types.Storage
+	analysis      types.Analysis
+	visualization types.Visualization
+	processing    types.Processing
+	ingestion     types.Ingestion
 }
 
 // NewBigDataService 创建一个新的大数据服务实例
@@ -26,18 +27,21 @@ func NewBigDataService() *BigDataServiceImpl {
 
 // Init 初始化大数据服务
 func (s *BigDataServiceImpl) Init(
-	storageConfig StorageConfig,
-	analysisConfig AnalysisConfig,
-	visualizationConfig VisualizationConfig,
-	processingConfig ProcessingConfig,
-	ingestionConfig IngestionConfig,
+	storageConfig types.StorageConfig,
+	analysisConfig types.AnalysisConfig,
+	visualizationConfig types.VisualizationConfig,
+	processingConfig types.ProcessingConfig,
+	ingestionConfig types.IngestionConfig,
 ) error {
 	// 初始化存储
-	if storageConfig.Type == "clickhouse" {
+	switch storageConfig.Type {
+	case "clickhouse":
 		s.storage = storage.NewClickHouseStorage()
-	} else {
-		return &Error{
-			Code:    ErrCodeInvalidConfig,
+	case "doris":
+		s.storage = storage.NewDorisStorage()
+	default:
+		return &types.Error{
+			Code:    types.ErrCodeInvalidConfig,
 			Message: fmt.Sprintf("unsupported storage type: %s", storageConfig.Type),
 		}
 	}
@@ -50,8 +54,8 @@ func (s *BigDataServiceImpl) Init(
 	if analysisConfig.Type == "basic" {
 		s.analysis = analysis.NewBasicAnalyzer()
 	} else {
-		return &Error{
-			Code:    ErrCodeInvalidConfig,
+		return &types.Error{
+			Code:    types.ErrCodeInvalidConfig,
 			Message: fmt.Sprintf("unsupported analysis type: %s", analysisConfig.Type),
 		}
 	}
@@ -64,8 +68,8 @@ func (s *BigDataServiceImpl) Init(
 	if visualizationConfig.Type == "basic" {
 		s.visualization = visualization.NewBasicVisualizer()
 	} else {
-		return &Error{
-			Code:    ErrCodeInvalidConfig,
+		return &types.Error{
+			Code:    types.ErrCodeInvalidConfig,
 			Message: fmt.Sprintf("unsupported visualization type: %s", visualizationConfig.Type),
 		}
 	}
@@ -75,11 +79,14 @@ func (s *BigDataServiceImpl) Init(
 	}
 
 	// 初始化处理
-	if processingConfig.Type == "basic" {
+	switch processingConfig.Type {
+	case "basic":
 		s.processing = processing.NewBasicProcessor()
-	} else {
-		return &Error{
-			Code:    ErrCodeInvalidConfig,
+	case "flink":
+		s.processing = processing.NewFlinkProcessor()
+	default:
+		return &types.Error{
+			Code:    types.ErrCodeInvalidConfig,
 			Message: fmt.Sprintf("unsupported processing type: %s", processingConfig.Type),
 		}
 	}
@@ -92,8 +99,8 @@ func (s *BigDataServiceImpl) Init(
 	if ingestionConfig.Type == "basic" {
 		s.ingestion = ingestion.NewBasicIngester()
 	} else {
-		return &Error{
-			Code:    ErrCodeInvalidConfig,
+		return &types.Error{
+			Code:    types.ErrCodeInvalidConfig,
 			Message: fmt.Sprintf("unsupported ingestion type: %s", ingestionConfig.Type),
 		}
 	}
@@ -104,7 +111,7 @@ func (s *BigDataServiceImpl) Init(
 
 	// 注册数据处理函数
 	if ingester, ok := s.ingestion.(*ingestion.BasicIngester); ok {
-		ingester.RegisterHandler(func(data *BatchData) {
+		ingester.RegisterHandler(func(data *types.BatchData) {
 			// 处理数据
 			processedData, err := s.processing.Process(data)
 			if err == nil {
@@ -118,10 +125,10 @@ func (s *BigDataServiceImpl) Init(
 }
 
 // Ingest 摄取数据
-func (s *BigDataServiceImpl) Ingest(data *BatchData) error {
+func (s *BigDataServiceImpl) Ingest(data *types.BatchData) error {
 	if s.ingestion == nil {
-		return &Error{
-			Code:    ErrCodeIngestionError,
+		return &types.Error{
+			Code:    types.ErrCodeIngestionError,
 			Message: "ingestion not initialized",
 		}
 	}
@@ -131,17 +138,17 @@ func (s *BigDataServiceImpl) Ingest(data *BatchData) error {
 		return ingester.Ingest(data)
 	}
 
-	return &Error{
-		Code:    ErrCodeIngestionError,
+	return &types.Error{
+		Code:    types.ErrCodeIngestionError,
 		Message: "unsupported ingestion implementation",
 	}
 }
 
 // Store 存储数据
-func (s *BigDataServiceImpl) Store(data *BatchData) error {
+func (s *BigDataServiceImpl) Store(data *types.BatchData) error {
 	if s.storage == nil {
-		return &Error{
-			Code:    ErrCodeStorageError,
+		return &types.Error{
+			Code:    types.ErrCodeStorageError,
 			Message: "storage not initialized",
 		}
 	}
@@ -152,8 +159,8 @@ func (s *BigDataServiceImpl) Store(data *BatchData) error {
 // Analyze 分析数据
 func (s *BigDataServiceImpl) Analyze(query string) (interface{}, error) {
 	if s.analysis == nil {
-		return nil, &Error{
-			Code:    ErrCodeAnalysisError,
+		return nil, &types.Error{
+			Code:    types.ErrCodeAnalysisError,
 			Message: "analysis not initialized",
 		}
 	}
@@ -164,8 +171,8 @@ func (s *BigDataServiceImpl) Analyze(query string) (interface{}, error) {
 // Visualize 可视化数据
 func (s *BigDataServiceImpl) Visualize(dashboardID, panelID string, data interface{}) error {
 	if s.visualization == nil {
-		return &Error{
-			Code:    ErrCodeVisualizationError,
+		return &types.Error{
+			Code:    types.ErrCodeVisualizationError,
 			Message: "visualization not initialized",
 		}
 	}
@@ -174,10 +181,10 @@ func (s *BigDataServiceImpl) Visualize(dashboardID, panelID string, data interfa
 }
 
 // Process 处理数据
-func (s *BigDataServiceImpl) Process(data *BatchData) (*BatchData, error) {
+func (s *BigDataServiceImpl) Process(data *types.BatchData) (*types.BatchData, error) {
 	if s.processing == nil {
-		return nil, &Error{
-			Code:    ErrCodeProcessingError,
+		return nil, &types.Error{
+			Code:    types.ErrCodeProcessingError,
 			Message: "processing not initialized",
 		}
 	}
@@ -188,8 +195,8 @@ func (s *BigDataServiceImpl) Process(data *BatchData) (*BatchData, error) {
 // StartIngestion 启动数据摄取
 func (s *BigDataServiceImpl) StartIngestion() error {
 	if s.ingestion == nil {
-		return &Error{
-			Code:    ErrCodeIngestionError,
+		return &types.Error{
+			Code:    types.ErrCodeIngestionError,
 			Message: "ingestion not initialized",
 		}
 	}
@@ -200,8 +207,8 @@ func (s *BigDataServiceImpl) StartIngestion() error {
 // StopIngestion 停止数据摄取
 func (s *BigDataServiceImpl) StopIngestion() error {
 	if s.ingestion == nil {
-		return &Error{
-			Code:    ErrCodeIngestionError,
+		return &types.Error{
+			Code:    types.ErrCodeIngestionError,
 			Message: "ingestion not initialized",
 		}
 	}
