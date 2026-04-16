@@ -11,18 +11,22 @@ import (
 )
 
 type DorisStorage struct {
-	config         types.StorageConfig
-	table          string
-	db             string
-	batchBuffer    []*types.DataPoint
-	batchSize      int
-	flushInterval  time.Duration
-	mu             sync.Mutex
-	stopChan       chan struct{}
-	started        bool
-	queryCache     map[string]*DorisCacheItem
-	cacheTTL       time.Duration
-	cacheMaxSize   int
+	config             types.StorageConfig
+	table              string
+	db                 string
+	batchBuffer        []*types.DataPoint
+	batchSize          int
+	flushInterval      time.Duration
+	mu                 sync.Mutex
+	stopChan           chan struct{}
+	started            bool
+	queryCache         map[string]*DorisCacheItem
+	cacheTTL           time.Duration
+	cacheMaxSize       int
+	storageConfig      DorisStorageOptimizationConfig
+	partitionStats     map[string]*PartitionStats
+	compressionEnabled bool
+	tieredStorage      bool
 }
 
 type DorisCacheItem struct {
@@ -32,6 +36,41 @@ type DorisCacheItem struct {
 	ExpiresAt   time.Time
 	AccessCount int
 }
+
+type DorisStorageOptimizationConfig struct {
+	Compression        string        `json:"compression"`
+	PartitionBy        string        `json:"partition_by"`
+	Buckets            int           `json:"buckets"`
+	ReplicationNum     int           `json:"replication_num"`
+	StoragePolicy      string        `json:"storage_policy"`
+	HotPartitionDays   int           `json:"hot_partition_days"`
+	WarmPartitionDays  int           `json:"warm_partition_days"`
+	EnableTieredStorage bool          `json:"enable_tiered_storage"`
+	EnableCompression   bool          `json:"enable_compression"`
+	CompressionType    string        `json:"compression_type"`
+	BloomFilterColumns []string      `json:"bloom_filter_columns"`
+	InvertedIndexColumns []string    `json:"inverted_index_columns"`
+}
+
+type PartitionStats struct {
+	PartitionName string        `json:"partition_name"`
+	StartTime     time.Time     `json:"start_time"`
+	EndTime       time.Time     `json:"end_time"`
+	RowCount      int64         `json:"row_count"`
+	DataSize      int64         `json:"data_size"`
+	Tier          string        `json:"tier"`
+	LastAccess    time.Time     `json:"last_access"`
+	AccessCount   int64         `json:"access_count"`
+	IsHot         bool          `json:"is_hot"`
+}
+
+type StorageTier int
+
+const (
+	TierHot StorageTier = iota
+	TierWarm
+	TierCold
+)
 
 type DorisTableSchema struct {
 	Database    string
@@ -46,13 +85,34 @@ type DorisTableSchema struct {
 
 func NewDorisStorage() *DorisStorage {
 	return &DorisStorage{
-		batchSize:     defaultBatchSize,
-		flushInterval: defaultFlushInterval,
-		batchBuffer:   make([]*types.DataPoint, 0, defaultBatchSize),
-		stopChan:      make(chan struct{}),
-		queryCache:     make(map[string]*DorisCacheItem),
-		cacheTTL:       5 * time.Minute,
-		cacheMaxSize:   1000,
+		batchSize:         defaultBatchSize,
+		flushInterval:     defaultFlushInterval,
+		batchBuffer:       make([]*types.DataPoint, 0, defaultBatchSize),
+		stopChan:          make(chan struct{}),
+		queryCache:        make(map[string]*DorisCacheItem),
+		cacheTTL:          5 * time.Minute,
+		cacheMaxSize:      1000,
+		partitionStats:    make(map[string]*PartitionStats),
+		storageConfig:     DefaultDorisStorageOptimizationConfig(),
+		compressionEnabled: true,
+		tieredStorage:      true,
+	}
+}
+
+func DefaultDorisStorageOptimizationConfig() DorisStorageOptimizationConfig {
+	return DorisStorageOptimizationConfig{
+		Compression:        "LZ4",
+		PartitionBy:        "timestamp",
+		Buckets:            32,
+		ReplicationNum:     1,
+		StoragePolicy:      "default",
+		HotPartitionDays:   7,
+		WarmPartitionDays:  30,
+		EnableTieredStorage: true,
+		EnableCompression:   true,
+		CompressionType:    "LZ4",
+		BloomFilterColumns: []string{"device_id", "station_id", "metric_name"},
+		InvertedIndexColumns: []string{"tags"},
 	}
 }
 
@@ -80,6 +140,25 @@ func (d *DorisStorage) Init(config types.StorageConfig) error {
 }
 
 func (d *DorisStorage) getDefaultTableSchema() DorisTableSchema {
+	properties := map[string]string{
+		"replication_num":           fmt.Sprintf("%d", d.storageConfig.ReplicationNum),
+		"dynamic_partition.enable":  "true",
+		"dynamic_partition.time_unit": "DAY",
+		"dynamic_partition.time_zone": "Asia/Shanghai",
+		"dynamic_partition.start":   "-7",
+		"dynamic_partition.end":     "3",
+		"dynamic_partition.prefix":  "p",
+		"dynamic_partition.buckets": fmt.Sprintf("%d", d.storageConfig.Buckets),
+	}
+
+	if d.storageConfig.EnableCompression {
+		properties["compression"] = d.storageConfig.CompressionType
+	}
+
+	if len(d.storageConfig.BloomFilterColumns) > 0 {
+		properties["bloom_filter_columns"] = strings.Join(d.storageConfig.BloomFilterColumns, ",")
+	}
+
 	return DorisTableSchema{
 		Database: d.db,
 		Table:    d.table,
@@ -95,14 +174,152 @@ func (d *DorisStorage) getDefaultTableSchema() DorisTableSchema {
 		Keys:        []string{"timestamp", "device_id", "station_id", "metric_name"},
 		DuplicateKey: true,
 		Distributed:  true,
-		Buckets:      32,
-		Properties: map[string]string{
-			"replication_num":        "1",
-			"dynamic_partition.enable": "true",
-			"dynamic_partition.time_unit": "MONTH",
-			"dynamic_partition.time_zone": "Asia/Shanghai",
-		},
+		Buckets:      d.storageConfig.Buckets,
+		Properties:   properties,
 	}
+}
+
+func (d *DorisStorage) SetStorageOptimizationConfig(config DorisStorageOptimizationConfig) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	d.storageConfig = config
+	d.compressionEnabled = config.EnableCompression
+	d.tieredStorage = config.EnableTieredStorage
+}
+
+func (d *DorisStorage) GetStorageOptimizationConfig() DorisStorageOptimizationConfig {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	return d.storageConfig
+}
+
+func (d *DorisStorage) CreatePartition(partitionName string, startTime, endTime time.Time) error {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
+	fmt.Printf("Creating partition: %s from %s to %s\n", partitionName, startTime.Format(time.RFC3339), endTime.Format(time.RFC3339))
+	
+	d.partitionStats[partitionName] = &PartitionStats{
+		PartitionName: partitionName,
+		StartTime:     startTime,
+		EndTime:       endTime,
+		RowCount:      0,
+		DataSize:      0,
+		Tier:          "hot",
+		LastAccess:    time.Now(),
+		AccessCount:   0,
+		IsHot:         true,
+	}
+	
+	return nil
+}
+
+func (d *DorisStorage) DropPartition(partitionName string) error {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
+	fmt.Printf("Dropping partition: %s\n", partitionName)
+	delete(d.partitionStats, partitionName)
+	return nil
+}
+
+func (d *DorisStorage) GetPartitionStats() ([]*PartitionStats, error) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
+	stats := make([]*PartitionStats, 0, len(d.partitionStats))
+	for _, s := range d.partitionStats {
+		stats = append(stats, s)
+	}
+	return stats, nil
+}
+
+func (d *DorisStorage) MigratePartition(partitionName string, targetTier StorageTier) error {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
+	stats, exists := d.partitionStats[partitionName]
+	if !exists {
+		return fmt.Errorf("partition not found: %s", partitionName)
+	}
+
+	tierNames := map[StorageTier]string{
+		TierHot:  "hot",
+		TierWarm: "warm",
+		TierCold: "cold",
+	}
+
+	fmt.Printf("Migrating partition %s from %s to %s tier\n", partitionName, stats.Tier, tierNames[targetTier])
+	
+	stats.Tier = tierNames[targetTier]
+	stats.IsHot = targetTier == TierHot
+	
+	return nil
+}
+
+func (d *DorisStorage) AutoMigratePartitions() error {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
+	now := time.Now()
+	hotDuration := time.Duration(d.storageConfig.HotPartitionDays) * 24 * time.Hour
+	warmDuration := time.Duration(d.storageConfig.WarmPartitionDays) * 24 * time.Hour
+
+	for _, stats := range d.partitionStats {
+		age := now.Sub(stats.EndTime)
+		
+		if age > warmDuration && stats.Tier != "cold" {
+			fmt.Printf("Auto-migrating partition %s to cold tier (age: %v)\n", stats.PartitionName, age)
+			stats.Tier = "cold"
+			stats.IsHot = false
+		} else if age > hotDuration && age <= warmDuration && stats.Tier != "warm" {
+			fmt.Printf("Auto-migrating partition %s to warm tier (age: %v)\n", stats.PartitionName, age)
+			stats.Tier = "warm"
+			stats.IsHot = false
+		}
+	}
+	
+	return nil
+}
+
+func (d *DorisStorage) GetStorageOptimizationStats() (map[string]interface{}, error) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
+	totalPartitions := len(d.partitionStats)
+	hotPartitions := 0
+	warmPartitions := 0
+	coldPartitions := 0
+	totalRows := int64(0)
+	totalSize := int64(0)
+
+	for _, stats := range d.partitionStats {
+		totalRows += stats.RowCount
+		totalSize += stats.DataSize
+		
+		switch stats.Tier {
+		case "hot":
+			hotPartitions++
+		case "warm":
+			warmPartitions++
+		case "cold":
+			coldPartitions++
+		}
+	}
+
+	return map[string]interface{}{
+		"compression_enabled":   d.compressionEnabled,
+		"tiered_storage_enabled": d.tieredStorage,
+		"compression_type":      d.storageConfig.CompressionType,
+		"total_partitions":      totalPartitions,
+		"hot_partitions":        hotPartitions,
+		"warm_partitions":       warmPartitions,
+		"cold_partitions":       coldPartitions,
+		"total_rows":            totalRows,
+		"total_size_bytes":      totalSize,
+		"hot_partition_days":    d.storageConfig.HotPartitionDays,
+		"warm_partition_days":   d.storageConfig.WarmPartitionDays,
+	}, nil
 }
 
 func (d *DorisStorage) Write(data *types.BatchData) error {

@@ -637,3 +637,146 @@ func BenchmarkMemoryOptimization(b *testing.B) {
 		}
 	})
 }
+
+func BenchmarkStorageOptimization(b *testing.B) {
+	config := types.StorageConfig{
+		Type:     "doris",
+		Host:     "localhost",
+		Port:     9030,
+		Database: "test",
+		Table:    "test_data",
+		Username: "root",
+		Password: "",
+	}
+
+	store := storage.NewDorisStorage()
+	if err := store.Init(config); err != nil {
+		b.Fatalf("Failed to init storage: %v", err)
+	}
+	defer store.Close()
+
+	b.Run("PartitionManagement", func(b *testing.B) {
+		now := time.Now()
+		for i := 0; i < b.N; i++ {
+			partitionName := fmt.Sprintf("p202401%02d", i%28+1)
+			startTime := now.AddDate(0, 0, -(i%28 + 1))
+			endTime := startTime.Add(24 * time.Hour)
+			_ = store.CreatePartition(partitionName, startTime, endTime)
+		}
+	})
+
+	b.Run("PartitionMigration", func(b *testing.B) {
+		now := time.Now()
+		for i := 0; i < 10; i++ {
+			partitionName := fmt.Sprintf("p_migrate_%02d", i)
+			startTime := now.AddDate(0, 0, -(i + 1))
+			endTime := startTime.Add(24 * time.Hour)
+			_ = store.CreatePartition(partitionName, startTime, endTime)
+		}
+
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			partitionName := fmt.Sprintf("p_migrate_%02d", i%10)
+			targetTier := storage.TierWarm
+			if i%3 == 0 {
+				targetTier = storage.TierCold
+			}
+			_ = store.MigratePartition(partitionName, targetTier)
+		}
+	})
+
+	b.Run("AutoMigration", func(b *testing.B) {
+		now := time.Now()
+		optConfig := storage.DefaultDorisStorageOptimizationConfig()
+		optConfig.HotPartitionDays = 3
+		optConfig.WarmPartitionDays = 7
+		store.SetStorageOptimizationConfig(optConfig)
+
+		for i := 0; i < 30; i++ {
+			partitionName := fmt.Sprintf("p_auto_%02d", i)
+			startTime := now.AddDate(0, 0, -(i + 1))
+			endTime := startTime.Add(24 * time.Hour)
+			_ = store.CreatePartition(partitionName, startTime, endTime)
+		}
+
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			_ = store.AutoMigratePartitions()
+		}
+	})
+
+	b.Run("GetStorageStats", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			_, _ = store.GetStorageOptimizationStats()
+		}
+	})
+
+	b.Run("GetPartitionStats", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			_, _ = store.GetPartitionStats()
+		}
+	})
+}
+
+func BenchmarkStorageOptimizationComparison(b *testing.B) {
+	config := types.StorageConfig{
+		Type:     "doris",
+		Host:     "localhost",
+		Port:     9030,
+		Database: "test",
+		Table:    "test_data",
+		Username: "root",
+		Password: "",
+	}
+
+	store := storage.NewDorisStorage()
+	if err := store.Init(config); err != nil {
+		b.Fatalf("Failed to init storage: %v", err)
+	}
+	defer store.Close()
+
+	b.Run("WithCompression", func(b *testing.B) {
+		optConfig := storage.DefaultDorisStorageOptimizationConfig()
+		optConfig.EnableCompression = true
+		optConfig.CompressionType = "LZ4"
+		store.SetStorageOptimizationConfig(optConfig)
+		testData := createTestBatchData(1000)
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			_ = store.Write(testData)
+		}
+	})
+
+	b.Run("WithoutCompression", func(b *testing.B) {
+		optConfig := storage.DefaultDorisStorageOptimizationConfig()
+		optConfig.EnableCompression = false
+		store.SetStorageOptimizationConfig(optConfig)
+		testData := createTestBatchData(1000)
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			_ = store.Write(testData)
+		}
+	})
+
+	b.Run("WithTieredStorage", func(b *testing.B) {
+		optConfig := storage.DefaultDorisStorageOptimizationConfig()
+		optConfig.EnableTieredStorage = true
+		store.SetStorageOptimizationConfig(optConfig)
+		testData := createTestBatchData(1000)
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			_ = store.Write(testData)
+		}
+	})
+
+	b.Run("WithoutTieredStorage", func(b *testing.B) {
+		optConfig := storage.DefaultDorisStorageOptimizationConfig()
+		optConfig.EnableTieredStorage = false
+		store.SetStorageOptimizationConfig(optConfig)
+		testData := createTestBatchData(1000)
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			_ = store.Write(testData)
+		}
+	})
+}
