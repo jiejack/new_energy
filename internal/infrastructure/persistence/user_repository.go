@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/new-energy-monitoring/internal/domain/entity"
+	"github.com/new-energy-monitoring/internal/domain/repository"
 	"gorm.io/gorm"
 )
 
@@ -12,7 +13,7 @@ type UserRepository struct {
 	db *Database
 }
 
-func NewUserRepository(db *Database) *UserRepository {
+func NewUserRepository(db *Database) repository.UserRepository {
 	return &UserRepository{db: db}
 }
 
@@ -157,7 +158,7 @@ type RoleRepository struct {
 	db *Database
 }
 
-func NewRoleRepository(db *Database) *RoleRepository {
+func NewRoleRepository(db *Database) repository.RoleRepository {
 	return &RoleRepository{db: db}
 }
 
@@ -235,7 +236,7 @@ type PermissionRepository struct {
 	db *Database
 }
 
-func NewPermissionRepository(db *Database) *PermissionRepository {
+func NewPermissionRepository(db *Database) repository.PermissionRepository {
 	return &PermissionRepository{db: db}
 }
 

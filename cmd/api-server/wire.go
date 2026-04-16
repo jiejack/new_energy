@@ -21,6 +21,7 @@ func InitializeApp() (*App, error) {
 		NewKafka,
 		NewJWTManager,
 		NewPasswordManager,
+		NewDialogueManager,
 
 		// 仓储层
 		persistence.RepositorySet,

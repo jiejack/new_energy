@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/new-energy-monitoring/internal/domain/entity"
+	"github.com/new-energy-monitoring/internal/domain/repository"
 	"gorm.io/gorm"
 )
 
@@ -14,7 +15,7 @@ type SystemConfigRepository struct {
 }
 
 // NewSystemConfigRepository 创建系统配置仓储
-func NewSystemConfigRepository(db *Database) *SystemConfigRepository {
+func NewSystemConfigRepository(db *Database) repository.SystemConfigRepository {
 	return &SystemConfigRepository{db: db}
 }
 

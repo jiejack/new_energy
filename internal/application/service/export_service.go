@@ -31,7 +31,7 @@ func NewExportService(
 	alarmRepo repository.AlarmRepository,
 	deviceRepo repository.DeviceRepository,
 	stationRepo repository.StationRepository,
-) *ExportService {
+) ExportServiceInterface {
 	return &ExportService{
 		alarmRepo:   alarmRepo,
 		deviceRepo:  deviceRepo,

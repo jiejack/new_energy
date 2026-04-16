@@ -16,6 +16,7 @@ import (
 	"github.com/new-energy-monitoring/internal/infrastructure/logger"
 	"github.com/new-energy-monitoring/internal/infrastructure/mq"
 	"github.com/new-energy-monitoring/internal/infrastructure/persistence"
+	"github.com/new-energy-monitoring/pkg/ai/qa"
 	"github.com/new-energy-monitoring/pkg/auth"
 	"go.uber.org/zap"
 )
@@ -195,6 +196,14 @@ func NewPasswordManager(cfg *config.Config) *auth.PasswordManager {
 	return auth.NewPasswordManager(passwordConfig)
 }
 
+// NewDialogueManager 创建对话管理器实例
+func NewDialogueManager() *qa.DialogueManager {
+	// 创建意图识别器
+	recognizer := qa.NewIntentRecognizer(nil)
+	// 创建对话管理器
+	return qa.NewDialogueManager(recognizer, nil)
+}
+
 // NewHTTPServer 创建 HTTP 服务器实例
 func NewHTTPServer(
 	cfg *config.Config,
@@ -213,6 +222,18 @@ func NewHTTPServer(
 	reportHandler *handler.ReportHandler,
 	operationLogHandler *handler.OperationLogHandler,
 	energyEfficiencyHandler *handler.EnergyEfficiencyHandler,
+	workOrderHandler *handler.WorkOrderHandler,
+	inventoryHandler *handler.InventoryHandler,
+	purchaseOrderHandler *handler.PurchaseOrderHandler,
+	receiptHandler *handler.ReceiptHandler,
+	costCategoryHandler *handler.CostCategoryHandler,
+	costEntryHandler *handler.CostEntryHandler,
+	costAllocationHandler *handler.CostAllocationHandler,
+	costReportHandler *handler.CostReportHandler,
+	assetHandler *handler.AssetHandler,
+	assetMaintenanceHandler *handler.AssetMaintenanceHandler,
+	assetDepreciationHandler *handler.AssetDepreciationHandler,
+	assetDocumentHandler *handler.AssetDocumentHandler,
 	// carbonEmissionHandler *handler.CarbonEmissionHandler,
 ) *http.Server {
 	// 设置 Gin 模式
@@ -386,6 +407,150 @@ func NewHTTPServer(
 			energyEfficiency.GET("/analyses", energyEfficiencyHandler.ListEnergyEfficiencyAnalyses)
 			energyEfficiency.GET("/analyses/:id", energyEfficiencyHandler.GetEnergyEfficiencyAnalysis)
 			energyEfficiency.GET("/analyses/latest", energyEfficiencyHandler.GetLatestEnergyEfficiencyAnalysis)
+		}
+
+		// 工单管理路由
+		workOrders := api.Group("/work-orders")
+		{
+			workOrders.GET("", workOrderHandler.ListWorkOrders)
+			workOrders.POST("", workOrderHandler.CreateWorkOrder)
+			workOrders.GET("/stats", workOrderHandler.GetWorkOrderStats)
+			workOrders.GET("/:id", workOrderHandler.GetWorkOrder)
+			workOrders.PUT("/:id", workOrderHandler.UpdateWorkOrder)
+			workOrders.DELETE("/:id", workOrderHandler.DeleteWorkOrder)
+		}
+
+		// 库存管理路由
+		inventory := api.Group("/inventory")
+		{
+			inventory.GET("", inventoryHandler.ListInventories)
+			inventory.POST("", inventoryHandler.CreateInventory)
+			inventory.GET("/low-stock", inventoryHandler.GetLowStockItems)
+			inventory.GET("/:id", inventoryHandler.GetInventory)
+			inventory.PUT("/:id", inventoryHandler.UpdateInventory)
+			inventory.DELETE("/:id", inventoryHandler.DeleteInventory)
+			inventory.GET("/:inventory_id/transactions", inventoryHandler.GetTransactions)
+			inventory.POST("/transactions", inventoryHandler.ProcessTransaction)
+		}
+
+		// 采购订单路由
+		purchaseOrders := api.Group("/purchase-orders")
+		{
+			purchaseOrders.GET("", purchaseOrderHandler.ListPurchaseOrders)
+			purchaseOrders.POST("", purchaseOrderHandler.CreatePurchaseOrder)
+			purchaseOrders.GET("/:id", purchaseOrderHandler.GetPurchaseOrder)
+			purchaseOrders.PUT("/:id", purchaseOrderHandler.UpdatePurchaseOrder)
+			purchaseOrders.DELETE("/:id", purchaseOrderHandler.DeletePurchaseOrder)
+			purchaseOrders.PUT("/:id/status", purchaseOrderHandler.UpdatePurchaseOrderStatus)
+		}
+
+		// 收货单路由
+		receipts := api.Group("/receipts")
+		{
+			receipts.GET("", receiptHandler.ListReceipts)
+			receipts.POST("", receiptHandler.CreateReceipt)
+			receipts.GET("/:id", receiptHandler.GetReceipt)
+			receipts.PUT("/:id", receiptHandler.UpdateReceipt)
+			receipts.DELETE("/:id", receiptHandler.DeleteReceipt)
+			receipts.PUT("/:id/status", receiptHandler.UpdateReceiptStatus)
+		}
+
+		// 成本类别路由
+		costCategories := api.Group("/cost-categories")
+		{
+			costCategories.GET("", costCategoryHandler.ListCostCategories)
+			costCategories.POST("", costCategoryHandler.CreateCostCategory)
+			costCategories.GET("/tree", costCategoryHandler.GetCostCategoryTree)
+			costCategories.GET("/:id", costCategoryHandler.GetCostCategoryByID)
+			costCategories.PUT("/:id", costCategoryHandler.UpdateCostCategory)
+			costCategories.DELETE("/:id", costCategoryHandler.DeleteCostCategory)
+			costCategories.GET("/code/:code", costCategoryHandler.GetCostCategoryByCode)
+		}
+
+		// 成本条目路由
+		costEntries := api.Group("/cost-entries")
+		{
+			costEntries.GET("", costEntryHandler.ListCostEntries)
+			costEntries.POST("", costEntryHandler.CreateCostEntry)
+			costEntries.GET("/:id", costEntryHandler.GetCostEntryByID)
+			costEntries.PUT("/:id", costEntryHandler.UpdateCostEntry)
+			costEntries.DELETE("/:id", costEntryHandler.DeleteCostEntry)
+			costEntries.GET("/code/:code", costEntryHandler.GetCostEntryByCode)
+			costEntries.PUT("/:id/approve", costEntryHandler.ApproveCostEntry)
+			costEntries.PUT("/:id/reject", costEntryHandler.RejectCostEntry)
+			costEntries.GET("/total/category/:category_id", costEntryHandler.GetTotalByCategory)
+			costEntries.GET("/total/period", costEntryHandler.GetTotalByPeriod)
+		}
+
+		// 成本分配路由
+		costAllocations := api.Group("/cost-allocations")
+		{
+			costAllocations.GET("", costAllocationHandler.ListCostAllocationsByAllocated)
+			costAllocations.POST("", costAllocationHandler.CreateCostAllocation)
+			costAllocations.GET("/:id", costAllocationHandler.GetCostAllocationByID)
+			costAllocations.PUT("/:id", costAllocationHandler.UpdateCostAllocation)
+			costAllocations.DELETE("/:id", costAllocationHandler.DeleteCostAllocation)
+			costAllocations.GET("/cost-entry/:cost_entry_id", costAllocationHandler.ListCostAllocationsByCostEntryID)
+			costAllocations.GET("/total", costAllocationHandler.GetTotalByAllocated)
+		}
+
+		// 成本报表路由
+		costReports := api.Group("/cost-reports")
+		{
+			costReports.GET("", costReportHandler.ListCostReports)
+			costReports.POST("", costReportHandler.CreateCostReport)
+			costReports.GET("/:id", costReportHandler.GetCostReportByID)
+			costReports.PUT("/:id", costReportHandler.UpdateCostReport)
+			costReports.DELETE("/:id", costReportHandler.DeleteCostReport)
+			costReports.GET("/code/:code", costReportHandler.GetCostReportByCode)
+			costReports.PUT("/:id/generate", costReportHandler.GenerateCostReport)
+			costReports.PUT("/:id/approve", costReportHandler.ApproveCostReport)
+			costReports.PUT("/:id/reject", costReportHandler.RejectCostReport)
+		}
+
+		// 资产路由
+		assets := api.Group("/assets")
+		{
+			assets.GET("", assetHandler.ListAssets)
+			assets.POST("", assetHandler.CreateAsset)
+			assets.GET("/:id", assetHandler.GetAsset)
+			assets.PUT("/:id", assetHandler.UpdateAsset)
+			assets.DELETE("/:id", assetHandler.DeleteAsset)
+			assets.GET("/:id/depreciation", assetHandler.CalculateDepreciation)
+			
+			// 资产维护路由
+			assets.GET("/:asset_id/maintenance/costs", assetMaintenanceHandler.GetMaintenanceCosts)
+		}
+
+		// 资产维护记录路由
+		assetMaintenance := api.Group("/assets/maintenance")
+		{
+			assetMaintenance.GET("", assetMaintenanceHandler.ListMaintenanceRecords)
+			assetMaintenance.POST("", assetMaintenanceHandler.CreateMaintenanceRecord)
+			assetMaintenance.GET("/:id", assetMaintenanceHandler.GetMaintenanceRecord)
+			assetMaintenance.PUT("/:id", assetMaintenanceHandler.UpdateMaintenanceRecord)
+			assetMaintenance.DELETE("/:id", assetMaintenanceHandler.DeleteMaintenanceRecord)
+		}
+
+		// 资产折旧记录路由
+		assetDepreciation := api.Group("/assets/depreciation")
+		{
+			assetDepreciation.GET("", assetDepreciationHandler.ListDepreciationRecords)
+			assetDepreciation.POST("", assetDepreciationHandler.CreateDepreciationRecord)
+			assetDepreciation.GET("/:id", assetDepreciationHandler.GetDepreciationRecord)
+			assetDepreciation.PUT("/:id", assetDepreciationHandler.UpdateDepreciationRecord)
+			assetDepreciation.DELETE("/:id", assetDepreciationHandler.DeleteDepreciationRecord)
+			assetDepreciation.GET("/:asset_id/summary", assetDepreciationHandler.GetDepreciationSummary)
+		}
+
+		// 资产文档路由
+		assetDocuments := api.Group("/assets/documents")
+		{
+			assetDocuments.GET("", assetDocumentHandler.ListDocuments)
+			assetDocuments.POST("", assetDocumentHandler.CreateDocument)
+			assetDocuments.GET("/:id", assetDocumentHandler.GetDocument)
+			assetDocuments.PUT("/:id", assetDocumentHandler.UpdateDocument)
+			assetDocuments.DELETE("/:id", assetDocumentHandler.DeleteDocument)
 		}
 		
 		// 碳排放监测路由 (暂时注释，待后续完善)

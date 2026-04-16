@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/new-energy-monitoring/internal/domain/entity"
+	"github.com/new-energy-monitoring/internal/domain/repository"
 	"gorm.io/gorm"
 )
 
@@ -13,7 +14,7 @@ type QARepository struct {
 }
 
 // NewQARepository 创建问答会话仓储
-func NewQARepository(db *Database) *QARepository {
+func NewQARepository(db *Database) repository.QARepository {
 	return &QARepository{db: db}
 }
 

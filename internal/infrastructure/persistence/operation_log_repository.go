@@ -7,14 +7,13 @@ import (
 	"github.com/google/uuid"
 	"github.com/new-energy-monitoring/internal/domain/entity"
 	"github.com/new-energy-monitoring/internal/domain/repository"
-	"gorm.io/gorm"
 )
 
 type operationLogRepository struct {
-	db *gorm.DB
+	db *Database
 }
 
-func NewOperationLogRepository(db *gorm.DB) repository.OperationLogRepository {
+func NewOperationLogRepository(db *Database) repository.OperationLogRepository {
 	return &operationLogRepository{db: db}
 }
 

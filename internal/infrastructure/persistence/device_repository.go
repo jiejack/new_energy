@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/new-energy-monitoring/internal/domain/entity"
+	"github.com/new-energy-monitoring/internal/domain/repository"
 )
 
 // DeviceRepository 设备仓储
@@ -12,7 +13,7 @@ type DeviceRepository struct {
 }
 
 // NewDeviceRepository 创建设备仓储
-func NewDeviceRepository(db *Database) *DeviceRepository {
+func NewDeviceRepository(db *Database) repository.DeviceRepository {
 	return &DeviceRepository{db: db}
 }
 
@@ -52,7 +53,7 @@ func (r *DeviceRepository) GetByCode(ctx context.Context, code string) (*entity.
 }
 
 // List 获取设备列表
-func (r *DeviceRepository) List(ctx context.Context, stationID *string, deviceType *string) ([]*entity.Device, error) {
+func (r *DeviceRepository) List(ctx context.Context, stationID *string, deviceType *entity.DeviceType) ([]*entity.Device, error) {
 	var devices []*entity.Device
 	query := r.db.WithContext(ctx)
 	
@@ -65,4 +66,21 @@ func (r *DeviceRepository) List(ctx context.Context, stationID *string, deviceTy
 	
 	err := query.Find(&devices).Error
 	return devices, err
+}
+
+// GetOnlineDevices 获取在线设备列表
+func (r *DeviceRepository) GetOnlineDevices(ctx context.Context, stationID string) ([]*entity.Device, error) {
+	var devices []*entity.Device
+	err := r.db.WithContext(ctx).Where("station_id = ? AND status = ?", stationID, "online").Find(&devices).Error
+	return devices, err
+}
+
+// GetWithPoints 获取设备及其采集点
+func (r *DeviceRepository) GetWithPoints(ctx context.Context, id string) (*entity.Device, error) {
+	var device entity.Device
+	err := r.db.WithContext(ctx).Preload("Points").First(&device, "id = ?", id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &device, nil
 }

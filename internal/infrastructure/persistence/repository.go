@@ -5,13 +5,14 @@ import (
 	"time"
 
 	"github.com/new-energy-monitoring/internal/domain/entity"
+	"github.com/new-energy-monitoring/internal/domain/repository"
 )
 
 type RegionRepository struct {
 	db *Database
 }
 
-func NewRegionRepository(db *Database) *RegionRepository {
+func NewRegionRepository(db *Database) repository.RegionRepository {
 	return &RegionRepository{db: db}
 }
 
@@ -74,7 +75,7 @@ type StationRepository struct {
 	db *Database
 }
 
-func NewStationRepository(db *Database) *StationRepository {
+func NewStationRepository(db *Database) repository.StationRepository {
 	return &StationRepository{db: db}
 }
 
@@ -139,7 +140,7 @@ type PointRepository struct {
 	db *Database
 }
 
-func NewPointRepository(db *Database) *PointRepository {
+func NewPointRepository(db *Database) repository.PointRepository {
 	return &PointRepository{db: db}
 }
 
@@ -211,7 +212,7 @@ type AlarmRepository struct {
 	db *Database
 }
 
-func NewAlarmRepository(db *Database) *AlarmRepository {
+func NewAlarmRepository(db *Database) repository.AlarmRepository {
 	return &AlarmRepository{db: db}
 }
 
@@ -289,27 +290,62 @@ func (r *AlarmRepository) CountByLevel(ctx context.Context, stationID *string) (
 		Level entity.AlarmLevel
 		Count int64
 	}
-	
+
 	var results []CountResult
 	query := r.db.WithContext(ctx).
 		Model(&entity.Alarm{}).
 		Select("level, count(*) as count").
 		Where("status = ?", entity.AlarmStatusActive).
 		Group("level")
-	
+
 	if stationID != nil {
 		query = query.Where("station_id = ?", *stationID)
 	}
-	
+
 	err := query.Scan(&results).Error
 	if err != nil {
 		return nil, err
 	}
-	
+
 	counts := make(map[entity.AlarmLevel]int64)
 	for _, r := range results {
 		counts[r.Level] = r.Count
 	}
-	
+
 	return counts, nil
+}
+
+type SubRegionRepository struct {
+	db *Database
+}
+
+func NewSubRegionRepository(db *Database) repository.SubRegionRepository {
+	return &SubRegionRepository{db: db}
+}
+
+func (r *SubRegionRepository) Create(ctx context.Context, subRegion *entity.SubRegion) error {
+	return r.db.WithContext(ctx).Create(subRegion).Error
+}
+
+func (r *SubRegionRepository) Update(ctx context.Context, subRegion *entity.SubRegion) error {
+	return r.db.WithContext(ctx).Save(subRegion).Error
+}
+
+func (r *SubRegionRepository) Delete(ctx context.Context, id string) error {
+	return r.db.WithContext(ctx).Delete(&entity.SubRegion{}, "id = ?", id).Error
+}
+
+func (r *SubRegionRepository) GetByID(ctx context.Context, id string) (*entity.SubRegion, error) {
+	var subRegion entity.SubRegion
+	err := r.db.WithContext(ctx).First(&subRegion, "id = ?", id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &subRegion, nil
+}
+
+func (r *SubRegionRepository) GetByRegionID(ctx context.Context, regionID string) ([]*entity.SubRegion, error) {
+	var subRegions []*entity.SubRegion
+	err := r.db.WithContext(ctx).Where("region_id = ?", regionID).Find(&subRegions).Error
+	return subRegions, err
 }

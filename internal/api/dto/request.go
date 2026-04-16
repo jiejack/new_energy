@@ -298,3 +298,52 @@ type UpdatePreferencesRequest struct {
 type UploadAvatarRequest struct {
 	Avatar string `json:"avatar" binding:"required" example:"data:image/png;base64,..."`
 }
+
+// AssetRequest 资产创建和更新请求
+type AssetRequest struct {
+	Code          string  `json:"code" binding:"required" example:"ASSET_001"`
+	Name          string  `json:"name" binding:"required" example:"1号逆变器"`
+	Category      string  `json:"category" binding:"required" example:"equipment"`
+	AssetType     string  `json:"asset_type" example:"inverter"`
+	Manufacturer  string  `json:"manufacturer" example:"华为"`
+	Model         string  `json:"model" example:"SUN2000-100KTL"`
+	SerialNumber  string  `json:"serial_number" example:"SN123456"`
+	PurchasePrice float64 `json:"purchase_price" binding:"required" example:"100000.0"`
+	PurchaseDate  string  `json:"purchase_date" binding:"required" example:"2024-01-01"`
+	ExpectedLife  int     `json:"expected_life" binding:"required" example:"10"`
+	ResidualValue float64 `json:"residual_value" example:"10000.0"`
+	Location      string  `json:"location" example:"上海光伏电站1号"`
+	Status        string  `json:"status" example:"in_use"`
+	Description   string  `json:"description" example:"逆变器设备"`
+}
+
+// AssetMaintenanceRequest 资产维护记录创建和更新请求
+type AssetMaintenanceRequest struct {
+	AssetID        string  `json:"asset_id" binding:"required" example:"asset-001"`
+	MaintenanceType string  `json:"maintenance_type" binding:"required" example:"preventive"`
+	Description    string  `json:"description" example:"定期维护"`
+	Cost           float64 `json:"cost" example:"5000.0"`
+	MaintenanceDate string  `json:"maintenance_date" binding:"required" example:"2024-01-01"`
+	Technician     string  `json:"technician" example:"张三"`
+	Status         string  `json:"status" example:"completed"`
+}
+
+// AssetDepreciationRequest 资产折旧记录创建和更新请求
+type AssetDepreciationRequest struct {
+	AssetID         string  `json:"asset_id" binding:"required" example:"asset-001"`
+	DepreciationMethod string  `json:"depreciation_method" binding:"required" example:"straight-line"`
+	Year            int     `json:"year" binding:"required" example:"2024"`
+	Amount          float64 `json:"amount" binding:"required" example:"9000.0"`
+	AccumulatedAmount float64 `json:"accumulated_amount" binding:"required" example:"9000.0"`
+	BookValue       float64 `json:"book_value" binding:"required" example:"91000.0"`
+}
+
+// AssetDocumentRequest 资产文档创建和更新请求
+type AssetDocumentRequest struct {
+	AssetID      string `json:"asset_id" binding:"required" example:"asset-001"`
+	DocumentType string `json:"document_type" binding:"required" example:"manual"`
+	Title        string `json:"title" binding:"required" example:"逆变器操作手册"`
+	FilePath     string `json:"file_path" binding:"required" example:"/documents/inverter_manual.pdf"`
+	Description  string `json:"description" example:"逆变器操作手册"`
+	UploadDate   string `json:"upload_date" binding:"required" example:"2024-01-01"`
+}

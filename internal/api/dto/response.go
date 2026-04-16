@@ -308,3 +308,118 @@ type OperationLogResponse struct {
 	Duration   int64  `json:"duration"`
 	CreatedAt  string `json:"created_at"`
 }
+
+// AssetResponse 资产响应
+type AssetResponse struct {
+	ID            string     `json:"id" example:"asset-001"`
+	Code          string     `json:"code" example:"ASSET_001"`
+	Name          string     `json:"name" example:"1号逆变器"`
+	Category      string     `json:"category" example:"equipment"`
+	AssetType     string     `json:"asset_type" example:"inverter"`
+	Manufacturer  string     `json:"manufacturer" example:"华为"`
+	Model         string     `json:"model" example:"SUN2000-100KTL"`
+	SerialNumber  string     `json:"serial_number" example:"SN123456"`
+	PurchasePrice float64    `json:"purchase_price" example:"100000.0"`
+	PurchaseDate  *time.Time `json:"purchase_date"`
+	ExpectedLife  int        `json:"expected_life" example:"10"`
+	ResidualValue float64    `json:"residual_value" example:"10000.0"`
+	Location      string     `json:"location" example:"上海光伏电站1号"`
+	Status        string     `json:"status" example:"in_use"`
+	Description   string     `json:"description" example:"逆变器设备"`
+	CreatedAt     time.Time  `json:"created_at"`
+	UpdatedAt     time.Time  `json:"updated_at"`
+}
+
+// AssetListResponse 资产列表响应
+type AssetListResponse struct {
+	Items []AssetResponse `json:"items"`
+	Total int64           `json:"total"`
+	Page  int             `json:"page"`
+	Size  int             `json:"size"`
+}
+
+// AssetMaintenanceResponse 资产维护记录响应
+type AssetMaintenanceResponse struct {
+	ID              string     `json:"id" example:"maintenance-001"`
+	AssetID         string     `json:"asset_id" example:"asset-001"`
+	MaintenanceType string     `json:"maintenance_type" example:"preventive"`
+	Description     string     `json:"description" example:"定期维护"`
+	Cost            float64    `json:"cost" example:"5000.0"`
+	MaintenanceDate *time.Time `json:"maintenance_date"`
+	Technician      string     `json:"technician" example:"张三"`
+	Status          string     `json:"status" example:"completed"`
+	CreatedAt       time.Time  `json:"created_at"`
+	UpdatedAt       time.Time  `json:"updated_at"`
+}
+
+// AssetMaintenanceListResponse 资产维护记录列表响应
+type AssetMaintenanceListResponse struct {
+	Items []AssetMaintenanceResponse `json:"items"`
+	Total int64                      `json:"total"`
+	Page  int                        `json:"page"`
+	Size  int                        `json:"size"`
+}
+
+// AssetDepreciationResponse 资产折旧记录响应
+type AssetDepreciationResponse struct {
+	ID                string    `json:"id" example:"depreciation-001"`
+	AssetID           string    `json:"asset_id" example:"asset-001"`
+	DepreciationMethod string    `json:"depreciation_method" example:"straight-line"`
+	Year              int       `json:"year" example:"2024"`
+	Amount            float64   `json:"amount" example:"9000.0"`
+	AccumulatedAmount float64   `json:"accumulated_amount" example:"9000.0"`
+	BookValue         float64   `json:"book_value" example:"91000.0"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
+}
+
+// AssetDepreciationListResponse 资产折旧记录列表响应
+type AssetDepreciationListResponse struct {
+	Items []AssetDepreciationResponse `json:"items"`
+	Total int64                       `json:"total"`
+	Page  int                         `json:"page"`
+	Size  int                         `json:"size"`
+}
+
+// AssetDocumentResponse 资产文档响应
+type AssetDocumentResponse struct {
+	ID           string     `json:"id" example:"document-001"`
+	AssetID      string     `json:"asset_id" example:"asset-001"`
+	DocumentType string     `json:"document_type" example:"manual"`
+	Title        string     `json:"title" example:"逆变器操作手册"`
+	FilePath     string     `json:"file_path" example:"/documents/inverter_manual.pdf"`
+	Description  string     `json:"description" example:"逆变器操作手册"`
+	UploadDate   *time.Time `json:"upload_date"`
+	CreatedAt    time.Time  `json:"created_at"`
+	UpdatedAt    time.Time  `json:"updated_at"`
+}
+
+// AssetDocumentListResponse 资产文档列表响应
+type AssetDocumentListResponse struct {
+	Items []AssetDocumentResponse `json:"items"`
+	Total int64                   `json:"total"`
+	Page  int                     `json:"page"`
+	Size  int                     `json:"size"`
+}
+
+// DepreciationResponse 折旧计算响应
+type DepreciationResponse struct {
+	AssetID           string  `json:"asset_id" example:"asset-001"`
+	Method            string  `json:"method" example:"straight-line"`
+	AnnualDepreciation float64 `json:"annual_depreciation" example:"9000.0"`
+	MonthlyDepreciation float64 `json:"monthly_depreciation" example:"750.0"`
+	AccumulatedDepreciation float64 `json:"accumulated_depreciation" example:"9000.0"`
+	BookValue         float64 `json:"book_value" example:"91000.0"`
+}
+
+// DepreciationSummaryResponse 折旧汇总响应
+type DepreciationSummaryResponse struct {
+	AssetID           string  `json:"asset_id" example:"asset-001"`
+	TotalDepreciation float64 `json:"total_depreciation" example:"9000.0"`
+}
+
+// MaintenanceCostResponse 维护成本响应
+type MaintenanceCostResponse struct {
+	AssetID string  `json:"asset_id" example:"asset-001"`
+	Cost    float64 `json:"cost" example:"5000.0"`
+}
