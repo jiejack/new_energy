@@ -296,6 +296,243 @@ func (s *BigDataServiceImpl) GetProcessingStats() (map[string]interface{}, error
 	}, nil
 }
 
+// CreateMaterializedView 创建物化视图
+func (s *BigDataServiceImpl) CreateMaterializedView(name string, targetTable string, query string) error {
+	if s.storage == nil {
+		return &types.Error{
+			Code:    types.ErrCodeStorageError,
+			Message: "storage not initialized",
+		}
+	}
+
+	return s.storage.CreateMaterializedView(name, targetTable, query)
+}
+
+// ListMaterializedViews 列出物化视图
+func (s *BigDataServiceImpl) ListMaterializedViews() ([]string, error) {
+	if s.storage == nil {
+		return nil, &types.Error{
+			Code:    types.ErrCodeStorageError,
+			Message: "storage not initialized",
+		}
+	}
+
+	return s.storage.ListMaterializedViews()
+}
+
+// DropMaterializedView 删除物化视图
+func (s *BigDataServiceImpl) DropMaterializedView(name string) error {
+	if s.storage == nil {
+		return &types.Error{
+			Code:    types.ErrCodeStorageError,
+			Message: "storage not initialized",
+		}
+	}
+
+	return s.storage.DropMaterializedView(name)
+}
+
+// RefreshMaterializedView 刷新物化视图
+func (s *BigDataServiceImpl) RefreshMaterializedView(name string) error {
+	if s.storage == nil {
+		return &types.Error{
+			Code:    types.ErrCodeStorageError,
+			Message: "storage not initialized",
+		}
+	}
+
+	return s.storage.RefreshMaterializedView(name)
+}
+
+// ExplainQuery 分析查询执行计划
+func (s *BigDataServiceImpl) ExplainQuery(query string) (interface{}, error) {
+	if s.storage == nil {
+		return nil, &types.Error{
+			Code:    types.ErrCodeStorageError,
+			Message: "storage not initialized",
+		}
+	}
+
+	return s.storage.ExplainQuery(query)
+}
+
+// CreatePreAggregationTable 创建预聚合表
+func (s *BigDataServiceImpl) CreatePreAggregationTable(tableName string, timeInterval string) error {
+	if s.storage == nil {
+		return &types.Error{
+			Code:    types.ErrCodeStorageError,
+			Message: "storage not initialized",
+		}
+	}
+
+	return s.storage.CreatePreAggregationTable(tableName, timeInterval)
+}
+
+// CreatePreAggregationRule 创建预聚合规则
+func (s *BigDataServiceImpl) CreatePreAggregationRule(rule interface{}) error {
+	if s.storage == nil {
+		return &types.Error{
+			Code:    types.ErrCodeStorageError,
+			Message: "storage not initialized",
+		}
+	}
+
+	return s.storage.CreatePreAggregationRule(rule)
+}
+
+// ListPreAggregationRules 列出预聚合规则
+func (s *BigDataServiceImpl) ListPreAggregationRules() (interface{}, error) {
+	if s.storage == nil {
+		return nil, &types.Error{
+			Code:    types.ErrCodeStorageError,
+			Message: "storage not initialized",
+		}
+	}
+
+	return s.storage.ListPreAggregationRules()
+}
+
+// EnablePreAggregationRule 启用预聚合规则
+func (s *BigDataServiceImpl) EnablePreAggregationRule(ruleID string) error {
+	if s.storage == nil {
+		return &types.Error{
+			Code:    types.ErrCodeStorageError,
+			Message: "storage not initialized",
+		}
+	}
+
+	return s.storage.EnablePreAggregationRule(ruleID)
+}
+
+// DisablePreAggregationRule 禁用预聚合规则
+func (s *BigDataServiceImpl) DisablePreAggregationRule(ruleID string) error {
+	if s.storage == nil {
+		return &types.Error{
+			Code:    types.ErrCodeStorageError,
+			Message: "storage not initialized",
+		}
+	}
+
+	return s.storage.DisablePreAggregationRule(ruleID)
+}
+
+// DeletePreAggregationRule 删除预聚合规则
+func (s *BigDataServiceImpl) DeletePreAggregationRule(ruleID string) error {
+	if s.storage == nil {
+		return &types.Error{
+			Code:    types.ErrCodeStorageError,
+			Message: "storage not initialized",
+		}
+	}
+
+	return s.storage.DeletePreAggregationRule(ruleID)
+}
+
+// RefreshPreAggregation 刷新预聚合
+func (s *BigDataServiceImpl) RefreshPreAggregation(tableName string) error {
+	if s.storage == nil {
+		return &types.Error{
+			Code:    types.ErrCodeStorageError,
+			Message: "storage not initialized",
+		}
+	}
+
+	return s.storage.RefreshPreAggregation(tableName)
+}
+
+// GetCacheStats 获取缓存统计信息
+func (s *BigDataServiceImpl) GetCacheStats() (map[string]interface{}, error) {
+	if s.storage == nil {
+		return nil, &types.Error{
+			Code:    types.ErrCodeStorageError,
+			Message: "storage not initialized",
+		}
+	}
+
+	return s.storage.GetCacheStats()
+}
+
+// ClearCache 清空缓存
+func (s *BigDataServiceImpl) ClearCache() error {
+	if s.storage == nil {
+		return &types.Error{
+			Code:    types.ErrCodeStorageError,
+			Message: "storage not initialized",
+		}
+	}
+
+	return s.storage.ClearCache()
+}
+
+// MultiDimensionAggregation 多维度聚合分析
+func (s *BigDataServiceImpl) MultiDimensionAggregation(
+	metrics []string,
+	dimensions []string,
+	startTime, endTime time.Time,
+	filters map[string]interface{},
+) (interface{}, error) {
+	if s.storage == nil {
+		return nil, &types.Error{
+			Code:    types.ErrCodeStorageError,
+			Message: "storage not initialized",
+		}
+	}
+
+	return s.storage.MultiDimensionAggregation(metrics, dimensions, startTime, endTime, filters)
+}
+
+// DimensionDrillDown 维度下钻分析
+func (s *BigDataServiceImpl) DimensionDrillDown(
+	baseDimensions []string,
+	drillDownDimension string,
+	metrics []string,
+	startTime, endTime time.Time,
+	filters map[string]interface{},
+) (interface{}, error) {
+	if s.storage == nil {
+		return nil, &types.Error{
+			Code:    types.ErrCodeStorageError,
+			Message: "storage not initialized",
+		}
+	}
+
+	return s.storage.DimensionDrillDown(baseDimensions, drillDownDimension, metrics, startTime, endTime, filters)
+}
+
+// DimensionCrossAnalysis 维度交叉分析
+func (s *BigDataServiceImpl) DimensionCrossAnalysis(
+	dimensions1 []string,
+	dimensions2 []string,
+	metric string,
+	startTime, endTime time.Time,
+	filters map[string]interface{},
+) (interface{}, error) {
+	if s.storage == nil {
+		return nil, &types.Error{
+			Code:    types.ErrCodeStorageError,
+			Message: "storage not initialized",
+		}
+	}
+
+	return s.storage.DimensionCrossAnalysis(dimensions1, dimensions2, metric, startTime, endTime, filters)
+}
+
+// GetDimensionValues 获取维度值
+func (s *BigDataServiceImpl) GetDimensionValues(
+	dimension string,
+	startTime, endTime time.Time,
+	filters map[string]interface{},
+) (interface{}, error) {
+	if s.storage == nil {
+		return nil, &types.Error{
+			Code:    types.ErrCodeStorageError,
+			Message: "storage not initialized",
+		}
+	}
+
+	return s.storage.GetDimensionValues(dimension, startTime, endTime, filters)
+}
+
 // Close 关闭服务
 func (s *BigDataServiceImpl) Close() error {
 	// 停止摄取

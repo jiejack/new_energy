@@ -93,6 +93,29 @@ type Storage interface {
 	Flush() error
 	GetStats() (map[string]interface{}, error)
 	Close() error
+	// 物化视图相关方法
+	CreateMaterializedView(name string, targetTable string, query string) error
+	ListMaterializedViews() ([]string, error)
+	DropMaterializedView(name string) error
+	RefreshMaterializedView(name string) error
+	// 查询优化相关方法
+	ExplainQuery(query string) (interface{}, error)
+	// 预聚合相关方法
+	CreatePreAggregationTable(tableName string, timeInterval string) error
+	CreatePreAggregationRule(rule interface{}) error
+	ListPreAggregationRules() (interface{}, error)
+	EnablePreAggregationRule(ruleID string) error
+	DisablePreAggregationRule(ruleID string) error
+	DeletePreAggregationRule(ruleID string) error
+	RefreshPreAggregation(tableName string) error
+	// 缓存相关方法
+	GetCacheStats() (map[string]interface{}, error)
+	ClearCache() error
+	// 多维度分析相关方法
+	MultiDimensionAggregation(metrics []string, dimensions []string, startTime, endTime time.Time, filters map[string]interface{}) (interface{}, error)
+	DimensionDrillDown(baseDimensions []string, drillDownDimension string, metrics []string, startTime, endTime time.Time, filters map[string]interface{}) (interface{}, error)
+	DimensionCrossAnalysis(dimensions1 []string, dimensions2 []string, metric string, startTime, endTime time.Time, filters map[string]interface{}) (interface{}, error)
+	GetDimensionValues(dimension string, startTime, endTime time.Time, filters map[string]interface{}) (interface{}, error)
 }
 
 // Analysis interface 分析接口
@@ -142,6 +165,29 @@ type BigDataService interface {
 	Analyze(query string) (interface{}, error)
 	Visualize(dashboardID, panelID string, data interface{}) error
 	Process(data *BatchData) (*BatchData, error)
+	// 物化视图相关方法
+	CreateMaterializedView(name string, targetTable string, query string) error
+	ListMaterializedViews() ([]string, error)
+	DropMaterializedView(name string) error
+	RefreshMaterializedView(name string) error
+	// 查询优化相关方法
+	ExplainQuery(query string) (interface{}, error)
+	// 预聚合相关方法
+	CreatePreAggregationTable(tableName string, timeInterval string) error
+	CreatePreAggregationRule(rule interface{}) error
+	ListPreAggregationRules() (interface{}, error)
+	EnablePreAggregationRule(ruleID string) error
+	DisablePreAggregationRule(ruleID string) error
+	DeletePreAggregationRule(ruleID string) error
+	RefreshPreAggregation(tableName string) error
+	// 缓存相关方法
+	GetCacheStats() (map[string]interface{}, error)
+	ClearCache() error
+	// 多维度分析相关方法
+	MultiDimensionAggregation(metrics []string, dimensions []string, startTime, endTime time.Time, filters map[string]interface{}) (interface{}, error)
+	DimensionDrillDown(baseDimensions []string, drillDownDimension string, metrics []string, startTime, endTime time.Time, filters map[string]interface{}) (interface{}, error)
+	DimensionCrossAnalysis(dimensions1 []string, dimensions2 []string, metric string, startTime, endTime time.Time, filters map[string]interface{}) (interface{}, error)
+	GetDimensionValues(dimension string, startTime, endTime time.Time, filters map[string]interface{}) (interface{}, error)
 }
 
 // Error 大数据模块错误

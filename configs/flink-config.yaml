@@ -1,0 +1,61 @@
+flink:
+  enabled: true
+  job_name: "new_energy_monitoring_stream"
+  parallelism: 4
+  window:
+    type: "sliding"  # tumbling, sliding, session
+    size: 60        # seconds
+    slide: 30       # seconds
+  operators:
+    - name: "data_cleaning"
+      enabled: true
+    - name: "quality_validation"
+      enabled: true
+    - name: "window_aggregation"
+      enabled: true
+    - name: "anomaly_detection"
+      enabled: true
+    - name: "alerting"
+      enabled: true
+  anomaly_detection:
+    enabled: true
+    threshold: 3.0
+    window_size: 60
+    detectors:
+      - type: "threshold"
+        enabled: true
+      - type: "statistical"
+        enabled: true
+  sinks:
+    - type: "kafka"
+      topic: "nem_processed"
+    - type: "clickhouse"
+      table: "processed_data"
+  sources:
+    - type: "kafka"
+      topic: "nem_raw"
+      consumer_group: "flink_consumer"
+  metrics:
+    enabled: true
+    interval: 10  # seconds
+  checkpoint:
+    enabled: true
+    interval: 300  # seconds
+    mode: "exactly_once"
+  visualization:
+    enabled: true
+    type: "basic"
+    refresh_interval: 10  # seconds
+    panels:
+      - id: "flink-metrics"
+        title: "Flink Processing Metrics"
+        type: "metrics"
+        refresh: 10
+      - id: "anomaly-detection"
+        title: "Anomaly Detection"
+        type: "anomaly"
+        refresh: 5
+      - id: "window-aggregations"
+        title: "Window Aggregations"
+        type: "aggregations"
+        refresh: 15
