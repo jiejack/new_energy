@@ -65,12 +65,12 @@ type FlinkProcessor struct {
 	kafkaConfig   mq.KafkaConfig
 	ctx           context.Context
 	cancel        context.CancelFunc
-	anomalyDetectors map[string]fault.AnomalyDetector
+	anomalyDetectors map[string]fault.FaultDetector
 	anomalyConfig    map[string]interface{}
 	alertConfig      map[string]interface{}
 	alertNotifier    notifier.Notifier
 	alertChannel     chan *notifier.Notification
-	visualizer       visualization.Visualization
+	visualizer       types.Visualization
 	visualizationConfig types.VisualizationConfig
 	visualizationEnabled bool
 }
@@ -111,7 +111,7 @@ func NewFlinkProcessor() *FlinkProcessor {
 		sources:          make([]map[string]interface{}, 0),
 		checkpoint:       make(map[string]interface{}),
 		metrics:          make(map[string]interface{}),
-		anomalyDetectors: make(map[string]fault.AnomalyDetector),
+		anomalyDetectors: make(map[string]fault.FaultDetector),
 		anomalyConfig:    make(map[string]interface{}),
 		alertConfig:      make(map[string]interface{}),
 		alertChannel:     make(chan *notifier.Notification, 100),
@@ -438,7 +438,7 @@ func (f *FlinkProcessor) loadFlinkConfig() {
 		
 		// 加载operators
 		if viper.IsSet("flink.operators") {
-			operators := viper.GetSlice("flink.operators")
+			operators := viper.Get("flink.operators").([]interface{})
 			for _, op := range operators {
 				if opMap, ok := op.(map[string]interface{}); ok {
 					name, ok := opMap["name"].(string)
@@ -452,12 +452,12 @@ func (f *FlinkProcessor) loadFlinkConfig() {
 		
 		// 加载sinks
 		if viper.IsSet("flink.sinks") {
-			f.sinks = viper.GetSlice("flink.sinks").([]map[string]interface{})
+			f.sinks = viper.Get("flink.sinks").([]map[string]interface{})
 		}
 		
 		// 加载sources
 		if viper.IsSet("flink.sources") {
-			f.sources = viper.GetSlice("flink.sources").([]map[string]interface{})
+			f.sources = viper.Get("flink.sources").([]map[string]interface{})
 		}
 		
 		// 加载metrics
@@ -604,8 +604,14 @@ func (f *FlinkProcessor) processBatchData(data *types.BatchData) (*types.BatchDa
 	fmt.Printf("Batch processing complete: cleaned=%d, invalid=%d, anomalies=%d, duration=%v\n",
 		stats["cleaned"], stats["invalid"], stats["anomalies"], processingTime)
 
+	// 转换stats为map[string]interface{}
+	statsMap := make(map[string]interface{})
+	for k, v := range stats {
+		statsMap[k] = v
+	}
+	
 	// 更新可视化
-	f.updateVisualization(stats, processedDataPoints)
+	f.updateVisualization(statsMap, processedDataPoints)
 
 	return &types.BatchData{
 		DataPoints: processedDataPoints,
@@ -653,8 +659,14 @@ func (f *FlinkProcessor) processStreamData(data *types.BatchData) (*types.BatchD
 	fmt.Printf("Stream processing complete: cleaned=%d, invalid=%d, windowed=%d, anomalies=%d, duration=%v\n",
 		stats["cleaned"], stats["invalid"], stats["windowed"], stats["anomalies"], processingTime)
 
+	// 转换stats为map[string]interface{}
+	statsMap := make(map[string]interface{})
+	for k, v := range stats {
+		statsMap[k] = v
+	}
+	
 	// 更新可视化
-	f.updateVisualization(stats, processedDataPoints)
+	f.updateVisualization(statsMap, processedDataPoints)
 
 	return &types.BatchData{
 		DataPoints: processedDataPoints,
@@ -755,33 +767,47 @@ func (f *FlinkProcessor) detectAnomalies(dp *types.DataPoint) []*fault.Anomaly {
 				allAnomalies = append(allAnomalies, anomalies...)
 				
 				// 为每个异常创建告警通知
-				for _, anomaly := range anomalies {
-					notification := &notifier.Notification{
-						Subject:   fmt.Sprintf("Anomaly Detected: %s", anomaly.Metric),
-						Content:   fmt.Sprintf("Device: %s, Metric: %s, Value: %f, Severity: %s, Timestamp: %s",
-							anomaly.DeviceID, anomaly.Metric, anomaly.Value, anomaly.Severity, anomaly.Timestamp),
-						Severity:  anomaly.Severity,
-						Timestamp: time.Now(),
-						Source:    "flink_processor",
-						Metadata: map[string]interface{}{
-							"device_id":   anomaly.DeviceID,
-							"metric":      anomaly.Metric,
-							"value":       anomaly.Value,
-							"detector":    key,
-							"job_id":      f.jobID,
-							"job_name":    f.jobName,
-						},
-					}
-					
-					// 发送告警到通道
-					select {
-					case f.alertChannel <- notification:
-						// 告警已发送
-					default:
-						// 通道已满，丢弃告警
-						fmt.Printf("Alert channel full, dropping alert for %s\n", anomaly.Metric)
-					}
+			for _, anomaly := range anomalies {
+				// 转换严重程度到通知优先级
+				priority := notifier.PriorityNormal
+				switch anomaly.Severity {
+				case "critical":
+					priority = notifier.PriorityCritical
+				case "high":
+					priority = notifier.PriorityHigh
+				case "low":
+					priority = notifier.PriorityLow
 				}
+				
+				notification := &notifier.Notification{
+					ID:        fmt.Sprintf("alert_%d", time.Now().UnixNano()),
+					AlarmID:   fmt.Sprintf("anomaly_%s_%s", anomaly.DeviceID, anomaly.Metric),
+					Channel:   notifier.ChannelInternal,
+					Priority:  priority,
+					Status:    notifier.StatusPending,
+					Subject:   fmt.Sprintf("Anomaly Detected: %s", anomaly.Metric),
+					Content:   fmt.Sprintf("Device: %s, Metric: %s, Value: %f, Severity: %s, Timestamp: %s",
+						anomaly.DeviceID, anomaly.Metric, anomaly.Value, anomaly.Severity, anomaly.Timestamp),
+					CreatedAt: time.Now(),
+					Tags: map[string]string{
+						"source":    "flink_processor",
+						"device_id": anomaly.DeviceID,
+						"metric":    anomaly.Metric,
+						"detector":  key,
+						"job_id":    f.jobID,
+						"job_name":  f.jobName,
+					},
+				}
+				
+				// 发送告警到通道
+				select {
+				case f.alertChannel <- notification:
+					// 告警已发送
+				default:
+					// 通道已满，丢弃告警
+					fmt.Printf("Alert channel full, dropping alert for %s\n", anomaly.Metric)
+				}
+			}
 			}
 		}
 	}

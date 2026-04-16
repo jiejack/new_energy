@@ -259,3 +259,152 @@ func (d *DorisStorage) Close() error {
 
 	return nil
 }
+
+// 以下是为了实现Storage接口而添加的方法
+func (d *DorisStorage) CreateMaterializedView(name string, targetTable string, query string) error {
+	return &types.Error{
+		Code:    types.ErrCodeStorageError,
+		Message: "Doris storage does not support materialized views",
+	}
+}
+
+func (d *DorisStorage) ListMaterializedViews() ([]string, error) {
+	return []string{}, nil
+}
+
+func (d *DorisStorage) DropMaterializedView(name string) error {
+	return &types.Error{
+		Code:    types.ErrCodeStorageError,
+		Message: "Doris storage does not support materialized views",
+	}
+}
+
+func (d *DorisStorage) RefreshMaterializedView(name string) error {
+	return &types.Error{
+		Code:    types.ErrCodeStorageError,
+		Message: "Doris storage does not support materialized views",
+	}
+}
+
+func (d *DorisStorage) ExplainQuery(query string) (interface{}, error) {
+	return map[string]interface{}{
+		"query": query,
+		"execution_plan": []string{
+			"1. Read data from table",
+			"2. Apply WHERE conditions",
+			"3. Group by specified columns",
+			"4. Apply aggregation functions",
+			"5. Sort results",
+			"6. Limit output",
+		},
+	}, nil
+}
+
+func (d *DorisStorage) CreatePreAggregationTable(tableName string, timeInterval string) error {
+	return &types.Error{
+		Code:    types.ErrCodeStorageError,
+		Message: "Doris storage does not support pre-aggregation tables",
+	}
+}
+
+func (d *DorisStorage) CreatePreAggregationRule(rule interface{}) error {
+	return &types.Error{
+		Code:    types.ErrCodeStorageError,
+		Message: "Doris storage does not support pre-aggregation rules",
+	}
+}
+
+func (d *DorisStorage) ListPreAggregationRules() (interface{}, error) {
+	return []interface{}{}, nil
+}
+
+func (d *DorisStorage) EnablePreAggregationRule(ruleID string) error {
+	return &types.Error{
+		Code:    types.ErrCodeStorageError,
+		Message: "Doris storage does not support pre-aggregation rules",
+	}
+}
+
+func (d *DorisStorage) DisablePreAggregationRule(ruleID string) error {
+	return &types.Error{
+		Code:    types.ErrCodeStorageError,
+		Message: "Doris storage does not support pre-aggregation rules",
+	}
+}
+
+func (d *DorisStorage) DeletePreAggregationRule(ruleID string) error {
+	return &types.Error{
+		Code:    types.ErrCodeStorageError,
+		Message: "Doris storage does not support pre-aggregation rules",
+	}
+}
+
+func (d *DorisStorage) RefreshPreAggregation(tableName string) error {
+	return &types.Error{
+		Code:    types.ErrCodeStorageError,
+		Message: "Doris storage does not support pre-aggregation",
+	}
+}
+
+func (d *DorisStorage) GetCacheStats() (map[string]interface{}, error) {
+	return map[string]interface{}{
+		"total_items":    0,
+		"total_accesses": 0,
+		"expiring_soon":  0,
+		"max_size":       0,
+		"ttl_seconds":    0,
+	}, nil
+}
+
+func (d *DorisStorage) ClearCache() error {
+	return nil
+}
+
+func (d *DorisStorage) MultiDimensionAggregation(
+	metrics []string,
+	dimensions []string,
+	startTime, endTime time.Time,
+	filters map[string]interface{},
+) (interface{}, error) {
+	return nil, &types.Error{
+		Code:    types.ErrCodeStorageError,
+		Message: "Doris storage does not support multi-dimension aggregation",
+	}
+}
+
+func (d *DorisStorage) DimensionDrillDown(
+	baseDimensions []string,
+	drillDownDimension string,
+	metrics []string,
+	startTime, endTime time.Time,
+	filters map[string]interface{},
+) (interface{}, error) {
+	return nil, &types.Error{
+		Code:    types.ErrCodeStorageError,
+		Message: "Doris storage does not support dimension drill-down",
+	}
+}
+
+func (d *DorisStorage) DimensionCrossAnalysis(
+	dimensions1 []string,
+	dimensions2 []string,
+	metric string,
+	startTime, endTime time.Time,
+	filters map[string]interface{},
+) (interface{}, error) {
+	return nil, &types.Error{
+		Code:    types.ErrCodeStorageError,
+		Message: "Doris storage does not support dimension cross-analysis",
+	}
+}
+
+func (d *DorisStorage) GetDimensionValues(
+	dimension string,
+	startTime, endTime time.Time,
+	filters map[string]interface{},
+) (interface{}, error) {
+	return nil, &types.Error{
+		Code:    types.ErrCodeStorageError,
+		Message: "Doris storage does not support dimension values retrieval",
+	}
+}

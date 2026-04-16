@@ -482,7 +482,15 @@ func (s *ClickHouseStorage) CreatePreAggregationTable(tableName string, timeInte
 	return nil
 }
 
-func (s *ClickHouseStorage) CreatePreAggregationRule(rule PreAggregationRule) error {
+func (s *ClickHouseStorage) CreatePreAggregationRule(rule interface{}) error {
+	// 类型断言
+	preAggRule, ok := rule.(PreAggregationRule)
+	if !ok {
+		return &types.Error{
+			Code:    types.ErrCodeStorageError,
+			Message: "invalid pre-aggregation rule type",
+		}
+	}
 	if !s.started {
 		return &types.Error{
 			Code:    types.ErrCodeStorageError,
@@ -491,13 +499,13 @@ func (s *ClickHouseStorage) CreatePreAggregationRule(rule PreAggregationRule) er
 	}
 
 	// 生成规则ID
-	if rule.ID == "" {
-		rule.ID = fmt.Sprintf("rule_%d", time.Now().UnixNano())
+	if preAggRule.ID == "" {
+		preAggRule.ID = fmt.Sprintf("rule_%d", time.Now().UnixNano())
 	}
-	rule.CreatedAt = time.Now()
+	preAggRule.CreatedAt = time.Now()
 
 	// 构建预聚合查询
-	groupByClause := strings.Join(rule.GroupBy, ", ")
+	groupByClause := strings.Join(preAggRule.GroupBy, ", ")
 	query := fmt.Sprintf(`
 		SELECT
 			toStartOf%s(timestamp) as timestamp,
@@ -509,12 +517,12 @@ func (s *ClickHouseStorage) CreatePreAggregationRule(rule PreAggregationRule) er
 			count() as metric_value_count
 		FROM %s
 		GROUP BY timestamp, %s
-	`, rule.TimeInterval, groupByClause, rule.SourceTable, groupByClause)
+	`, preAggRule.TimeInterval, groupByClause, preAggRule.SourceTable, groupByClause)
 
 	// 创建物化视图用于预聚合
 	err := s.CreateMaterializedView(
-		fmt.Sprintf("mv_%s", rule.ID),
-		rule.TargetTable,
+		fmt.Sprintf("mv_%s", preAggRule.ID),
+		preAggRule.TargetTable,
 		query,
 	)
 	if err != nil {
@@ -522,13 +530,13 @@ func (s *ClickHouseStorage) CreatePreAggregationRule(rule PreAggregationRule) er
 	}
 
 	// 添加到预聚合规则列表
-	s.preAggregationRules = append(s.preAggregationRules, rule)
-	fmt.Printf("Created pre-aggregation rule: %s\n", rule.ID)
+	s.preAggregationRules = append(s.preAggregationRules, preAggRule)
+	fmt.Printf("Created pre-aggregation rule: %s\n", preAggRule.ID)
 
 	return nil
 }
 
-func (s *ClickHouseStorage) ListPreAggregationRules() ([]PreAggregationRule, error) {
+func (s *ClickHouseStorage) ListPreAggregationRules() (interface{}, error) {
 	if !s.started {
 		return nil, &types.Error{
 			Code:    types.ErrCodeStorageError,
@@ -537,7 +545,7 @@ func (s *ClickHouseStorage) ListPreAggregationRules() ([]PreAggregationRule, err
 	}
 
 	fmt.Println("Listing pre-aggregation rules")
-	return s.preAggregationRules, nil
+	return interface{}(s.preAggregationRules), nil
 }
 
 func (s *ClickHouseStorage) EnablePreAggregationRule(ruleID string) error {
@@ -595,13 +603,11 @@ func (s *ClickHouseStorage) DeletePreAggregationRule(ruleID string) error {
 	}
 
 	// 查找规则
-	var ruleToDelete PreAggregationRule
 	var ruleIndex int
 	found := false
 
 	for i, rule := range s.preAggregationRules {
 		if rule.ID == ruleID {
-			ruleToDelete = rule
 			ruleIndex = i
 			found = true
 			break
@@ -736,7 +742,7 @@ func (s *ClickHouseStorage) clearExpiredCache() {
 	}
 }
 
-func (s *ClickHouseStorage) GetCacheStats() map[string]interface{} {
+func (s *ClickHouseStorage) GetCacheStats() (map[string]interface{}, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -758,7 +764,7 @@ func (s *ClickHouseStorage) GetCacheStats() map[string]interface{} {
 		"expiring_soon":  expiringSoon,
 		"max_size":       s.cacheMaxSize,
 		"ttl_seconds":    s.cacheTTL.Seconds(),
-	}
+	}, nil
 }
 
 func (s *ClickHouseStorage) ClearCache() error {
