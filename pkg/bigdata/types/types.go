@@ -1,6 +1,7 @@
 package types
 
 import (
+	"sync"
 	"time"
 )
 
@@ -209,3 +210,80 @@ const (
 	ErrCodeProcessingError  = "PROCESSING_ERROR"
 	ErrCodeIngestionError   = "INGESTION_ERROR"
 )
+
+// DataPointPool 数据点对象池
+var DataPointPool = &sync.Pool{
+	New: func() interface{} {
+		return &DataPoint{
+			Tags:       make(map[string]string),
+			Attributes: make(map[string]interface{}),
+		}
+	},
+}
+
+// BatchDataPool 批量数据对象池
+var BatchDataPool = &sync.Pool{
+	New: func() interface{} {
+		return &BatchData{
+			DataPoints: make([]*DataPoint, 0, 100),
+			Metadata: Metadata{
+				Properties: make(map[string]interface{}),
+			},
+		}
+	},
+}
+
+// AcquireDataPoint 从池中获取一个DataPoint对象
+func AcquireDataPoint() *DataPoint {
+	return DataPointPool.Get().(*DataPoint)
+}
+
+// ReleaseDataPoint 将DataPoint对象归还到池中
+func ReleaseDataPoint(dp *DataPoint) {
+	if dp == nil {
+		return
+	}
+	
+	dp.Timestamp = time.Time{}
+	dp.DeviceID = ""
+	dp.Metric = ""
+	dp.Value = 0
+	
+	for k := range dp.Tags {
+		delete(dp.Tags, k)
+	}
+	
+	for k := range dp.Attributes {
+		delete(dp.Attributes, k)
+	}
+	
+	DataPointPool.Put(dp)
+}
+
+// AcquireBatchData 从池中获取一个BatchData对象
+func AcquireBatchData() *BatchData {
+	return BatchDataPool.Get().(*BatchData)
+}
+
+// ReleaseBatchData 将BatchData对象归还到池中
+func ReleaseBatchData(bd *BatchData) {
+	if bd == nil {
+		return
+	}
+	
+	for _, dp := range bd.DataPoints {
+		ReleaseDataPoint(dp)
+	}
+	
+	bd.DataPoints = bd.DataPoints[:0]
+	bd.Metadata.Source = ""
+	bd.Metadata.BatchID = ""
+	bd.Metadata.Timestamp = time.Time{}
+	bd.Metadata.RecordCount = 0
+	
+	for k := range bd.Metadata.Properties {
+		delete(bd.Metadata.Properties, k)
+	}
+	
+	BatchDataPool.Put(bd)
+}

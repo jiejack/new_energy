@@ -584,3 +584,56 @@ func BenchmarkBigDataStressSustainedLoad(b *testing.B) {
 		}
 	})
 }
+
+func BenchmarkMemoryOptimization(b *testing.B) {
+	b.Run("WithPool", func(b *testing.B) {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			bd := types.AcquireBatchData()
+			bd.Metadata.Source = "benchmark"
+			bd.Metadata.BatchID = fmt.Sprintf("batch-%d", i)
+			
+			for j := 0; j < 100; j++ {
+				dp := types.AcquireDataPoint()
+				dp.Timestamp = time.Now()
+				dp.DeviceID = fmt.Sprintf("DEV-%03d", j%100)
+				dp.Metric = "power"
+				dp.Value = float64(j * 100)
+				dp.Tags["location"] = fmt.Sprintf("site-%d", j%5)
+				bd.DataPoints = append(bd.DataPoints, dp)
+			}
+			
+			bd.Metadata.RecordCount = len(bd.DataPoints)
+			types.ReleaseBatchData(bd)
+		}
+	})
+	
+	b.Run("WithoutPool", func(b *testing.B) {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			bd := &types.BatchData{
+				DataPoints: make([]*types.DataPoint, 0, 100),
+				Metadata: types.Metadata{
+					Source:      "benchmark",
+					BatchID:     fmt.Sprintf("batch-%d", i),
+					Timestamp:   time.Now(),
+					Properties:  make(map[string]interface{}),
+				},
+			}
+			
+			for j := 0; j < 100; j++ {
+				dp := &types.DataPoint{
+					Timestamp:  time.Now(),
+					DeviceID:   fmt.Sprintf("DEV-%03d", j%100),
+					Metric:     "power",
+					Value:      float64(j * 100),
+					Tags:       map[string]string{"location": fmt.Sprintf("site-%d", j%5)},
+					Attributes: make(map[string]interface{}),
+				}
+				bd.DataPoints = append(bd.DataPoints, dp)
+			}
+			
+			bd.Metadata.RecordCount = len(bd.DataPoints)
+		}
+	})
+}
