@@ -2,6 +2,7 @@ package bigdata
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/new-energy-monitoring/pkg/bigdata/analysis"
 	"github.com/new-energy-monitoring/pkg/bigdata/ingestion"
@@ -214,6 +215,85 @@ func (s *BigDataServiceImpl) StopIngestion() error {
 	}
 
 	return s.ingestion.Stop()
+}
+
+// WritePoint 写入单个数据点
+func (s *BigDataServiceImpl) WritePoint(point *types.DataPoint) error {
+	if s.storage == nil {
+		return &types.Error{
+			Code:    types.ErrCodeStorageError,
+			Message: "storage not initialized",
+		}
+	}
+
+	return s.storage.WritePoint(point)
+}
+
+// ReadTimeRange 按时间范围读取数据
+func (s *BigDataServiceImpl) ReadTimeRange(
+	startTime, endTime time.Time,
+	stationID, deviceID, metricName string,
+) ([]*types.DataPoint, error) {
+	if s.storage == nil {
+		return nil, &types.Error{
+			Code:    types.ErrCodeStorageError,
+			Message: "storage not initialized",
+		}
+	}
+
+	return s.storage.ReadTimeRange(startTime, endTime, stationID, deviceID, metricName)
+}
+
+// Aggregate 执行聚合查询
+func (s *BigDataServiceImpl) Aggregate(
+	aggregation string,
+	metricName string,
+	startTime, endTime time.Time,
+	groupBy string,
+) (interface{}, error) {
+	if s.storage == nil {
+		return nil, &types.Error{
+			Code:    types.ErrCodeStorageError,
+			Message: "storage not initialized",
+		}
+	}
+
+	return s.storage.Aggregate(aggregation, metricName, startTime, endTime, groupBy)
+}
+
+// Flush 手动刷新缓冲区
+func (s *BigDataServiceImpl) Flush() error {
+	if s.storage == nil {
+		return &types.Error{
+			Code:    types.ErrCodeStorageError,
+			Message: "storage not initialized",
+		}
+	}
+
+	return s.storage.Flush()
+}
+
+// GetStorageStats 获取存储统计信息
+func (s *BigDataServiceImpl) GetStorageStats() (map[string]interface{}, error) {
+	if s.storage == nil {
+		return nil, &types.Error{
+			Code:    types.ErrCodeStorageError,
+			Message: "storage not initialized",
+		}
+	}
+
+	return s.storage.GetStats()
+}
+
+// GetProcessingStats 获取处理统计信息
+func (s *BigDataServiceImpl) GetProcessingStats() (map[string]interface{}, error) {
+	if flinkProc, ok := s.processing.(interface{ GetStats() map[string]interface{} }); ok {
+		return flinkProc.GetStats(), nil
+	}
+
+	return map[string]interface{}{
+		"processor": "unknown",
+	}, nil
 }
 
 // Close 关闭服务

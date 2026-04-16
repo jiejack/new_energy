@@ -138,6 +138,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { User, ArrowDown, Refresh } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
+import { useLoadingStore } from '@/stores/loading'
 import { getStationList, getStationStatistics } from '@/api/station'
 import { getAlarmList, acknowledgeAlarm, getAlarmStatistics } from '@/api/alarm'
 import { wsManager } from '@/utils/websocket'
@@ -150,6 +151,7 @@ import RealtimeChart from './components/RealtimeChart.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
+const loadingStore = useLoadingStore()
 
 // 时间相关
 const currentDate = ref('')
@@ -308,11 +310,18 @@ async function loadStatistics() {
  * 刷新统计数据
  */
 async function refreshStats() {
-  await Promise.all([
-    loadAlarmStatistics(),
-    loadStatistics()
-  ])
-  ElMessage.success('数据已刷新')
+  const actionKey = 'refresh-stats'
+  loadingStore.setActionLoading(actionKey, true)
+  
+  try {
+    await Promise.all([
+      loadAlarmStatistics(),
+      loadStatistics()
+    ])
+    ElMessage.success('数据已刷新')
+  } finally {
+    loadingStore.setActionLoading(actionKey, false)
+  }
 }
 
 /**
@@ -446,20 +455,26 @@ async function initWebSocket() {
  * 初始化
  */
 async function init() {
-  // 更新时间
-  updateTime()
-  timeTimer = window.setInterval(updateTime, 1000)
+  loadingStore.setPageLoading(true, '加载数据中...')
+  
+  try {
+    // 更新时间
+    updateTime()
+    timeTimer = window.setInterval(updateTime, 1000)
 
-  // 加载数据
-  await loadStations()
-  await Promise.all([
-    loadAlarms(),
-    loadAlarmStatistics(),
-    loadStatistics()
-  ])
+    // 加载数据
+    await loadStations()
+    await Promise.all([
+      loadAlarms(),
+      loadAlarmStatistics(),
+      loadStatistics()
+    ])
 
-  // 初始化WebSocket
-  await initWebSocket()
+    // 初始化WebSocket
+    await initWebSocket()
+  } finally {
+    loadingStore.setPageLoading(false)
+  }
 }
 
 // 生命周期

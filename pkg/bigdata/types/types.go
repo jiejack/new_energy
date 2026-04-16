@@ -31,14 +31,16 @@ type Metadata struct {
 
 // StorageConfig 存储配置
 type StorageConfig struct {
-	Type     string                 `json:"type"` // clickhouse, doris, influxdb, etc.
-	Host     string                 `json:"host"`
-	Port     int                    `json:"port"`
-	Database string                 `json:"database"`
-	Table    string                 `json:"table"`
-	Username string                 `json:"username"`
-	Password string                 `json:"password"`
-	Options  map[string]interface{} `json:"options,omitempty"`
+	Type           string                 `json:"type"` // clickhouse, doris, influxdb, etc.
+	Host           string                 `json:"host"`
+	Port           int                    `json:"port"`
+	Database       string                 `json:"database"`
+	Table          string                 `json:"table"`
+	Username       string                 `json:"username"`
+	Password       string                 `json:"password"`
+	BatchSize      int                    `json:"batch_size"`
+	FlushInterval  int                    `json:"flush_interval"`
+	Options        map[string]interface{} `json:"options,omitempty"`
 }
 
 // AnalysisConfig 分析配置
@@ -83,8 +85,13 @@ type IngestionConfig struct {
 type Storage interface {
 	Init(config StorageConfig) error
 	Write(data *BatchData) error
+	WritePoint(point *DataPoint) error
 	Read(query string) ([]*DataPoint, error)
+	ReadTimeRange(startTime, endTime time.Time, stationID, deviceID, metricName string) ([]*DataPoint, error)
 	Query(query string) (interface{}, error)
+	Aggregate(aggregation, metricName string, startTime, endTime time.Time, groupBy string) (interface{}, error)
+	Flush() error
+	GetStats() (map[string]interface{}, error)
 	Close() error
 }
 

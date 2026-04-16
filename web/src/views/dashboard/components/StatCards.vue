@@ -1,83 +1,103 @@
 <template>
   <div class="stat-cards">
     <div class="stat-grid">
-      <!-- 总装机容量 -->
-      <div class="stat-card capacity">
-        <div class="card-icon">
-          <el-icon :size="28"><Coin /></el-icon>
-        </div>
-        <div class="card-content">
-          <div class="card-value">
-            <span class="value">{{ formatNumber(stats.totalCapacity) }}</span>
-            <span class="unit">MW</span>
+      <template v-if="!loading">
+        <!-- 总装机容量 -->
+        <div class="stat-card capacity">
+          <div class="card-icon">
+            <el-icon :size="28"><Coin /></el-icon>
           </div>
-          <div class="card-label">总装机容量</div>
+          <div class="card-content">
+            <div class="card-value">
+              <span class="value">{{ formatNumber(stats.totalCapacity) }}</span>
+              <span class="unit">MW</span>
+            </div>
+            <div class="card-label">总装机容量</div>
+          </div>
+          <div class="card-decoration"></div>
         </div>
-        <div class="card-decoration"></div>
-      </div>
 
-      <!-- 实时发电功率 -->
-      <div class="stat-card power">
-        <div class="card-icon">
-          <el-icon :size="28"><Promotion /></el-icon>
-        </div>
-        <div class="card-content">
-          <div class="card-value">
-            <span class="value">{{ formatNumber(stats.currentPower) }}</span>
-            <span class="unit">MW</span>
+        <!-- 实时发电功率 -->
+        <div class="stat-card power">
+          <div class="card-icon">
+            <el-icon :size="28"><Promotion /></el-icon>
           </div>
-          <div class="card-label">实时发电功率</div>
+          <div class="card-content">
+            <div class="card-value">
+              <span class="value">{{ formatNumber(stats.currentPower) }}</span>
+              <span class="unit">MW</span>
+            </div>
+            <div class="card-label">实时发电功率</div>
+          </div>
+          <div class="card-decoration"></div>
         </div>
-        <div class="card-decoration"></div>
-      </div>
 
-      <!-- 今日发电量 -->
-      <div class="stat-card energy">
-        <div class="card-icon">
-          <el-icon :size="28"><Sunny /></el-icon>
-        </div>
-        <div class="card-content">
-          <div class="card-value">
-            <span class="value">{{ formatNumber(stats.todayEnergy) }}</span>
-            <span class="unit">MWh</span>
+        <!-- 今日发电量 -->
+        <div class="stat-card energy">
+          <div class="card-icon">
+            <el-icon :size="28"><Sunny /></el-icon>
           </div>
-          <div class="card-label">今日发电量</div>
+          <div class="card-content">
+            <div class="card-value">
+              <span class="value">{{ formatNumber(stats.todayEnergy) }}</span>
+              <span class="unit">MWh</span>
+            </div>
+            <div class="card-label">今日发电量</div>
+          </div>
+          <div class="card-decoration"></div>
         </div>
-        <div class="card-decoration"></div>
-      </div>
 
-      <!-- 告警数量 -->
-      <div class="stat-card alarm">
-        <div class="card-icon">
-          <el-icon :size="28"><Bell /></el-icon>
-        </div>
-        <div class="card-content">
-          <div class="card-value">
-            <span class="value">{{ stats.alarmCount }}</span>
-            <span class="unit">个</span>
+        <!-- 告警数量 -->
+        <div class="stat-card alarm">
+          <div class="card-icon">
+            <el-icon :size="28"><Bell /></el-icon>
           </div>
-          <div class="card-label">告警数量</div>
+          <div class="card-content">
+            <div class="card-value">
+              <span class="value">{{ stats.alarmCount }}</span>
+              <span class="unit">个</span>
+            </div>
+            <div class="card-label">告警数量</div>
+          </div>
+          <div class="card-decoration"></div>
         </div>
-        <div class="card-decoration"></div>
-      </div>
 
-      <!-- 设备在线率 -->
-      <div class="stat-card online-rate">
-        <div class="card-icon">
-          <el-icon :size="28"><Connection /></el-icon>
-        </div>
-        <div class="card-content">
-          <div class="card-value">
-            <span class="value">{{ stats.onlineRate.toFixed(1) }}</span>
-            <span class="unit">%</span>
+        <!-- 设备在线率 -->
+        <div class="stat-card online-rate">
+          <div class="card-icon">
+            <el-icon :size="28"><Connection /></el-icon>
           </div>
-          <div class="card-label">设备在线率</div>
+          <div class="card-content">
+            <div class="card-value">
+              <span class="value">{{ stats.onlineRate.toFixed(1) }}</span>
+              <span class="unit">%</span>
+            </div>
+            <div class="card-label">设备在线率</div>
+          </div>
+          <div class="card-decoration"></div>
+          <div class="progress-bar">
+            <div class="progress-fill" :style="{ width: `${stats.onlineRate}%` }"></div>
+          </div>
         </div>
-        <div class="card-decoration"></div>
-        <div class="progress-bar">
-          <div class="progress-fill" :style="{ width: `${stats.onlineRate}%` }"></div>
+      </template>
+
+      <template v-else>
+        <!-- 骨架屏加载状态 -->
+        <div v-for="i in 5" :key="i" class="stat-card skeleton-card">
+          <div class="card-icon">
+            <el-skeleton-item variant="circle" style="width: 50px; height: 50px;" />
+          </div>
+          <div class="card-content">
+            <div class="card-value">
+              <el-skeleton-item variant="text" style="width: 80px; height: 28px;" />
+              <span class="unit-skeleton">MW</span>
+            </div>
+            <div class="card-label">
+              <el-skeleton-item variant="text" style="width: 60px; height: 16px;" />
+            </div>
+          </div>
         </div>
-      </div>
+      </template>
     </div>
   </div>
 </template>
@@ -339,6 +359,37 @@ function formatNumber(num: number) {
   }
   50% {
     box-shadow: 0 0 30px rgba(0, 212, 170, 0.5);
+  }
+}
+
+// 骨架屏卡片样式
+    .skeleton-card {
+      &::before {
+        display: none;
+      }
+
+      &:hover {
+        transform: none;
+        box-shadow: $shadow-light;
+        border-color: rgba(0, 212, 170, 0.2);
+        background: linear-gradient(135deg, rgba(26, 31, 46, 0.6) 0%, rgba(13, 17, 23, 0.7) 100%);
+      }
+
+      .card-icon {
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .card-content {
+        .card-value {
+          .unit-skeleton {
+            font-size: 12px;
+            color: transparent;
+            width: 30px;
+          }
+        }
+      }
+    }
   }
 }
 
