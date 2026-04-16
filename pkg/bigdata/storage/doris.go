@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"crypto/md5"
 	"fmt"
 	"strings"
 	"sync"
@@ -19,6 +20,17 @@ type DorisStorage struct {
 	mu             sync.Mutex
 	stopChan       chan struct{}
 	started        bool
+	queryCache     map[string]*DorisCacheItem
+	cacheTTL       time.Duration
+	cacheMaxSize   int
+}
+
+type DorisCacheItem struct {
+	Key         string
+	Value       interface{}
+	CreatedAt   time.Time
+	ExpiresAt   time.Time
+	AccessCount int
 }
 
 type DorisTableSchema struct {
@@ -38,6 +50,9 @@ func NewDorisStorage() *DorisStorage {
 		flushInterval: defaultFlushInterval,
 		batchBuffer:   make([]*types.DataPoint, 0, defaultBatchSize),
 		stopChan:      make(chan struct{}),
+		queryCache:     make(map[string]*DorisCacheItem),
+		cacheTTL:       5 * time.Minute,
+		cacheMaxSize:   1000,
 	}
 }
 
@@ -193,6 +208,16 @@ func (d *DorisStorage) ReadTimeRange(
 }
 
 func (d *DorisStorage) Query(query string) (interface{}, error) {
+	// 生成缓存键
+	cacheKey := d.generateCacheKey(query)
+
+	// 尝试从缓存获取
+	if item, found := d.getFromCache(cacheKey); found {
+		fmt.Printf("Cache hit for query: %s\n", query)
+		return item.Value, nil
+	}
+
+	// 缓存未命中，执行查询
 	fmt.Printf("Executing query on Doris: %s\n", query)
 
 	result := []map[string]interface{}{
@@ -204,6 +229,15 @@ func (d *DorisStorage) Query(query string) (interface{}, error) {
 			"rows":        0,
 		},
 	}
+
+	// 将结果存入缓存
+	d.setToCache(cacheKey, result)
+	fmt.Printf("Cache miss, stored result in cache: %s\n", cacheKey)
+
+	// 定期清理过期缓存
+	go func() {
+		d.clearExpiredCache()
+	}()
 
 	return result, nil
 }
@@ -347,17 +381,128 @@ func (d *DorisStorage) RefreshPreAggregation(tableName string) error {
 	}
 }
 
+func (d *DorisStorage) generateCacheKey(query string) string {
+	return fmt.Sprintf("%x", md5.Sum([]byte(query)))
+}
+
+func (d *DorisStorage) getFromCache(key string) (*DorisCacheItem, bool) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
+	item, exists := d.queryCache[key]
+	if !exists {
+		return nil, false
+	}
+
+	// 检查是否过期
+	if time.Now().After(item.ExpiresAt) {
+		delete(d.queryCache, key)
+		return nil, false
+	}
+
+	// 更新访问计数
+	item.AccessCount++
+	d.queryCache[key] = item
+
+	return item, true
+}
+
+func (d *DorisStorage) setToCache(key string, value interface{}) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
+	// 检查缓存大小
+	if len(d.queryCache) >= d.cacheMaxSize {
+		d.evictOldestCacheItems()
+	}
+
+	// 创建缓存项
+	now := time.Now()
+	item := &DorisCacheItem{
+		Key:         key,
+		Value:       value,
+		CreatedAt:   now,
+		ExpiresAt:   now.Add(d.cacheTTL),
+		AccessCount: 1,
+	}
+
+	d.queryCache[key] = item
+}
+
+func (d *DorisStorage) evictOldestCacheItems() {
+	// 按访问次数和创建时间排序，删除最旧的10%缓存项
+	evictCount := len(d.queryCache) / 10
+	if evictCount < 1 {
+		evictCount = 1
+	}
+
+	// 收集所有缓存项
+	items := make([]*DorisCacheItem, 0, len(d.queryCache))
+	for _, item := range d.queryCache {
+		items = append(items, item)
+	}
+
+	// 简单的淘汰策略：删除最早创建的项
+	for i := 0; i < evictCount && len(d.queryCache) > 0; i++ {
+		oldestKey := ""
+		oldestTime := time.Now()
+
+		for key, item := range d.queryCache {
+			if item.CreatedAt.Before(oldestTime) {
+				oldestTime = item.CreatedAt
+				oldestKey = key
+			}
+		}
+
+		if oldestKey != "" {
+			delete(d.queryCache, oldestKey)
+		}
+	}
+}
+
+func (d *DorisStorage) clearExpiredCache() {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
+	now := time.Now()
+	for key, item := range d.queryCache {
+		if now.After(item.ExpiresAt) {
+			delete(d.queryCache, key)
+		}
+	}
+}
+
 func (d *DorisStorage) GetCacheStats() (map[string]interface{}, error) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
+	totalItems := len(d.queryCache)
+	totalAccesses := 0
+	expiringSoon := 0
+	now := time.Now()
+
+	for _, item := range d.queryCache {
+		totalAccesses += item.AccessCount
+		if now.Add(time.Minute).After(item.ExpiresAt) {
+			expiringSoon++
+		}
+	}
+
 	return map[string]interface{}{
-		"total_items":    0,
-		"total_accesses": 0,
-		"expiring_soon":  0,
-		"max_size":       0,
-		"ttl_seconds":    0,
+		"total_items":    totalItems,
+		"total_accesses": totalAccesses,
+		"expiring_soon":  expiringSoon,
+		"max_size":       d.cacheMaxSize,
+		"ttl_seconds":    d.cacheTTL.Seconds(),
 	}, nil
 }
 
 func (d *DorisStorage) ClearCache() error {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
+	d.queryCache = make(map[string]*DorisCacheItem)
+	fmt.Println("Cache cleared")
 	return nil
 }
 
