@@ -2,6 +2,7 @@ package storage
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -366,10 +367,40 @@ func (d *DorisStorage) MultiDimensionAggregation(
 	startTime, endTime time.Time,
 	filters map[string]interface{},
 ) (interface{}, error) {
-	return nil, &types.Error{
-		Code:    types.ErrCodeStorageError,
-		Message: "Doris storage does not support multi-dimension aggregation",
+	// 构建查询
+	metricClauses := []string{}
+	for _, metric := range metrics {
+		metricClauses = append(metricClauses, fmt.Sprintf("sum(%s) as sum_%s, avg(%s) as avg_%s, min(%s) as min_%s, max(%s) as max_%s",
+			metric, metric, metric, metric, metric, metric, metric, metric))
 	}
+
+	dimensionClauses := strings.Join(dimensions, ", ")
+	metricClause := strings.Join(metricClauses, ", ")
+
+	query := fmt.Sprintf(`
+		SELECT
+			%s,
+			%s
+		FROM %s.%s
+		WHERE timestamp >= '%s' AND timestamp <= '%s'
+	`, dimensionClauses, metricClause, d.db, d.table, startTime.Format("2006-01-02 15:04:05"), endTime.Format("2006-01-02 15:04:05"))
+
+	// 添加过滤条件
+	for key, value := range filters {
+		query += fmt.Sprintf(" AND %s = '%v'", key, value)
+	}
+
+	// 添加分组
+	query += fmt.Sprintf(" GROUP BY %s", dimensionClauses)
+
+	// 执行查询
+	fmt.Printf("Executing multi-dimension aggregation query: %s\n", query)
+	result, err := d.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 func (d *DorisStorage) DimensionDrillDown(
@@ -379,10 +410,42 @@ func (d *DorisStorage) DimensionDrillDown(
 	startTime, endTime time.Time,
 	filters map[string]interface{},
 ) (interface{}, error) {
-	return nil, &types.Error{
-		Code:    types.ErrCodeStorageError,
-		Message: "Doris storage does not support dimension drill-down",
+	// 合并维度
+	allDimensions := append(baseDimensions, drillDownDimension)
+
+	// 构建查询
+	metricClauses := []string{}
+	for _, metric := range metrics {
+		metricClauses = append(metricClauses, fmt.Sprintf("sum(%s) as sum_%s", metric, metric))
 	}
+
+	dimensionClauses := strings.Join(allDimensions, ", ")
+	metricClause := strings.Join(metricClauses, ", ")
+
+	query := fmt.Sprintf(`
+		SELECT
+			%s,
+			%s
+		FROM %s.%s
+		WHERE timestamp >= '%s' AND timestamp <= '%s'
+	`, dimensionClauses, metricClause, d.db, d.table, startTime.Format("2006-01-02 15:04:05"), endTime.Format("2006-01-02 15:04:05"))
+
+	// 添加过滤条件
+	for key, value := range filters {
+		query += fmt.Sprintf(" AND %s = '%v'", key, value)
+	}
+
+	// 添加分组
+	query += fmt.Sprintf(" GROUP BY %s", dimensionClauses)
+
+	// 执行查询
+	fmt.Printf("Executing dimension drill-down query: %s\n", query)
+	result, err := d.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 func (d *DorisStorage) DimensionCrossAnalysis(
@@ -392,10 +455,37 @@ func (d *DorisStorage) DimensionCrossAnalysis(
 	startTime, endTime time.Time,
 	filters map[string]interface{},
 ) (interface{}, error) {
-	return nil, &types.Error{
-		Code:    types.ErrCodeStorageError,
-		Message: "Doris storage does not support dimension cross-analysis",
+	// 合并维度
+	allDimensions := append(dimensions1, dimensions2...)
+
+	// 构建查询
+	dimensionClauses := strings.Join(allDimensions, ", ")
+
+	query := fmt.Sprintf(`
+		SELECT
+			%s,
+			sum(%s) as sum_%s,
+			avg(%s) as avg_%s
+		FROM %s.%s
+		WHERE timestamp >= '%s' AND timestamp <= '%s'
+	`, dimensionClauses, metric, metric, metric, metric, d.db, d.table, startTime.Format("2006-01-02 15:04:05"), endTime.Format("2006-01-02 15:04:05"))
+
+	// 添加过滤条件
+	for key, value := range filters {
+		query += fmt.Sprintf(" AND %s = '%v'", key, value)
 	}
+
+	// 添加分组
+	query += fmt.Sprintf(" GROUP BY %s", dimensionClauses)
+
+	// 执行查询
+	fmt.Printf("Executing dimension cross-analysis query: %s\n", query)
+	result, err := d.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 func (d *DorisStorage) GetDimensionValues(
@@ -403,8 +493,24 @@ func (d *DorisStorage) GetDimensionValues(
 	startTime, endTime time.Time,
 	filters map[string]interface{},
 ) (interface{}, error) {
-	return nil, &types.Error{
-		Code:    types.ErrCodeStorageError,
-		Message: "Doris storage does not support dimension values retrieval",
+	// 构建查询
+	query := fmt.Sprintf(`
+		SELECT DISTINCT %s
+		FROM %s.%s
+		WHERE timestamp >= '%s' AND timestamp <= '%s'
+	`, dimension, d.db, d.table, startTime.Format("2006-01-02 15:04:05"), endTime.Format("2006-01-02 15:04:05"))
+
+	// 添加过滤条件
+	for key, value := range filters {
+		query += fmt.Sprintf(" AND %s = '%v'", key, value)
 	}
+
+	// 执行查询
+	fmt.Printf("Executing dimension values query: %s\n", query)
+	result, err := d.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
