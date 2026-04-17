@@ -1,0 +1,334 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: collector
+  namespace: nem-system
+  labels:
+    app: collector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: collector
+  template:
+    metadata:
+      labels:
+        app: collector
+    spec:
+      containers:
+      - name: collector
+        image: nem/collector:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: TZ
+          valueFrom:
+            configMapKeyRef:
+              name: nem-config
+              key: TZ
+        - name: KAFKA_BROKERS
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: kafka-brokers
+        - name: REDIS_HOST
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: redis-host
+        - name: REDIS_PORT
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: redis-port
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
+          requests:
+            cpu: "250m"
+            memory: "128Mi"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alarm
+  namespace: nem-system
+  labels:
+    app: alarm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alarm
+  template:
+    metadata:
+      labels:
+        app: alarm
+    spec:
+      containers:
+      - name: alarm
+        image: nem/alarm:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: TZ
+          valueFrom:
+            configMapKeyRef:
+              name: nem-config
+              key: TZ
+        - name: KAFKA_BROKERS
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: kafka-brokers
+        - name: REDIS_HOST
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: redis-host
+        - name: REDIS_PORT
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: redis-port
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: db-host
+        - name: DB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: db-port
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: db-user
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: db-password
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: nem-config
+              key: DB_NAME
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
+          requests:
+            cpu: "250m"
+            memory: "128Mi"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: compute
+  namespace: nem-system
+  labels:
+    app: compute
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: compute
+  template:
+    metadata:
+      labels:
+        app: compute
+    spec:
+      containers:
+      - name: compute
+        image: nem/compute:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: TZ
+          valueFrom:
+            configMapKeyRef:
+              name: nem-config
+              key: TZ
+        - name: REDIS_HOST
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: redis-host
+        - name: REDIS_PORT
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: redis-port
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: db-host
+        - name: DB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: db-port
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: db-user
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: db-password
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: nem-config
+              key: DB_NAME
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
+          requests:
+            cpu: "250m"
+            memory: "128Mi"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-service
+  namespace: nem-system
+  labels:
+    app: ai-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ai-service
+  template:
+    metadata:
+      labels:
+        app: ai-service
+    spec:
+      containers:
+      - name: ai-service
+        image: nem/ai-service:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: TZ
+          valueFrom:
+            configMapKeyRef:
+              name: nem-config
+              key: TZ
+        - name: REDIS_HOST
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: redis-host
+        - name: REDIS_PORT
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: redis-port
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: db-host
+        - name: DB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: db-port
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: db-user
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: db-password
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: nem-config
+              key: DB_NAME
+        resources:
+          limits:
+            cpu: "1"
+            memory: "512Mi"
+          requests:
+            cpu: "500m"
+            memory: "256Mi"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scheduler
+  namespace: nem-system
+  labels:
+    app: scheduler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scheduler
+  template:
+    metadata:
+      labels:
+        app: scheduler
+    spec:
+      containers:
+      - name: scheduler
+        image: nem/scheduler:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: TZ
+          valueFrom:
+            configMapKeyRef:
+              name: nem-config
+              key: TZ
+        - name: REDIS_HOST
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: redis-host
+        - name: REDIS_PORT
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: redis-port
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: db-host
+        - name: DB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: db-port
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: db-user
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: nem-secrets
+              key: db-password
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: nem-config
+              key: DB_NAME
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
+          requests:
+            cpu: "250m"
+            memory: "128Mi"
