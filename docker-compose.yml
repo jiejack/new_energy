@@ -1,66 +1,66 @@
 version: '3.8'
 
 services:
-  new-energy-monitoring:
-    build: .
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nem-backend
     ports:
       - "8080:8080"
     environment:
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_NAME=new_energy_monitoring
-      - JWT_SECRET=your-secret-key
-      - ENVIRONMENT=development
-    depends_on:
-      - postgres
-      - rabbitmq
+      - TZ=Asia/Shanghai
+      - GIN_MODE=release
     volumes:
       - ./configs:/app/configs
       - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
-  postgres:
-    image: postgres:14-alpine
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=new_energy_monitoring
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: nem-frontend
     ports:
-      - "5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-
-  rabbitmq:
-    image: rabbitmq:3.8-management-alpine
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    volumes:
-      - rabbitmq-data:/var/lib/rabbitmq
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
 
   prometheus:
-    image: prom/prometheus:v2.30.3
+    image: prom/prometheus:v2.45.0
+    container_name: nem-prometheus
     ports:
       - "9090:9090"
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
     depends_on:
-      - new-energy-monitoring
+      - backend
+    restart: unless-stopped
 
   grafana:
-    image: grafana/grafana:8.1.5
+    image: grafana/grafana:10.2.0
+    container_name: nem-grafana
     ports:
-      - "3000:3000"
+      - "3001:3000"
     environment:
+      - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./monitoring/grafana-dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana-dashboard.json:/etc/grafana/provisioning/dashboards/dashboard.json
     depends_on:
       - prometheus
+    restart: unless-stopped
 
 volumes:
-  postgres-data:
-  rabbitmq-data:
+  prometheus-data:
   grafana-data:
