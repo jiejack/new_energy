@@ -2,6 +2,35 @@
 
 本文档帮助您在5分钟内快速上手新能源监控系统。
 
+## 快速部署
+
+### 一键部署（推荐）
+
+```bash
+# 克隆项目
+git clone https://github.com/jiejack/new_energy.git
+cd new_energy
+
+# 一键部署（Docker）
+./scripts/deploy.sh --full
+
+# 或部署到Kubernetes
+./scripts/deploy.sh --mode k8s
+```
+
+### 验证部署
+
+```bash
+# 检查服务状态
+docker-compose ps
+
+# 验证API服务
+curl http://localhost:8080/health
+
+# 访问前端
+# 浏览器打开: http://localhost
+```
+
 ## 前置条件
 
 - 系统已成功安装（参考 [安装指南](./Installation-Guide)）
@@ -166,8 +195,10 @@ curl -X GET "http://localhost:8080/api/v1/devices?station_id=<station_id>" \
 ## 下一步
 
 - [用户手册](./User-Manual) - 详细功能说明
+- [功能说明](./Feature-Guide) - 详细功能模块介绍
 - [API文档](./API-Documentation) - 接口调用指南
 - [配置说明](./Configuration) - 系统配置详解
+- [CI/CD指南](../../CI_CD_GUIDE.md) - 自动化部署流程
 
 ---
 
