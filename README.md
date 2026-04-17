@@ -105,23 +105,62 @@ npm run dev
 
 ```
 new-energy-monitoring/
+├── .github/                # GitHub Actions 工作流
+├── .trae/                  # Trae 配置文件
+├── api/                    # API 相关文档
+│   └── docs/               # Swagger 文档
+├── changelogs/             # 版本变更记录
 ├── cmd/                    # 应用入口
 │   ├── api-server/         # API 服务
 │   ├── collector/          # 数据采集服务
 │   ├── alarm/              # 告警服务
-│   └── ...
-├── internal/               # 内部代码
-│   ├── api/                # API 层
-│   ├── application/        # 应用层
-│   ├── domain/             # 领域层
-│   └── infrastructure/     # 基础设施层
+│   ├── compute/            # 计算服务
+│   ├── ai-service/         # AI 服务
+│   ├── scheduler/          # 调度服务
+│   └── migrate/            # 数据库迁移
+├── configs/                # 配置文件
+├── deploy/                 # 部署配置
+├── deployments/            # 部署相关文件
+├── docs/                   # 文档
+│   ├── wiki/               # Wiki 文档
+│   ├── plans/              # 计划文档
+│   └── ...                 # 其他文档
+├── ops/                    # 运维配置
+│   ├── docker/             # Docker 配置
+│   ├── k8s/                # Kubernetes 配置
+│   ├── monitoring/         # 监控配置
+│   └── scripts/            # 部署脚本
 ├── pkg/                    # 公共包
-│   ├── harness/            # Harness 验证层
-│   ├── protocol/           # 通信协议
-│   └── ...
+│   ├── auth/               # 认证相关
+│   ├── bigdata/            # 大数据处理
+│   ├── cache/              # 缓存
+│   ├── collector/          # 采集相关
+│   ├── config/             # 配置管理
+│   ├── errors/             # 错误处理
+│   ├── export/             # 导出功能
+│   ├── feedback/           # 反馈机制
+│   ├── harness/            # 验证框架
+│   ├── monitoring/         # 监控相关
+│   ├── nacos/              # Nacos 集成
+│   ├── processor/          # 数据处理
+│   ├── qa/                 # QA 相关
+│   ├── skills/             # 技能模块
+│   └── websocket/          # WebSocket 支持
+├── scripts/                # 开发脚本
+│   ├── git-hooks/          # Git 钩子
+│   ├── migrations/         # 数据库迁移脚本
+│   └── performance/        # 性能测试脚本
+├── tests/                  # 测试文件
+│   ├── api/                # API 测试
+│   ├── helpers/            # 测试辅助工具
+│   └── performance/        # 性能测试
 ├── web/                    # 前端项目
-├── deployments/            # 部署配置
-└── docs/                   # 文档
+├── AGENT.md                # Agent 相关文档
+├── CLAUDE.md               # Claude 相关文档
+├── Makefile                # 构建脚本
+├── README.md               # 项目说明
+├── go.mod                  # Go 依赖管理
+└── go.sum                  # Go 依赖校验
 ```
 
 ## 📖 文档
@@ -133,10 +172,12 @@ new-energy-monitoring/
 | [API文档](./docs/wiki/API-Documentation.md) | 接口调用指南 |
 | [用户手册](./docs/user-manual.md) | 功能使用说明 |
 | [运维手册](./docs/operations-manual.md) | 运维操作指南 |
-| [CI/CD指南](./CI_CD_GUIDE.md) | 自动化部署流程 |
-| [FAQ](./docs/wiki/FAQ.md) | 常见问题解答 |
+| [CI/CD指南](./docs/CI_CD_GUIDE.md) | 自动化部署流程 |
+| [贡献指南](./docs/CONTRIBUTING.md) | 如何参与开发 |
 | [项目结构](./docs/wiki/Project-Structure.md) | 代码目录说明 |
-| [贡献指南](./CONTRIBUTING.md) | 如何参与开发 |
+| [配置指南](./docs/wiki/Configuration.md) | 系统配置说明 |
+| [功能指南](./docs/wiki/Feature-Guide.md) | 系统功能说明 |
+| [FAQ](./docs/wiki/FAQ.md) | 常见问题解答 |
 
 ## 🧪 测试
 

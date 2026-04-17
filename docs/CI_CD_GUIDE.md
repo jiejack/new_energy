@@ -31,13 +31,13 @@
 
 项目包含以下分层构建的Dockerfile：
 
-1. [Dockerfile](file:///workspace/Dockerfile) - API Server
-2. [Dockerfile.collector](file:///workspace/Dockerfile.collector) - 采集服务
-3. [Dockerfile.alarm](file:///workspace/Dockerfile.alarm) - 告警服务
-4. [Dockerfile.compute](file:///workspace/Dockerfile.compute) - 计算服务
-5. [Dockerfile.ai-service](file:///workspace/Dockerfile.ai-service) - AI服务
-6. [Dockerfile.scheduler](file:///workspace/Dockerfile.scheduler) - 调度服务
-7. [Dockerfile.frontend](file:///workspace/Dockerfile.frontend) - 前端应用
+1. [Dockerfile](file:///workspace/ops/docker/Dockerfile) - API Server
+2. [Dockerfile.collector](file:///workspace/ops/docker/Dockerfile.collector) - 采集服务
+3. [Dockerfile.alarm](file:///workspace/ops/docker/Dockerfile.alarm) - 告警服务
+4. [Dockerfile.compute](file:///workspace/ops/docker/Dockerfile.compute) - 计算服务
+5. [Dockerfile.ai-service](file:///workspace/ops/docker/Dockerfile.ai-service) - AI服务
+6. [Dockerfile.scheduler](file:///workspace/ops/docker/Dockerfile.scheduler) - 调度服务
+7. [Dockerfile.frontend](file:///workspace/ops/docker/Dockerfile.frontend) - 前端应用
 
 ### 分层构建特点
 
@@ -62,17 +62,17 @@ DOCKER_REGISTRY=my-registry.com IMAGE_TAG=v1.0.0 make docker-build-all
 
 ### K8s 配置文件
 
-Kubernetes配置文件位于 [k8s/](file:///workspace/k8s/) 目录：
+Kubernetes配置文件位于 [ops/k8s/](file:///workspace/ops/k8s/) 目录：
 
-1. [01-namespace.yaml](file:///workspace/k8s/01-namespace.yaml) - 命名空间
-2. [02-configmap.yaml](file:///workspace/k8s/02-configmap.yaml) - 配置映射
-3. [03-secrets.yaml](file:///workspace/k8s/03-secrets.yaml) - 密钥配置
-4. [04-postgres.yaml](file:///workspace/k8s/04-postgres.yaml) - PostgreSQL数据库
-5. [05-redis.yaml](file:///workspace/k8s/05-redis.yaml) - Redis缓存
-6. [06-kafka.yaml](file:///workspace/k8s/06-kafka.yaml) - Kafka消息队列
-7. [07-api-server.yaml](file:///workspace/k8s/07-api-server.yaml) - API Server（含HPA）
-8. [08-microservices.yaml](file:///workspace/k8s/08-microservices.yaml) - 微服务部署
-9. [09-frontend-monitoring.yaml](file:///workspace/k8s/09-frontend-monitoring.yaml) - 前端和监控
+1. [01-namespace.yaml](file:///workspace/ops/k8s/01-namespace.yaml) - 命名空间
+2. [02-configmap.yaml](file:///workspace/ops/k8s/02-configmap.yaml) - 配置映射
+3. [03-secrets.yaml](file:///workspace/ops/k8s/03-secrets.yaml) - 密钥配置
+4. [04-postgres.yaml](file:///workspace/ops/k8s/04-postgres.yaml) - PostgreSQL数据库
+5. [05-redis.yaml](file:///workspace/ops/k8s/05-redis.yaml) - Redis缓存
+6. [06-kafka.yaml](file:///workspace/ops/k8s/06-kafka.yaml) - Kafka消息队列
+7. [07-api-server.yaml](file:///workspace/ops/k8s/07-api-server.yaml) - API Server（含HPA）
+8. [08-microservices.yaml](file:///workspace/ops/k8s/08-microservices.yaml) - 微服务部署
+9. [09-frontend-monitoring.yaml](file:///workspace/ops/k8s/09-frontend-monitoring.yaml) - 前端和监控
 
 ### 部署到Kubernetes
 
@@ -125,26 +125,26 @@ KUBE_CONFIG          # Kubernetes kubeconfig内容
 
 ### 使用 deploy.sh
 
-项目提供了 [scripts/deploy.sh](file:///workspace/scripts/deploy.sh) 一键部署脚本：
+项目提供了 [ops/scripts/deploy.sh](file:///workspace/ops/scripts/deploy.sh) 一键部署脚本：
 
 ```bash
 # 基本用法
-./scripts/deploy.sh
+./ops/scripts/deploy.sh
 
 # 部署完整微服务栈
-./scripts/deploy.sh --full
+./ops/scripts/deploy.sh --full
 
 # 部署到Kubernetes
-./scripts/deploy.sh --mode k8s
+./ops/scripts/deploy.sh --mode k8s
 
 # 指定仓库和标签
-./scripts/deploy.sh --registry my-registry.com --tag v1.0.0
+./ops/scripts/deploy.sh --registry my-registry.com --tag v1.0.0
 
 # 仅构建镜像
-./scripts/deploy.sh --build-only
+./ops/scripts/deploy.sh --build-only
 
 # 查看帮助
-./scripts/deploy.sh --help
+./ops/scripts/deploy.sh --help
 ```
 
 ### 脚本功能
@@ -221,7 +221,7 @@ git clone <repo-url>
 cd new-energy-monitoring
 
 # 2. 使用脚本一键部署
-./scripts/deploy.sh --full
+./ops/scripts/deploy.sh --full
 
 # 3. 访问服务
 # 前端: http://localhost
@@ -236,7 +236,7 @@ cd new-energy-monitoring
 export KUBE_CONFIG=<your-kubeconfig>
 
 # 2. 部署到K8s
-./scripts/deploy.sh --mode k8s
+./ops/scripts/deploy.sh --mode k8s
 
 # 3. 查看部署状态
 make k8s-status
@@ -264,6 +264,6 @@ make k8s-status
 
 ## 下一步
 
-- 查看 [DEPLOYMENT.md](file:///workspace/DEPLOYMENT.md) 了解更多部署详情
-- 查看 [Kubernetes配置](file:///workspace/k8s/) 自定义部署参数
+- 查看 [DEPLOYMENT.md](file:///workspace/docs/DEPLOYMENT.md) 了解更多部署详情
+- 查看 [Kubernetes配置](file:///workspace/ops/k8s/) 自定义部署参数
 - 配置 [GitHub Actions](file:///workspace/.github/workflows/) 实现自动化部署

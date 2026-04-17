@@ -6,101 +6,62 @@
 
 ```
 new-energy-monitoring/
-├── cmd/                          # 应用入口
-│   ├── api-server/               # API服务
-│   ├── collector/                # 数据采集服务
-│   ├── alarm/                    # 告警服务
-│   ├── compute/                  # 计算服务
-│   ├── scheduler/                # 调度服务
-│   ├── ai-service/               # AI服务
-│   └── migrate/                  # 数据库迁移工具
-├── internal/                     # 内部代码（不对外暴露）
-│   ├── api/                      # API层
-│   │   ├── handler/              # 请求处理器
-│   │   └── dto/                  # 数据传输对象
-│   ├── application/              # 应用层
-│   │   └── service/              # 业务服务
-│   ├── domain/                   # 领域层
-│   │   ├── entity/               # 实体
-│   │   ├── repository/           # 仓储接口
-│   │   ├── cache/                # 缓存接口
-│   │   └── logger/               # 日志接口
-│   └── infrastructure/           # 基础设施层
-│       ├── persistence/          # 数据持久化
-│       ├── cache/                # 缓存实现
-│       ├── config/               # 配置加载
-│       ├── logger/               # 日志实现
-│       └── mq/                   # 消息队列
-├── pkg/                          # 公共包（可对外暴露）
-│   ├── auth/                     # 认证授权
-│   ├── cache/                    # 缓存工具
-│   ├── collector/                # 采集器
-│   ├── compute/                  # 计算引擎
-│   ├── config/                   # 配置工具
-│   ├── errors/                   # 错误处理
-│   ├── export/                   # 数据导出
-│   ├── harness/                  # Harness层
-│   ├── monitoring/               # 监控组件
-│   ├── processor/                # 数据处理器
-│   ├── protocol/                 # 通信协议
-│   │   ├── modbus/               # Modbus协议
-│   │   ├── iec104/               # IEC104协议
-│   │   └── iec61850/             # IEC61850协议
-│   ├── qa/                       # QA助手
-│   ├── statistics/               # 统计计算
-│   └── storage/                  # 存储组件
-├── web/                          # 前端项目
-│   ├── src/
-│   │   ├── api/                  # API调用
-│   │   ├── assets/               # 静态资源
-│   │   ├── components/           # 公共组件
-│   │   ├── composables/          # 组合式函数
-│   │   ├── directives/           # 自定义指令
-│   │   ├── layouts/              # 布局组件
-│   │   ├── plugins/              # 插件
-│   │   ├── router/               # 路由配置
-│   │   ├── stores/               # 状态管理
-│   │   ├── styles/               # 样式文件
-│   │   ├── types/                # 类型定义
-│   │   ├── utils/                # 工具函数
-│   │   └── views/                # 页面组件
-│   ├── public/                   # 公共资源
-│   ├── e2e/                      # E2E测试
-│   └── tests/                    # 测试文件
-├── deployments/                  # 部署配置
-│   ├── docker/                   # Docker配置
-│   └── kubernetes/               # Kubernetes配置
-│       └── helm/                 # Helm Chart
-├── deploy/                       # 可观测性配置
-│   ├── prometheus/               # Prometheus配置
-│   ├── grafana/                  # Grafana配置
-│   ├── jaeger/                   # Jaeger配置
-│   └── alertmanager/             # Alertmanager配置
-├── docs/                         # 文档
-│   ├── wiki/                     # Wiki文档
-│   ├── superpowers/              # AI技能文档
-│   └── swagger/                  # API文档
-├── scripts/                      # 脚本
-│   ├── git-hooks/                # Git钩子
-│   ├── migrations/               # 数据库迁移
-│   └── performance/              # 性能测试
-├── tests/                        # 测试
-│   ├── api/                      # API测试
-│   ├── helpers/                  # 测试辅助
-│   └── performance/              # 性能测试
-├── configs/                      # 配置文件
-├── k8s/                          # K8s配置（简化版）
-├── .github/                      # GitHub配置
-│   └── workflows/                # CI/CD工作流
-├── go.mod                        # Go模块定义
-├── go.sum                        # Go依赖锁定
-├── Makefile                      # 构建脚本
-├── docker-compose.yml            # Docker Compose配置
-├── Dockerfile.backend            # 后端Dockerfile
-├── .golangci.yml                 # Go Linter配置
-├── .gitignore                    # Git忽略配置
-├── CLAUDE.md                     # AI技能配置
-└── README.md                     # 项目说明
+├── .github/                # GitHub Actions 工作流
+├── .trae/                  # Trae 配置文件
+├── api/                    # API 相关文档
+│   └── docs/               # Swagger 文档
+├── changelogs/             # 版本变更记录
+├── cmd/                    # 应用入口
+│   ├── api-server/         # API 服务
+│   ├── collector/          # 数据采集服务
+│   ├── alarm/              # 告警服务
+│   ├── compute/            # 计算服务
+│   ├── ai-service/         # AI 服务
+│   ├── scheduler/          # 调度服务
+│   └── migrate/            # 数据库迁移
+├── configs/                # 配置文件
+├── deploy/                 # 部署配置
+├── deployments/            # 部署相关文件
+├── docs/                   # 文档
+│   ├── wiki/               # Wiki 文档
+│   ├── plans/              # 计划文档
+│   └── ...                 # 其他文档
+├── ops/                    # 运维配置
+│   ├── docker/             # Docker 配置
+│   ├── k8s/                # Kubernetes 配置
+│   ├── monitoring/         # 监控配置
+│   └── scripts/            # 部署脚本
+├── pkg/                    # 公共包
+│   ├── auth/               # 认证相关
+│   ├── bigdata/            # 大数据处理
+│   ├── cache/              # 缓存
+│   ├── collector/          # 采集相关
+│   ├── config/             # 配置管理
+│   ├── errors/             # 错误处理
+│   ├── export/             # 导出功能
+│   ├── feedback/           # 反馈机制
+│   ├── harness/            # 验证框架
+│   ├── monitoring/         # 监控相关
+│   ├── nacos/              # Nacos 集成
+│   ├── processor/          # 数据处理
+│   ├── qa/                 # QA 相关
+│   ├── skills/             # 技能模块
+│   └── websocket/          # WebSocket 支持
+├── scripts/                # 开发脚本
+│   ├── git-hooks/          # Git 钩子
+│   ├── migrations/         # 数据库迁移脚本
+│   └── performance/        # 性能测试脚本
+├── tests/                  # 测试文件
+│   ├── api/                # API 测试
+│   ├── helpers/            # 测试辅助工具
+│   └── performance/        # 性能测试
+├── web/                    # 前端项目
+├── AGENT.md                # Agent 相关文档
+├── CLAUDE.md               # Claude 相关文档
+├── Makefile                # 构建脚本
+├── README.md               # 项目说明
+├── go.mod                  # Go 依赖管理
+└── go.sum                  # Go 依赖校验
 ```
 
 ## 模块说明
@@ -210,21 +171,26 @@ Vue 3 + TypeScript 单页应用。
 | src/views | 页面组件 |
 | e2e | Playwright E2E测试 |
 
-### deployments/ - 部署配置
+### deploy/ - 部署配置
 
 | 目录 | 说明 |
 |------|------|
-| docker | Docker和Docker Compose配置 |
-| kubernetes/helm | Helm Chart部署配置 |
+| 部署相关配置文件 | 包含可观测性配置等 |
 
-### deploy/ - 可观测性
+### deployments/ - 部署相关文件
 
 | 目录 | 说明 |
 |------|------|
-| prometheus | Prometheus配置和告警规则 |
-| grafana | Grafana仪表板 |
-| jaeger | 分布式追踪配置 |
-| alertmanager | 告警通知配置 |
+| docker | Docker相关配置 |
+
+### ops/ - 运维配置
+
+| 目录 | 说明 |
+|------|------|
+| docker | Docker 配置文件，包括各服务的 Dockerfile 和 docker-compose 配置 |
+| k8s | Kubernetes 配置文件，包括部署、服务、配置映射等 |
+| monitoring | 监控配置，包括 Prometheus 和 Grafana 配置 |
+| scripts | 部署和运维脚本，包括一键部署脚本等 |
 
 ### docs/ - 文档
 

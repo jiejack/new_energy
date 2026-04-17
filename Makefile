@@ -75,13 +75,13 @@ clean:
 
 docker-build-all:
 	@echo "Building all Docker images..."
-	@docker build -t $(DOCKER_REGISTRY)/nem-api-server:$(IMAGE_TAG) -f Dockerfile .
-	@docker build -t $(DOCKER_REGISTRY)/nem-collector:$(IMAGE_TAG) -f Dockerfile.collector .
-	@docker build -t $(DOCKER_REGISTRY)/nem-alarm:$(IMAGE_TAG) -f Dockerfile.alarm .
-	@docker build -t $(DOCKER_REGISTRY)/nem-compute:$(IMAGE_TAG) -f Dockerfile.compute .
-	@docker build -t $(DOCKER_REGISTRY)/nem-ai-service:$(IMAGE_TAG) -f Dockerfile.ai-service .
-	@docker build -t $(DOCKER_REGISTRY)/nem-scheduler:$(IMAGE_TAG) -f Dockerfile.scheduler .
-	@docker build -t $(DOCKER_REGISTRY)/nem-frontend:$(IMAGE_TAG) -f Dockerfile.frontend .
+	@docker build -t $(DOCKER_REGISTRY)/nem-api-server:$(IMAGE_TAG) -f ops/docker/Dockerfile .
+	@docker build -t $(DOCKER_REGISTRY)/nem-collector:$(IMAGE_TAG) -f ops/docker/Dockerfile.collector .
+	@docker build -t $(DOCKER_REGISTRY)/nem-alarm:$(IMAGE_TAG) -f ops/docker/Dockerfile.alarm .
+	@docker build -t $(DOCKER_REGISTRY)/nem-compute:$(IMAGE_TAG) -f ops/docker/Dockerfile.compute .
+	@docker build -t $(DOCKER_REGISTRY)/nem-ai-service:$(IMAGE_TAG) -f ops/docker/Dockerfile.ai-service .
+	@docker build -t $(DOCKER_REGISTRY)/nem-scheduler:$(IMAGE_TAG) -f ops/docker/Dockerfile.scheduler .
+	@docker build -t $(DOCKER_REGISTRY)/nem-frontend:$(IMAGE_TAG) -f ops/docker/Dockerfile.frontend .
 
 docker-push-all:
 	@echo "Pushing all Docker images..."
@@ -95,54 +95,54 @@ docker-push-all:
 
 docker-build:
 	@echo "Building Docker images with docker-compose..."
-	@docker-compose -f docker-compose.yml build
+	@docker-compose -f ops/docker/docker-compose.yml build
 
 docker-up:
 	@echo "Starting Docker containers..."
-	@docker-compose -f docker-compose.yml up -d
+	@docker-compose -f ops/docker/docker-compose.yml up -d
 
 docker-down:
 	@echo "Stopping Docker containers..."
-	@docker-compose -f docker-compose.yml down
+	@docker-compose -f ops/docker/docker-compose.yml down
 
 docker-logs:
-	@docker-compose -f docker-compose.yml logs -f
+	@docker-compose -f ops/docker/docker-compose.yml logs -f
 
 docker-full-up:
 	@echo "Starting full stack with all microservices..."
-	@docker-compose -f docker-compose.full.yml up -d
+	@docker-compose -f ops/docker/docker-compose.full.yml up -d
 
 docker-full-down:
 	@echo "Stopping full stack..."
-	@docker-compose -f docker-compose.full.yml down
+	@docker-compose -f ops/docker/docker-compose.full.yml down
 
 docker-full-logs:
-	@docker-compose -f docker-compose.full.yml logs -f
+	@docker-compose -f ops/docker/docker-compose.full.yml logs -f
 
 k8s-deploy:
 	@echo "Deploying to Kubernetes..."
-	@kubectl apply -f k8s/01-namespace.yaml
-	@kubectl apply -f k8s/02-configmap.yaml
-	@kubectl apply -f k8s/03-secrets.yaml
-	@kubectl apply -f k8s/04-postgres.yaml
-	@kubectl apply -f k8s/05-redis.yaml
-	@kubectl apply -f k8s/06-kafka.yaml
+	@kubectl apply -f ops/k8s/01-namespace.yaml
+	@kubectl apply -f ops/k8s/02-configmap.yaml
+	@kubectl apply -f ops/k8s/03-secrets.yaml
+	@kubectl apply -f ops/k8s/04-postgres.yaml
+	@kubectl apply -f ops/k8s/05-redis.yaml
+	@kubectl apply -f ops/k8s/06-kafka.yaml
 	@sleep 10
-	@kubectl apply -f k8s/07-api-server.yaml
-	@kubectl apply -f k8s/08-microservices.yaml
-	@kubectl apply -f k8s/09-frontend-monitoring.yaml
+	@kubectl apply -f ops/k8s/07-api-server.yaml
+	@kubectl apply -f ops/k8s/08-microservices.yaml
+	@kubectl apply -f ops/k8s/09-frontend-monitoring.yaml
 
 k8s-delete:
 	@echo "Deleting from Kubernetes..."
-	@kubectl delete -f k8s/09-frontend-monitoring.yaml
-	@kubectl delete -f k8s/08-microservices.yaml
-	@kubectl delete -f k8s/07-api-server.yaml
-	@kubectl delete -f k8s/06-kafka.yaml
-	@kubectl delete -f k8s/05-redis.yaml
-	@kubectl delete -f k8s/04-postgres.yaml
-	@kubectl delete -f k8s/03-secrets.yaml
-	@kubectl delete -f k8s/02-configmap.yaml
-	@kubectl delete -f k8s/01-namespace.yaml
+	@kubectl delete -f ops/k8s/09-frontend-monitoring.yaml
+	@kubectl delete -f ops/k8s/08-microservices.yaml
+	@kubectl delete -f ops/k8s/07-api-server.yaml
+	@kubectl delete -f ops/k8s/06-kafka.yaml
+	@kubectl delete -f ops/k8s/05-redis.yaml
+	@kubectl delete -f ops/k8s/04-postgres.yaml
+	@kubectl delete -f ops/k8s/03-secrets.yaml
+	@kubectl delete -f ops/k8s/02-configmap.yaml
+	@kubectl delete -f ops/k8s/01-namespace.yaml
 
 k8s-logs:
 	@echo "Getting Kubernetes logs..."

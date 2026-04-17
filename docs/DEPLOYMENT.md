@@ -13,7 +13,7 @@
 
 ### 单节点部署（推荐用于开发测试）
 
-使用根目录的`docker-compose.yml`进行快速部署：
+使用`ops/docker/`目录的`docker-compose.yml`进行快速部署：
 
 ```bash
 # 克隆项目
@@ -21,13 +21,13 @@ git clone <repository-url>
 cd new-energy-monitoring
 
 # 构建并启动所有服务
-docker-compose up -d
+docker-compose -f ops/docker/docker-compose.yml up -d
 
 # 查看服务状态
-docker-compose ps
+docker-compose -f ops/docker/docker-compose.yml ps
 
 # 查看日志
-docker-compose logs -f
+docker-compose -f ops/docker/docker-compose.yml logs -f
 ```
 
 ### 服务访问地址
@@ -71,10 +71,10 @@ docker-compose logs -f
 
 ### 文件说明
 
-- `Dockerfile`: 后端服务Docker镜像构建文件
-- `Dockerfile.frontend`: 前端服务Docker镜像构建文件
-- `docker-compose.yml`: 单节点部署配置
-- `deployments/docker/`: 生产环境完整部署配置（包含数据库、消息队列等）
+- `ops/docker/Dockerfile`: 后端服务Docker镜像构建文件
+- `ops/docker/Dockerfile.frontend`: 前端服务Docker镜像构建文件
+- `ops/docker/docker-compose.yml`: 单节点部署配置
+- `ops/docker/docker-compose.full.yml`: 生产环境完整部署配置（包含数据库、消息队列等）
 
 ## 配置说明
 
@@ -100,21 +100,20 @@ volumes:
 
 ### 生产环境部署
 
-生产环境建议使用`deployments/docker/`目录下的完整配置，包含：
+生产环境建议使用`ops/docker/`目录下的完整配置，包含：
 
 - PostgreSQL数据库
 - Redis缓存
 - Kafka消息队列
-- Doris数据仓库
 - 多个微服务（API Server、Collector、Alarm、Compute等）
 
 部署步骤：
 
 ```bash
-cd deployments/docker
+cd ops/docker
 
 # 构建并启动所有服务
-docker-compose up -d
+docker-compose -f docker-compose.full.yml up -d
 ```
 
 ### 自定义构建
@@ -123,13 +122,13 @@ docker-compose up -d
 
 ```bash
 # 构建后端镜像
-docker build -t nem-backend:latest -f Dockerfile .
+docker build -t nem-backend:latest -f ops/docker/Dockerfile .
 
 # 构建前端镜像
-docker build -t nem-frontend:latest -f Dockerfile.frontend .
+docker build -t nem-frontend:latest -f ops/docker/Dockerfile.frontend .
 
 # 启动服务
-docker-compose up -d
+docker-compose -f ops/docker/docker-compose.yml up -d
 ```
 
 ## 故障排查
@@ -173,10 +172,13 @@ docker run --rm -v prometheus-data:/data -v $(pwd):/backup alpine tar czf /backu
 
 ```bash
 # 停止服务
-docker-compose down
+docker-compose -f ops/docker/docker-compose.yml down
+
+# 停止完整服务栈
+docker-compose -f ops/docker/docker-compose.full.yml down
 
 # 停止服务并删除卷（谨慎使用）
-docker-compose down -v
+docker-compose -f ops/docker/docker-compose.yml down -v
 
 # 删除所有镜像
 docker rmi $(docker images -q "nem-*")
