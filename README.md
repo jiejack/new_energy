@@ -53,24 +53,36 @@
 
 | 软件 | 版本 |
 |------|------|
-| Go | ≥1.24 |
+| Go | ≥1.21 |
 | Node.js | ≥20.x |
 | Docker | ≥24.0 |
+| Docker Compose | ≥2.20+ |
+| Kubernetes | ≥1.28+ (生产环境) |
 | PostgreSQL | ≥15 |
 | Redis | ≥7 |
 
-### 使用 Docker Compose 部署
+### 一键部署
 
 ```bash
 # 克隆项目
 git clone https://github.com/jiejack/new_energy.git
 cd new_energy
 
-# 配置环境变量
-cp .env.example .env
+# 一键部署（Docker）
+./scripts/deploy.sh --full
 
-# 启动服务
+# 或部署到Kubernetes
+./scripts/deploy.sh --mode k8s
+```
+
+### 使用 Docker Compose 部署
+
+```bash
+# 启动基础服务
 docker-compose up -d
+
+# 启动完整微服务栈
+docker-compose -f docker-compose.full.yml up -d
 
 # 验证服务
 curl http://localhost:8080/health
@@ -119,6 +131,9 @@ new-energy-monitoring/
 | [安装指南](./docs/wiki/Installation-Guide.md) | 环境准备与安装部署 |
 | [快速开始](./docs/wiki/Quick-Start.md) | 5分钟快速上手 |
 | [API文档](./docs/wiki/API-Documentation.md) | 接口调用指南 |
+| [用户手册](./docs/user-manual.md) | 功能使用说明 |
+| [运维手册](./docs/operations-manual.md) | 运维操作指南 |
+| [CI/CD指南](./CI_CD_GUIDE.md) | 自动化部署流程 |
 | [FAQ](./docs/wiki/FAQ.md) | 常见问题解答 |
 | [项目结构](./docs/wiki/Project-Structure.md) | 代码目录说明 |
 | [贡献指南](./CONTRIBUTING.md) | 如何参与开发 |

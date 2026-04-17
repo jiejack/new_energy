@@ -47,6 +47,7 @@
 
 ### 使用文档
 - [用户手册](./User-Manual) - 功能使用说明
+- [功能说明](./Feature-Guide) - 详细功能模块介绍
 - [API文档](./API-Documentation) - 接口调用指南
 - [配置说明](./Configuration) - 系统配置详解
 

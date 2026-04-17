@@ -8,8 +8,8 @@ import (
 	"time"
 )
 
-// ExampleUsage 示例：如何使用告警系统
-func ExampleUsage() {
+// usageExample 使用告警系统的示例
+func usageExample() {
 	ctx := context.Background()
 
 	// 1. 创建规则管理器
@@ -234,8 +234,8 @@ func ExampleUsage() {
 	time.Sleep(1 * time.Minute)
 }
 
-// ExampleAPIUsage 示例：如何使用告警API
-func ExampleAPIUsage() {
+// apiUsageExample 使用告警API的示例
+func apiUsageExample() {
 	// 创建组件
 	metricProvider := &MockMetricProvider{}
 	ruleManager := NewRuleManager(metricProvider)
@@ -261,8 +261,8 @@ func ExampleAPIUsage() {
 	}
 }
 
-// ExampleCustomRule 示例：创建自定义告警规则
-func ExampleCustomRule() {
+// customRuleUsageExample 创建自定义告警规则的示例
+func customRuleUsageExample() {
 	// 创建自定义告警规则
 	customRule := &AlertRule{
 		ID:          "custom_temperature_alert",

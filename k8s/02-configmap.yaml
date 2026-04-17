@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nem-config
+  namespace: nem-system
+data:
+  TZ: "Asia/Shanghai"
+  GIN_MODE: "release"
+  DB_NAME: "nem_system"
+  REDIS_DB: "0"
+  KAFKA_TOPIC_PREFIX: "nem"
