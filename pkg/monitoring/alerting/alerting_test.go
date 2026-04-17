@@ -332,7 +332,7 @@ func TestNotificationTemplateManager(t *testing.T) {
 	}
 
 	if content != "告警内容: CPU使用率超过80%" {
-		t.Errorf("expected content '告警内容: CPU使用率超过80%', got '%s'", content)
+		t.Errorf("expected content '告警内容: CPU使用率超过80%%', got '%s'", content)
 	}
 }
 
