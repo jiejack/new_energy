@@ -38,7 +38,7 @@
             <el-menu-item
               v-for="child in route.children"
               :key="child.path"
-              :index="child.path"
+              :index="`${route.path}/${child.path}`"
             >
               <el-icon>
                 <component :is="child.meta?.icon || 'Document'" />
