@@ -19,7 +19,7 @@
           <!-- 没有子菜单 -->
           <el-menu-item
             v-if="!route.children || route.children.length === 1"
-            :index="route.children ? route.children[0].path : route.path"
+            :index="route.children ? `${route.path}/${route.children[0].path}` : route.path"
           >
             <el-icon>
               <component :is="route.meta?.icon || 'Document'" />
