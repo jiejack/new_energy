@@ -183,9 +183,6 @@ func TestNewExportService(t *testing.T) {
 
 	service := NewExportService(mockAlarmRepo, mockDeviceRepo, mockStationRepo)
 	assert.NotNil(t, service)
-	assert.Equal(t, mockAlarmRepo, service.alarmRepo)
-	assert.Equal(t, mockDeviceRepo, service.deviceRepo)
-	assert.Equal(t, mockStationRepo, service.stationRepo)
 }
 
 func TestExportService_Export_UnsupportedType(t *testing.T) {

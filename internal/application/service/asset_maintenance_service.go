@@ -70,7 +70,7 @@ func (s *AssetMaintenanceService) CreateMaintenanceRecord(ctx context.Context, r
 	if req.MaintenanceDate != "" {
 		maintenanceDate, err := time.Parse("2006-01-02", req.MaintenanceDate)
 		if err == nil {
-			record.MaintenanceDate = &maintenanceDate
+			record.StartDate = maintenanceDate
 		}
 	}
 
@@ -137,7 +137,7 @@ func (s *AssetMaintenanceService) UpdateMaintenanceRecord(ctx context.Context, i
 	if req.MaintenanceDate != "" {
 		maintenanceDate, err := time.Parse("2006-01-02", req.MaintenanceDate)
 		if err == nil {
-			existing.MaintenanceDate = &maintenanceDate
+			existing.StartDate = maintenanceDate
 		}
 	}
 

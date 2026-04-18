@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"new-energy-monitoring/internal/application/service"
-	"new-energy-monitoring/internal/api/dto"
+	"github.com/new-energy-monitoring/internal/application/service"
+	"github.com/new-energy-monitoring/internal/api/dto"
 )
 
 type AssetHandler struct {

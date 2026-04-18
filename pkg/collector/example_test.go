@@ -6,13 +6,13 @@ import (
 	"time"
 )
 
-// ExampleUsage 展示如何使用数据采集框架
-func ExampleUsage() {
+// Example 展示如何使用数据采集框架
+func Example() {
 	// 1. 创建协程池
 	pool := NewWorkerPool(
 		WithMaxWorkers(1000),
 		WithMinWorkers(10),
-		WithTaskQueueSize(100000),
+		WithPoolTaskQueueSize(100000),
 		WithIdleTimeout(30*time.Second),
 	)
 

@@ -57,8 +57,7 @@ func (s *AssetDepreciationService) CreateDepreciationRecord(ctx context.Context,
 	// 创建折旧记录实体
 	record := &entity.AssetDepreciationRecord{
 		AssetID:                 req.AssetID,
-		DepreciationMethod:      req.DepreciationMethod,
-		Year:                    req.Year,
+		DepreciationDate:        time.Now(),
 		DepreciationAmount:      req.Amount,
 		AccumulatedDepreciation: req.AccumulatedAmount,
 		BookValue:               req.BookValue,
@@ -108,12 +107,6 @@ func (s *AssetDepreciationService) UpdateDepreciationRecord(ctx context.Context,
 	}
 
 	// 更新其他字段
-	if req.DepreciationMethod != "" {
-		existing.DepreciationMethod = req.DepreciationMethod
-	}
-	if req.Year > 0 {
-		existing.Year = req.Year
-	}
 	if req.Amount > 0 {
 		existing.DepreciationAmount = req.Amount
 	}
@@ -123,6 +116,7 @@ func (s *AssetDepreciationService) UpdateDepreciationRecord(ctx context.Context,
 	if req.BookValue > 0 {
 		existing.BookValue = req.BookValue
 	}
+	existing.DepreciationDate = time.Now()
 
 	// 验证折旧期间是否有效
 	validPeriods := map[string]bool{

@@ -489,7 +489,7 @@ func DecodeCP56Time2a(data []byte) (CP56Time2a, error) {
 	}
 	
 	ms := binary.LittleEndian.Uint16(data[0:2])
-	year := int(data[6] >> 4)
+	year := int((data[6] >> 4) & 0x0F)
 	
 	return CP56Time2a{
 		Milliseconds: ms,
@@ -506,17 +506,14 @@ func DecodeCP56Time2a(data []byte) (CP56Time2a, error) {
 // CP56Time2a转time.Time
 func (cp CP56Time2a) ToTime() time.Time {
 	year := int(cp.Year)
-	if year < 70 {
-		year += 2000
-	} else {
-		year += 1900
-	}
+	// 处理2000-2099年
+	year += 2000
 	
 	sec := int(cp.Milliseconds / 1000)
 	nsec := (int(cp.Milliseconds) % 1000) * 1000000
 	
 	return time.Date(year, time.Month(cp.Month), int(cp.DayOfMonth),
-		int(cp.Hours), int(cp.Minutes), sec, nsec, time.Local)
+		int(cp.Hours), int(cp.Minutes), sec, nsec, time.UTC)
 }
 
 // 解析质量描述 (SIQ/DPI等)

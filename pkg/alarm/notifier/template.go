@@ -250,9 +250,12 @@ func (m *DefaultTemplateManager) Render(templateID string, data map[string]inter
 
 // RenderWithLanguage 使用指定语言渲染模板
 func (m *DefaultTemplateManager) RenderWithLanguage(templateID string, language Language, data map[string]interface{}) (string, error) {
+	// 构建缓存键
+	cacheKey := fmt.Sprintf("%s_%s", templateID, language)
+
 	// 获取模板
 	m.mu.RLock()
-	tmpl, exists := m.cache[templateID]
+	tmpl, exists := m.cache[cacheKey]
 	m.mu.RUnlock()
 
 	if !exists {
@@ -265,12 +268,12 @@ func (m *DefaultTemplateManager) RenderWithLanguage(templateID string, language 
 
 		// 更新缓存
 		m.mu.Lock()
-		m.cache[templateID] = tmpl
+		m.cache[cacheKey] = tmpl
 		m.mu.Unlock()
 	}
 
 	// 验证数据
-	if err := m.Validate(templateID, data); err != nil {
+	if err := m.Validate(cacheKey, data); err != nil {
 		return "", err
 	}
 
@@ -280,9 +283,13 @@ func (m *DefaultTemplateManager) RenderWithLanguage(templateID string, language 
 
 // Preview 预览模板
 func (m *DefaultTemplateManager) Preview(templateID string, data map[string]interface{}) (string, error) {
+	// 使用默认语言
+	language := LanguageZH
+	cacheKey := fmt.Sprintf("%s_%s", templateID, language)
+
 	// 获取模板
 	m.mu.RLock()
-	tmpl, exists := m.cache[templateID]
+	tmpl, exists := m.cache[cacheKey]
 	m.mu.RUnlock()
 
 	if !exists {

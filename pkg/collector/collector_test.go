@@ -2,6 +2,7 @@ package collector
 
 import (
 	"context"
+	"sync"
 	"testing"
 	"time"
 
@@ -10,12 +11,20 @@ import (
 
 // MockDataWriter 模拟数据写入器
 type MockDataWriter struct {
-	writeFunc func(ctx context.Context, data []PointData) error
+	writeFunc    func(ctx context.Context, data []PointData) error
+	writeBatchFunc func(ctx context.Context, batch [][]PointData) error
 }
 
 func (m *MockDataWriter) Write(ctx context.Context, data []PointData) error {
 	if m.writeFunc != nil {
 		return m.writeFunc(ctx, data)
+	}
+	return nil
+}
+
+func (m *MockDataWriter) WriteBatch(ctx context.Context, batch [][]PointData) error {
+	if m.writeBatchFunc != nil {
+		return m.writeBatchFunc(ctx, batch)
 	}
 	return nil
 }
@@ -68,15 +77,20 @@ func TestWorkerPool_Submit(t *testing.T) {
 	assert.NoError(t, err)
 	defer pool.GracefulShutdown(5 * time.Second)
 
+	var mu sync.Mutex
 	executed := false
 	err = pool.Submit(context.Background(), "test-task", 1, func(ctx context.Context) error {
+		mu.Lock()
 		executed = true
+		mu.Unlock()
 		return nil
 	})
 	assert.NoError(t, err)
 
 	// 等待任务执行
 	time.Sleep(100 * time.Millisecond)
+	mu.Lock()
+	defer mu.Unlock()
 	assert.True(t, executed)
 }
 
@@ -295,10 +309,13 @@ func TestDataBuffer_Clear(t *testing.T) {
 }
 
 func TestDataBuffer_ForceFlush(t *testing.T) {
+	var mu sync.Mutex
 	flushed := false
 	mockWriter := &MockDataWriter{
 		writeFunc: func(ctx context.Context, data []PointData) error {
+			mu.Lock()
 			flushed = true
+			mu.Unlock()
 			assert.Len(t, data, 3)
 			return nil
 		},
@@ -333,6 +350,8 @@ func TestDataBuffer_ForceFlush(t *testing.T) {
 
 	// 等待刷新完成
 	time.Sleep(200 * time.Millisecond)
+	mu.Lock()
+	defer mu.Unlock()
 	assert.True(t, flushed)
 }
 
@@ -381,10 +400,13 @@ func TestNewBatchWriter(t *testing.T) {
 }
 
 func TestBatchWriter_Write(t *testing.T) {
+	var mu sync.Mutex
 	writeCount := 0
 	mockWriter := &MockDataWriter{
 		writeFunc: func(ctx context.Context, data []PointData) error {
+			mu.Lock()
 			writeCount++
+			mu.Unlock()
 			return nil
 		},
 	}
@@ -404,6 +426,8 @@ func TestBatchWriter_Write(t *testing.T) {
 
 	err := bw.Write(context.Background(), data)
 	assert.NoError(t, err)
+	mu.Lock()
+	defer mu.Unlock()
 	assert.Equal(t, 3, writeCount)
 }
 

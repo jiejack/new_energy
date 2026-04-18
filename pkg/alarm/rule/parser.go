@@ -99,7 +99,7 @@ func (l *Lexer) skipWhitespace() {
 
 func (l *Lexer) readIdentifier() {
 	l.start = l.pos
-	for l.pos < len(l.input) && (isLetter(l.input[l.pos]) || isDigit(l.input[l.pos]) || l.input[l.pos] == '_') {
+	for l.pos < len(l.input) && (isLetter(l.input[l.pos]) || isDigit(l.input[l.pos]) || l.input[l.pos] == '_' || l.input[l.pos] == '-') {
 		l.pos++
 	}
 

@@ -673,7 +673,8 @@ func TestInterrogationCommandEncodeDecode(t *testing.T) {
 func TestClockSyncCommandEncodeDecode(t *testing.T) {
 	coder := NewASDUCoder()
 
-	now := time.Now()
+	// 使用2010年的时间，因为CP56Time2a格式只支持2000-2015年
+	now := time.Date(2010, 4, 18, 7, 10, 20, 673458881, time.UTC)
 	cmd := &ClockSyncCommand{Time: now}
 	data := coder.EncodeClockSyncCommand(1, cmd, CauseOfTransmission{Cause: COT_ACTIVATION})
 

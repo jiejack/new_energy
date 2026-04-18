@@ -14,6 +14,7 @@ import (
 // ExportServiceInterface 导出服务接口
 type ExportServiceInterface interface {
 	Export(ctx context.Context, req *ExportRequest) (*ExportResult, error)
+	StreamExportAlarms(ctx context.Context, req *ExportRequest, batchSize int) (*ExportResult, error)
 }
 
 // ExportService 导出服务

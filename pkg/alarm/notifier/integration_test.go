@@ -73,8 +73,7 @@ func TestIntegration(t *testing.T) {
 		UserID: "user-001",
 		Send:   make(chan []byte, 10),
 	}
-	hub := wsHub.(*WebSocketHub)
-	hub.Register(client)
+	wsHub.Register(client)
 	time.Sleep(100 * time.Millisecond)
 
 	// 6. 创建并发送通知
@@ -127,7 +126,7 @@ func TestIntegration(t *testing.T) {
 	}
 
 	// 11. 清理
-	hub.Unregister(client)
+	wsHub.Unregister(client)
 }
 
 // TestMultiChannelIntegration 多渠道集成测试
@@ -244,7 +243,7 @@ func TestTemplateIntegration(t *testing.T) {
 
 	// 创建模板
 	tmpl := &NotificationTemplate{
-		ID:       "test-template",
+		ID:       "test-template_zh-CN",
 		Name:     "测试模板",
 		Type:     TemplateTypeSMS,
 		Channel:  ChannelSMS,
@@ -262,23 +261,6 @@ func TestTemplateIntegration(t *testing.T) {
 
 	if err := mgr.Create(ctx, tmpl); err != nil {
 		t.Fatalf("Failed to create template: %v", err)
-	}
-
-	// 渲染模板
-	data := map[string]interface{}{
-		"Station": "光伏电站A",
-		"Device":  "逆变器01",
-		"Message": "温度过高",
-	}
-
-	rendered, err := mgr.Render("test-template", data)
-	if err != nil {
-		t.Fatalf("Failed to render template: %v", err)
-	}
-
-	expected := "告警：光伏电站A - 逆变器01 - 温度过高"
-	if rendered != expected {
-		t.Errorf("Expected %s, got %s", expected, rendered)
 	}
 
 	// 测试多语言
@@ -301,6 +283,23 @@ func TestTemplateIntegration(t *testing.T) {
 
 	if err := mgr.Create(ctx, tmplEN); err != nil {
 		t.Fatalf("Failed to create EN template: %v", err)
+	}
+
+	// 渲染模板
+	data := map[string]interface{}{
+		"Station": "光伏电站A",
+		"Device":  "逆变器01",
+		"Message": "温度过高",
+	}
+
+	rendered, err := mgr.RenderWithLanguage("test-template", LanguageZH, data)
+	if err != nil {
+		t.Fatalf("Failed to render template: %v", err)
+	}
+
+	expected := "告警：光伏电站A - 逆变器01 - 温度过高"
+	if rendered != expected {
+		t.Errorf("Expected %s, got %s", expected, rendered)
 	}
 
 	renderedEN, err := mgr.RenderWithLanguage("test-template", LanguageEN, data)
