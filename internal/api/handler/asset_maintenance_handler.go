@@ -30,13 +30,13 @@ func NewAssetMaintenanceHandler(service *service.AssetMaintenanceService) *Asset
 func (h *AssetMaintenanceHandler) CreateMaintenanceRecord(c *gin.Context) {
 	var req service.CreateMaintenanceRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Code: http.StatusBadRequest, Message: err.Error(), Timestamp: time.Now().UnixMilli()})
 		return
 	}
 
 	record, err := h.service.CreateMaintenanceRecord(c.Request.Context(), &req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: http.StatusBadRequest, Message: err.Error(), Timestamp: time.Now().UnixMilli()})
 		return
 	}
 
@@ -59,7 +59,7 @@ func (h *AssetMaintenanceHandler) GetMaintenanceRecord(c *gin.Context) {
 
 	record, err := h.service.GetMaintenanceRecord(c.Request.Context(), id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusNotFound, dto.ErrorResponse{Code: http.StatusBadRequest, Message: err.Error(), Timestamp: time.Now().UnixMilli()})
 		return
 	}
 
@@ -83,13 +83,13 @@ func (h *AssetMaintenanceHandler) UpdateMaintenanceRecord(c *gin.Context) {
 	id := c.Param("id")
 	var req service.UpdateMaintenanceRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Code: http.StatusBadRequest, Message: err.Error(), Timestamp: time.Now().UnixMilli()})
 		return
 	}
 
 	record, err := h.service.UpdateMaintenanceRecord(c.Request.Context(), id, &req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: http.StatusBadRequest, Message: err.Error(), Timestamp: time.Now().UnixMilli()})
 		return
 	}
 
@@ -112,7 +112,7 @@ func (h *AssetMaintenanceHandler) DeleteMaintenanceRecord(c *gin.Context) {
 
 	err := h.service.DeleteMaintenanceRecord(c.Request.Context(), id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: http.StatusBadRequest, Message: err.Error(), Timestamp: time.Now().UnixMilli()})
 		return
 	}
 
@@ -142,7 +142,7 @@ func (h *AssetMaintenanceHandler) ListMaintenanceRecords(c *gin.Context) {
 
 	records, total, err := h.service.ListMaintenanceRecords(c.Request.Context(), assetID, maintenanceType, status, page, pageSize)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: http.StatusBadRequest, Message: err.Error(), Timestamp: time.Now().UnixMilli()})
 		return
 	}
 
@@ -174,7 +174,7 @@ func (h *AssetMaintenanceHandler) GetMaintenanceCosts(c *gin.Context) {
 
 	cost, err := h.service.GetMaintenanceCosts(c.Request.Context(), assetID, startDate, endDate)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: http.StatusBadRequest, Message: err.Error(), Timestamp: time.Now().UnixMilli()})
 		return
 	}
 

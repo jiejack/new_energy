@@ -30,7 +30,7 @@ func NewAssetDocumentHandler(service *service.AssetDocumentService) *AssetDocume
 func (h *AssetDocumentHandler) CreateDocument(c *gin.Context) {
 	var req dto.AssetDocumentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Code: http.StatusBadRequest, Message: err.Error(), Timestamp: time.Now().UnixMilli()})
 		return
 	}
 
@@ -45,7 +45,7 @@ func (h *AssetDocumentHandler) CreateDocument(c *gin.Context) {
 
 	document, err := h.service.CreateDocument(c.Request.Context(), serviceReq)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: http.StatusBadRequest, Message: err.Error(), Timestamp: time.Now().UnixMilli()})
 		return
 	}
 
@@ -68,7 +68,7 @@ func (h *AssetDocumentHandler) GetDocument(c *gin.Context) {
 
 	document, err := h.service.GetDocument(c.Request.Context(), id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusNotFound, dto.ErrorResponse{Code: http.StatusBadRequest, Message: err.Error(), Timestamp: time.Now().UnixMilli()})
 		return
 	}
 
@@ -92,7 +92,7 @@ func (h *AssetDocumentHandler) UpdateDocument(c *gin.Context) {
 	id := c.Param("id")
 	var req dto.AssetDocumentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Code: http.StatusBadRequest, Message: err.Error(), Timestamp: time.Now().UnixMilli()})
 		return
 	}
 
@@ -107,7 +107,7 @@ func (h *AssetDocumentHandler) UpdateDocument(c *gin.Context) {
 
 	document, err := h.service.UpdateDocument(c.Request.Context(), id, serviceReq)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: http.StatusBadRequest, Message: err.Error(), Timestamp: time.Now().UnixMilli()})
 		return
 	}
 
@@ -130,7 +130,7 @@ func (h *AssetDocumentHandler) DeleteDocument(c *gin.Context) {
 
 	err := h.service.DeleteDocument(c.Request.Context(), id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: http.StatusBadRequest, Message: err.Error(), Timestamp: time.Now().UnixMilli()})
 		return
 	}
 
@@ -158,7 +158,7 @@ func (h *AssetDocumentHandler) ListDocuments(c *gin.Context) {
 
 	documents, total, err := h.service.ListDocuments(c.Request.Context(), assetID, documentType, page, pageSize)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: http.StatusBadRequest, Message: err.Error(), Timestamp: time.Now().UnixMilli()})
 		return
 	}
 

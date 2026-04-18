@@ -1,5 +1,24 @@
 package dto
 
+import (
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+)
+
+// GetIntQuery 从查询参数中获取整数，不存在时返回默认值
+func GetIntQuery(c *gin.Context, key string, defaultValue int) int {
+	value := c.Query(key)
+	if value == "" {
+		return defaultValue
+	}
+	result, err := strconv.Atoi(value)
+	if err != nil {
+		return defaultValue
+	}
+	return result
+}
+
 // CreateRegionRequest 创建区域请求
 type CreateRegionRequest struct {
 	Code        string  `json:"code" binding:"required" example:"EAST_SH"`

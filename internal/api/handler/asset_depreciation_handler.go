@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/new-energy-monitoring/internal/application/service"
@@ -30,13 +31,30 @@ func NewAssetDepreciationHandler(service *service.AssetDepreciationService) *Ass
 func (h *AssetDepreciationHandler) CreateDepreciationRecord(c *gin.Context) {
 	var req dto.AssetDepreciationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Code:      http.StatusBadRequest,
+			Message:   err.Error(),
+			Timestamp: time.Now().UnixMilli(),
+		})
 		return
 	}
 
-	record, err := h.service.CreateDepreciationRecord(c.Request.Context(), req)
+	serviceReq := &service.CreateDepreciationRequest{
+		AssetID:            req.AssetID,
+		DepreciationMethod: req.DepreciationMethod,
+		Year:               req.Year,
+		Amount:             req.Amount,
+		AccumulatedAmount:  req.AccumulatedAmount,
+		BookValue:          req.BookValue,
+	}
+
+	record, err := h.service.CreateDepreciationRecord(c.Request.Context(), serviceReq)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Code:      http.StatusInternalServerError,
+			Message:   err.Error(),
+			Timestamp: time.Now().UnixMilli(),
+		})
 		return
 	}
 
@@ -59,7 +77,11 @@ func (h *AssetDepreciationHandler) GetDepreciationRecord(c *gin.Context) {
 
 	record, err := h.service.GetDepreciationRecord(c.Request.Context(), id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusNotFound, dto.ErrorResponse{
+			Code:      http.StatusNotFound,
+			Message:   err.Error(),
+			Timestamp: time.Now().UnixMilli(),
+		})
 		return
 	}
 
@@ -83,13 +105,30 @@ func (h *AssetDepreciationHandler) UpdateDepreciationRecord(c *gin.Context) {
 	id := c.Param("id")
 	var req dto.AssetDepreciationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Code:      http.StatusBadRequest,
+			Message:   err.Error(),
+			Timestamp: time.Now().UnixMilli(),
+		})
 		return
 	}
 
-	record, err := h.service.UpdateDepreciationRecord(c.Request.Context(), id, req)
+	serviceReq := &service.UpdateDepreciationRequest{
+		AssetID:            req.AssetID,
+		DepreciationMethod: req.DepreciationMethod,
+		Year:               req.Year,
+		Amount:             req.Amount,
+		AccumulatedAmount:  req.AccumulatedAmount,
+		BookValue:          req.BookValue,
+	}
+
+	record, err := h.service.UpdateDepreciationRecord(c.Request.Context(), id, serviceReq)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Code:      http.StatusInternalServerError,
+			Message:   err.Error(),
+			Timestamp: time.Now().UnixMilli(),
+		})
 		return
 	}
 
@@ -112,7 +151,11 @@ func (h *AssetDepreciationHandler) DeleteDepreciationRecord(c *gin.Context) {
 
 	err := h.service.DeleteDepreciationRecord(c.Request.Context(), id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Code:      http.StatusInternalServerError,
+			Message:   err.Error(),
+			Timestamp: time.Now().UnixMilli(),
+		})
 		return
 	}
 
@@ -142,7 +185,11 @@ func (h *AssetDepreciationHandler) ListDepreciationRecords(c *gin.Context) {
 
 	records, total, err := h.service.ListDepreciationRecords(c.Request.Context(), assetID, method, year, page, pageSize)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Code:      http.StatusInternalServerError,
+			Message:   err.Error(),
+			Timestamp: time.Now().UnixMilli(),
+		})
 		return
 	}
 
@@ -172,7 +219,11 @@ func (h *AssetDepreciationHandler) GetDepreciationSummary(c *gin.Context) {
 
 	summary, err := h.service.GetDepreciationSummary(c.Request.Context(), assetID, upToDate)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Code:      http.StatusInternalServerError,
+			Message:   err.Error(),
+			Timestamp: time.Now().UnixMilli(),
+		})
 		return
 	}
 

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/new-energy-monitoring/internal/application/service"
@@ -30,7 +31,11 @@ func NewAssetHandler(service *service.AssetService) *AssetHandler {
 func (h *AssetHandler) CreateAsset(c *gin.Context) {
 	var req dto.AssetRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Code:      http.StatusBadRequest,
+			Message:   err.Error(),
+			Timestamp: time.Now().UnixMilli(),
+		})
 		return
 	}
 
@@ -53,7 +58,11 @@ func (h *AssetHandler) CreateAsset(c *gin.Context) {
 
 	asset, err := h.service.CreateAsset(c.Request.Context(), serviceReq)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Code:      http.StatusInternalServerError,
+			Message:   err.Error(),
+			Timestamp: time.Now().UnixMilli(),
+		})
 		return
 	}
 
@@ -76,7 +85,7 @@ func (h *AssetHandler) GetAsset(c *gin.Context) {
 
 	asset, err := h.service.GetAsset(c.Request.Context(), id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusNotFound, dto.ErrorResponse{Code: http.StatusBadRequest, Message: err.Error(), Timestamp: time.Now().UnixMilli()})
 		return
 	}
 
@@ -100,7 +109,7 @@ func (h *AssetHandler) UpdateAsset(c *gin.Context) {
 	id := c.Param("id")
 	var req dto.AssetRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Code: http.StatusBadRequest, Message: err.Error(), Timestamp: time.Now().UnixMilli()})
 		return
 	}
 
@@ -123,7 +132,7 @@ func (h *AssetHandler) UpdateAsset(c *gin.Context) {
 
 	asset, err := h.service.UpdateAsset(c.Request.Context(), id, serviceReq)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: http.StatusBadRequest, Message: err.Error(), Timestamp: time.Now().UnixMilli()})
 		return
 	}
 
@@ -146,7 +155,7 @@ func (h *AssetHandler) DeleteAsset(c *gin.Context) {
 
 	err := h.service.DeleteAsset(c.Request.Context(), id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: http.StatusBadRequest, Message: err.Error(), Timestamp: time.Now().UnixMilli()})
 		return
 	}
 
@@ -176,7 +185,7 @@ func (h *AssetHandler) ListAssets(c *gin.Context) {
 
 	assets, total, err := h.service.ListAssets(c.Request.Context(), name, category, status, page, pageSize)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: http.StatusBadRequest, Message: err.Error(), Timestamp: time.Now().UnixMilli()})
 		return
 	}
 
@@ -212,7 +221,7 @@ func (h *AssetHandler) CalculateDepreciation(c *gin.Context) {
 
 	depreciation, err := h.service.CalculateDepreciation(c.Request.Context(), id, method)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: http.StatusBadRequest, Message: err.Error(), Timestamp: time.Now().UnixMilli()})
 		return
 	}
 
