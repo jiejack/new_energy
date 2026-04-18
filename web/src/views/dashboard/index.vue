@@ -3,7 +3,10 @@
     <!-- 顶部标题栏 -->
     <header class="dashboard-header">
       <div class="header-left">
-        <h1 class="title">新能源监控系统</h1>
+        <h1 class="title">
+          <span class="title-icon">⚡</span>
+          <span class="title-text">新能源监控系统</span>
+        </h1>
       </div>
       <div class="header-center">
         <div class="datetime">
@@ -13,11 +16,18 @@
         </div>
       </div>
       <div class="header-right">
+        <div class="status-indicator">
+          <span class="status-dot" :class="{ 'online': wsConnected, 'offline': !wsConnected }"></span>
+          <span class="status-text">{{ wsConnected ? '实时连接' : '连接中...' }}</span>
+        </div>
         <el-dropdown trigger="click" @command="handleCommand">
           <div class="user-info">
-            <el-avatar :size="32" :src="userStore.avatar">
-              <el-icon><User /></el-icon>
-            </el-avatar>
+            <div class="avatar-container">
+              <el-avatar :size="32" :src="userStore.avatar">
+                <el-icon><User /></el-icon>
+              </el-avatar>
+              <div class="avatar-glow"></div>
+            </div>
             <span class="username">{{ userStore.nickname || userStore.username }}</span>
             <el-icon class="arrow"><ArrowDown /></el-icon>
           </div>
@@ -39,7 +49,7 @@
         <div class="panel station-panel">
           <div class="panel-header">
             <span class="panel-title">电站列表</span>
-            <el-tag :type="stations.length > 0 ? 'success' : 'info'" size="small">
+            <el-tag :type="stations.length > 0 ? 'success' : 'info'" size="small" effect="dark">
               {{ stations.length }} 个
             </el-tag>
           </div>
@@ -55,7 +65,7 @@
           <div class="panel-header">
             <span class="panel-title">实时告警</span>
             <el-badge :value="alarmCount" :max="99" :hidden="alarmCount === 0">
-              <el-tag type="danger" size="small">告警</el-tag>
+              <el-tag type="danger" size="small" effect="dark">告警</el-tag>
             </el-badge>
           </div>
           <div class="panel-content">
@@ -75,10 +85,10 @@
             <span class="panel-title">电站分布</span>
             <div class="panel-actions">
               <el-button-group size="small">
-                <el-button :type="mapType === 'normal' ? 'primary' : ''" @click="mapType = 'normal'">
+                <el-button :type="mapType === 'normal' ? 'primary' : ''" @click="mapType = 'normal'" effect="dark">
                   标准
                 </el-button>
-                <el-button :type="mapType === 'satellite' ? 'primary' : ''" @click="mapType = 'satellite'">
+                <el-button :type="mapType === 'satellite' ? 'primary' : ''" @click="mapType = 'satellite'" effect="dark">
                   卫星
                 </el-button>
               </el-button-group>
@@ -100,7 +110,7 @@
         <div class="panel stats-panel">
           <div class="panel-header">
             <span class="panel-title">数据统计</span>
-            <el-button text size="small" @click="refreshStats">
+            <el-button text size="small" @click="refreshStats" :loading="refreshingStats">
               <el-icon><Refresh /></el-icon>
               刷新
             </el-button>
@@ -178,6 +188,7 @@ const stats = ref({
   onlineRate: 0
 })
 const statsLoading = ref(false)
+const refreshingStats = ref(false)
 
 // 图表相关
 const selectedStationIds = ref<number[]>([])
@@ -188,7 +199,7 @@ const chartLoading = ref(false)
 const mapType = ref<'normal' | 'satellite'>('normal')
 
 // WebSocket连接状态
-let wsConnected = false
+const wsConnected = ref(false)
 
 // 计算选中的电站
 const selectedStations = computed(() => {
@@ -312,6 +323,7 @@ async function loadStatistics() {
 async function refreshStats() {
   const actionKey = 'refresh-stats'
   loadingStore.setActionLoading(actionKey, true)
+  refreshingStats.value = true
   
   try {
     await Promise.all([
@@ -321,6 +333,7 @@ async function refreshStats() {
     ElMessage.success('数据已刷新')
   } finally {
     loadingStore.setActionLoading(actionKey, false)
+    refreshingStats.value = false
   }
 }
 
@@ -351,7 +364,7 @@ async function handleAcknowledgeAlarm(alarm: Alarm) {
  */
 function handleStationChange() {
   // 重新订阅实时数据（只有在连接时才发送）
-  if (wsConnected && wsManager.isConnected()) {
+  if (wsConnected.value && wsManager.isConnected()) {
     wsManager.send('subscribe-power', { stationIds: selectedStationIds.value })
   }
 }
@@ -398,7 +411,7 @@ async function initWebSocket() {
   try {
     // 先设置连接成功回调，在回调中发送订阅消息
     wsManager.onConnect(() => {
-      wsConnected = true
+      wsConnected.value = true
       // 订阅实时数据（在连接成功后发送）
       wsManager.send('subscribe-power', { stationIds: selectedStationIds.value })
       wsManager.subscribeAlarm()
@@ -406,7 +419,7 @@ async function initWebSocket() {
     })
 
     wsManager.onDisconnect(() => {
-      wsConnected = false
+      wsConnected.value = false
       ElMessage.warning('WebSocket连接断开，正在重连...')
     })
 
@@ -494,15 +507,18 @@ onUnmounted(() => {
 /* ============================================
    新能源监控系统 - Dashboard 样式
    ============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+
 .dashboard-container {
   width: 100%;
   height: 100vh;
   background: linear-gradient(135deg, #0d1117 0%, #080b0f 100%);
-  color: $text-primary;
+  color: #e5eaf3;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   position: relative;
+  font-family: 'Rajdhani', sans-serif;
 
   /* 背景装饰 - 电网纹理 */
   &::before {
@@ -519,20 +535,36 @@ onUnmounted(() => {
     pointer-events: none;
     z-index: 0;
   }
+
+  /* 背景装饰 - 发光球体 */
+  &::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 800px;
+    height: 800px;
+    background: radial-gradient(circle, rgba(124, 58, 237, 0.05) 0%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+  }
 }
 
 // 顶部标题栏
 .dashboard-header {
-  height: 60px;
+  height: 70px;
   background: linear-gradient(90deg, rgba(26, 31, 46, 0.95) 0%, rgba(13, 17, 23, 0.95) 100%);
   border-bottom: 1px solid rgba(0, 212, 170, 0.3);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  padding: 0 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   position: relative;
   z-index: 10;
+  backdrop-filter: blur(10px);
 
   /* 顶部装饰线 */
   &::after {
@@ -541,22 +573,34 @@ onUnmounted(() => {
     bottom: 0;
     left: 0;
     right: 0;
-    height: 2px;
-    background: $gradient-primary;
-    box-shadow: 0 0 10px rgba(0, 212, 170, 0.5);
+    height: 3px;
+    background: linear-gradient(90deg, #00d4aa, #7c3aed);
+    box-shadow: 0 0 15px rgba(0, 212, 170, 0.6);
   }
 
   .header-left {
     .title {
-      font-size: 24px;
-      font-weight: bold;
-      background: $gradient-primary;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      font-size: 28px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 15px;
       margin: 0;
-      letter-spacing: 2px;
-      text-shadow: 0 0 20px rgba(0, 212, 170, 0.3);
+      font-family: 'Orbitron', sans-serif;
+
+      .title-icon {
+        font-size: 32px;
+        animation: pulse 2s infinite;
+      }
+
+      .title-text {
+        background: linear-gradient(90deg, #00d4aa, #7c3aed);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        letter-spacing: 2px;
+        text-shadow: 0 0 30px rgba(0, 212, 170, 0.4);
+      }
     }
   }
 
@@ -564,51 +608,117 @@ onUnmounted(() => {
     .datetime {
       display: flex;
       align-items: center;
-      gap: 20px;
-      font-size: 16px;
+      gap: 25px;
+      font-size: 18px;
+      font-family: 'Orbitron', sans-serif;
 
       .date {
-        color: $text-secondary;
+        color: #94a3b8;
+        font-weight: 500;
       }
 
       .time {
-        font-size: 24px;
-        font-weight: bold;
-        color: $primary-color;
-        font-family: $font-family-number;
-        text-shadow: 0 0 10px rgba(0, 212, 170, 0.5);
+        font-size: 32px;
+        font-weight: 700;
+        color: #00d4aa;
+        text-shadow: 0 0 20px rgba(0, 212, 170, 0.6);
+        animation: glow 3s ease-in-out infinite alternate;
       }
 
       .week {
-        color: $success-color;
+        color: #4ade80;
+        font-weight: 500;
       }
     }
   }
 
   .header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: rgba(26, 31, 46, 0.8);
+      border: 1px solid rgba(0, 212, 170, 0.2);
+      border-radius: 20px;
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+
+        &.online {
+          background: #4ade80;
+          box-shadow: 0 0 10px rgba(74, 222, 128, 0.8);
+        }
+
+        &.offline {
+          background: #f87171;
+          box-shadow: 0 0 10px rgba(248, 113, 113, 0.8);
+          animation: pulse 1.5s infinite;
+        }
+      }
+
+      .status-text {
+        font-size: 14px;
+        color: #94a3b8;
+      }
+    }
+
     .user-info {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       cursor: pointer;
-      padding: 5px 15px;
-      border-radius: 20px;
+      padding: 8px 20px;
+      border-radius: 25px;
       transition: all 0.3s ease;
       border: 1px solid transparent;
+      background: rgba(26, 31, 46, 0.8);
 
       &:hover {
-        background-color: rgba(0, 212, 170, 0.1);
-        border-color: rgba(0, 212, 170, 0.3);
+        background: rgba(0, 212, 170, 0.1);
+        border-color: rgba(0, 212, 170, 0.4);
+        box-shadow: 0 0 20px rgba(0, 212, 170, 0.2);
+        transform: translateY(-2px);
+      }
+
+      .avatar-container {
+        position: relative;
+
+        .avatar-glow {
+          position: absolute;
+          top: -2px;
+          left: -2px;
+          right: -2px;
+          bottom: -2px;
+          background: linear-gradient(45deg, #00d4aa, #7c3aed);
+          border-radius: 50%;
+          z-index: -1;
+          animation: rotate 3s linear infinite;
+          opacity: 0.7;
+        }
       }
 
       .username {
-        color: $text-primary;
-        font-size: 14px;
+        color: #e5eaf3;
+        font-size: 16px;
+        font-weight: 500;
       }
 
       .arrow {
-        color: $text-secondary;
-        font-size: 12px;
+        color: #94a3b8;
+        font-size: 14px;
+        transition: transform 0.3s ease;
+      }
+
+      &:hover .arrow {
+        transform: rotate(180deg);
       }
     }
   }
@@ -618,8 +728,8 @@ onUnmounted(() => {
 .dashboard-main {
   flex: 1;
   display: flex;
-  gap: 15px;
-  padding: 15px;
+  gap: 20px;
+  padding: 20px;
   overflow: hidden;
   position: relative;
   z-index: 1;
@@ -629,14 +739,16 @@ onUnmounted(() => {
 .panel {
   background: linear-gradient(135deg, rgba(26, 31, 46, 0.85) 0%, rgba(13, 17, 23, 0.9) 100%);
   border: 1px solid rgba(0, 212, 170, 0.2);
-  border-radius: $border-radius-base;
+  border-radius: 16px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: $shadow-light;
-  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(15px);
   transition: all 0.3s ease;
   position: relative;
+  animation: fadeInUp 0.6s ease-out;
+  animation-fill-mode: both;
 
   /* 面板发光效果 */
   &::before {
@@ -645,73 +757,77 @@ onUnmounted(() => {
     top: 0;
     left: 0;
     right: 0;
-    height: 2px;
-    background: $gradient-primary;
-    opacity: 0.5;
+    height: 3px;
+    background: linear-gradient(90deg, #00d4aa, #7c3aed);
+    opacity: 0.7;
   }
 
   &:hover {
     border-color: rgba(0, 212, 170, 0.4);
-    box-shadow: $shadow-glow;
+    box-shadow: 0 12px 40px rgba(0, 212, 170, 0.2);
+    transform: translateY(-5px);
   }
 
   .panel-header {
-    height: 40px;
+    height: 50px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 15px;
+    padding: 0 20px;
     background: rgba(0, 212, 170, 0.05);
     border-bottom: 1px solid rgba(0, 212, 170, 0.15);
     flex-shrink: 0;
 
     .panel-title {
-      font-size: 14px;
+      font-size: 16px;
       font-weight: 600;
-      color: $primary-color;
+      color: #00d4aa;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       letter-spacing: 0.5px;
+      font-family: 'Orbitron', sans-serif;
 
       &::before {
         content: '';
-        width: 3px;
-        height: 14px;
-        background: $gradient-primary;
+        width: 4px;
+        height: 18px;
+        background: linear-gradient(180deg, #00d4aa, #7c3aed);
         border-radius: 2px;
-        box-shadow: 0 0 8px rgba(0, 212, 170, 0.5);
+        box-shadow: 0 0 10px rgba(0, 212, 170, 0.6);
       }
     }
 
     .panel-actions {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
   }
 
   .panel-content {
     flex: 1;
     overflow: hidden;
-    padding: 10px;
+    padding: 15px;
   }
 }
 
 // 左侧面板
 .left-panel {
-  width: 320px;
+  width: 340px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
   flex-shrink: 0;
 
   .station-panel {
     flex: 1;
+    animation-delay: 0.1s;
   }
 
   .alarm-panel {
     flex: 1;
+    animation-delay: 0.2s;
   }
 }
 
@@ -722,36 +838,39 @@ onUnmounted(() => {
 
   .map-panel {
     height: 100%;
+    animation-delay: 0.3s;
   }
 }
 
 // 右侧面板
 .right-panel {
-  width: 380px;
+  width: 400px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
   flex-shrink: 0;
 
   .stats-panel {
     flex-shrink: 0;
     height: auto;
+    animation-delay: 0.4s;
   }
 
   .chart-panel {
     flex: 1;
     min-height: 0;
+    animation-delay: 0.5s;
   }
 }
 
 // 响应式布局
 @media (max-width: 1600px) {
   .left-panel {
-    width: 280px;
+    width: 300px;
   }
 
   .right-panel {
-    width: 320px;
+    width: 360px;
   }
 }
 
@@ -762,60 +881,130 @@ onUnmounted(() => {
 
   .left-panel,
   .right-panel {
-    width: calc(50% - 7.5px);
+    width: calc(50% - 10px);
   }
 
   .center-panel {
     width: 100%;
     order: -1;
-    height: 400px;
+    height: 450px;
   }
 }
 
 // 深色主题覆盖
 :deep(.el-dropdown-menu) {
-  background-color: #1a1f2e;
-  border-color: rgba(64, 158, 255, 0.3);
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.95) 0%, rgba(13, 17, 23, 0.95) 100%);
+  border: 1px solid rgba(0, 212, 170, 0.3);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
 
   .el-dropdown-menu__item {
     color: #e5eaf3;
+    padding: 10px 20px;
+    transition: all 0.3s ease;
 
     &:hover {
-      background-color: rgba(64, 158, 255, 0.2);
-      color: #409eff;
+      background: rgba(0, 212, 170, 0.15);
+      color: #00d4aa;
+      transform: translateX(5px);
     }
   }
 }
 
 :deep(.el-select-dropdown) {
-  background-color: #1a1f2e;
-  border-color: rgba(64, 158, 255, 0.3);
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.95) 0%, rgba(13, 17, 23, 0.95) 100%);
+  border: 1px solid rgba(0, 212, 170, 0.3);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
 
   .el-select-dropdown__item {
     color: #e5eaf3;
+    padding: 10px 15px;
+    transition: all 0.3s ease;
 
     &.selected,
     &:hover {
-      background-color: rgba(64, 158, 255, 0.2);
-      color: #409eff;
+      background: rgba(0, 212, 170, 0.15);
+      color: #00d4aa;
     }
   }
 }
 
 :deep(.el-button-group) {
   .el-button {
-    background-color: rgba(32, 45, 65, 0.8);
-    border-color: rgba(64, 158, 255, 0.3);
+    background: rgba(26, 31, 46, 0.8);
+    border: 1px solid rgba(0, 212, 170, 0.3);
     color: #e5eaf3;
+    transition: all 0.3s ease;
 
     &:hover {
-      background-color: rgba(64, 158, 255, 0.3);
+      background: rgba(0, 212, 170, 0.2);
+      border-color: #00d4aa;
     }
 
     &.el-button--primary {
-      background-color: #409eff;
-      border-color: #409eff;
+      background: linear-gradient(90deg, #00d4aa, #7c3aed);
+      border: none;
+      box-shadow: 0 4px 15px rgba(0, 212, 170, 0.4);
+
+      &:hover {
+        box-shadow: 0 6px 20px rgba(0, 212, 170, 0.6);
+        transform: translateY(-2px);
+      }
     }
+  }
+}
+
+:deep(.el-tag) {
+  &.el-tag--success {
+    background: rgba(74, 222, 128, 0.2);
+    border: 1px solid rgba(74, 222, 128, 0.4);
+    color: #4ade80;
+  }
+
+  &.el-tag--danger {
+    background: rgba(248, 113, 113, 0.2);
+    border: 1px solid rgba(248, 113, 113, 0.4);
+    color: #f87171;
+  }
+}
+
+// 动画效果
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes glow {
+  from {
+    text-shadow: 0 0 20px rgba(0, 212, 170, 0.6);
+  }
+  to {
+    text-shadow: 0 0 30px rgba(0, 212, 170, 0.9), 0 0 40px rgba(124, 58, 237, 0.6);
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 </style>

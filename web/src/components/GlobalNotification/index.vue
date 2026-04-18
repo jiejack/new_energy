@@ -81,7 +81,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Bell, Check, Delete, Warning, Info, Success, CircleClose } from '@element-plus/icons-vue'
+import { Bell, Check, Delete, Warning, InfoFilled, CircleCheck, CircleClose } from '@element-plus/icons-vue'
 import { wsManager } from '@/utils/websocket'
 import dayjs from 'dayjs'
 
@@ -127,11 +127,11 @@ function getIconComponent(type: string): any {
     alarm: Warning,
     error: CircleClose,
     warning: Warning,
-    message: Info,
-    system: Info,
-    success: Success,
+    message: InfoFilled,
+    system: InfoFilled,
+    success: CircleCheck,
   }
-  return iconMap[type] || Info
+  return iconMap[type] || InfoFilled
 }
 
 function formatTime(timestamp: Date): string {
@@ -203,7 +203,8 @@ function addNotification(notification: Omit<Notification, 'id' | 'read' | 'times
 }
 
 function initWebSocket() {
-  wsManager.on('alarm', (msg: any) => {
+  // 存储监听器以便在组件卸载时移除
+  const removeAlarmListener = wsManager.on('alarm', (msg: any) => {
     addNotification({
       type: 'alarm',
       title: '新告警',
@@ -212,7 +213,7 @@ function initWebSocket() {
     })
   })
   
-  wsManager.on('notification', (msg: any) => {
+  const removeNotificationListener = wsManager.on('notification', (msg: any) => {
     addNotification({
       type: msg.payload?.type || 'message',
       title: msg.payload?.title || '新消息',
@@ -220,6 +221,11 @@ function initWebSocket() {
       data: msg.payload?.data,
     })
   })
+
+  wsListener = () => {
+    removeAlarmListener()
+    removeNotificationListener()
+  }
 }
 
 onMounted(() => {
