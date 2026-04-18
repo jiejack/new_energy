@@ -19,7 +19,8 @@
           <!-- 没有子菜单 -->
           <el-menu-item
             v-if="!route.children || route.children.length === 1"
-            :index="route.children ? `${route.path}/${route.children[0].path}` : route.path"
+            :index="route.children ? route.redirect : `/${route.path}`"
+            @click="handleMenuClick(route.children ? route.redirect : `/${route.path}`)"
           >
             <el-icon>
               <component :is="route.meta?.icon || 'Document'" />
@@ -28,7 +29,7 @@
           </el-menu-item>
 
           <!-- 有子菜单 -->
-          <el-sub-menu v-else :index="route.path">
+          <el-sub-menu v-else :index="`/${route.path}`">
             <template #title>
               <el-icon>
                 <component :is="route.meta?.icon || 'Document'" />
@@ -38,7 +39,8 @@
             <el-menu-item
               v-for="child in route.children"
               :key="child.path"
-              :index="`${route.path}/${child.path}`"
+              :index="`/${route.path}/${child.path}`"
+              @click="handleMenuClick(`/${route.path}/${child.path}`)"
             >
               <el-icon>
                 <component :is="child.meta?.icon || 'Document'" />
@@ -137,7 +139,9 @@ const userAvatar = computed(() => userStore.avatar)
 
 // 菜单路由
 const menuRoutes = computed(() => {
-  return asyncRoutes.find((r) => r.path === '/')?.children || []
+  const routes = asyncRoutes.find((r) => r.path === '/')?.children || []
+  console.log('menuRoutes:', routes.map(r => ({ path: r.path, children: r.children?.length })))
+  return routes
 })
 
 // 面包屑
@@ -202,6 +206,12 @@ async function handleCommand(command: string) {
       router.push('/login')
       break
   }
+}
+
+// 处理菜单点击
+function handleMenuClick(path: string) {
+  console.log('Menu clicked:', path)
+  router.push(path)
 }
 </script>
 
