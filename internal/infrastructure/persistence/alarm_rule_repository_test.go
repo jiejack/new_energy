@@ -45,6 +45,14 @@ func (m *MockAlarmRuleRepository) GetByID(ctx context.Context, id string) (*enti
 	return args.Get(0).(*entity.AlarmRule), args.Error(1)
 }
 
+func (m *MockAlarmRuleRepository) GetByName(ctx context.Context, name string) (*entity.AlarmRule, error) {
+	args := m.Called(ctx, name)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*entity.AlarmRule), args.Error(1)
+}
+
 func (m *MockAlarmRuleRepository) List(ctx context.Context, query *repository.AlarmRuleQuery) ([]*entity.AlarmRule, int64, error) {
 	args := m.Called(ctx, query)
 	if args.Get(0) == nil {

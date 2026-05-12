@@ -18,6 +18,7 @@ type ForecastResult struct {
 	PredictedPower    float64      `json:"predicted_power" gorm:"type:decimal(12,4);not null"`
 	ActualPower       *float64     `json:"actual_power,omitempty" gorm:"type:decimal(12,4)"`
 	Accuracy          *float64     `json:"accuracy,omitempty" gorm:"type:decimal(6,4)"`
+	Confidence        *float64     `json:"confidence,omitempty" gorm:"type:decimal(6,4)"`
 	ConfidenceLower   *float64     `json:"confidence_lower,omitempty" gorm:"type:decimal(12,4)"`
 	ConfidenceUpper   *float64     `json:"confidence_upper,omitempty" gorm:"type:decimal(12,4)"`
 	ModelVersion      string       `json:"model_version" gorm:"type:varchar(50);not null"`

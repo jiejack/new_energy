@@ -244,6 +244,8 @@ func TestAlarmHarness_VerifyAlarmOutput(t *testing.T) {
 	t.Run("输出验证成功", func(t *testing.T) {
 		expected := entity.NewAlarm("point001", "device001", "station001", entity.AlarmTypeLimit, entity.AlarmLevelWarning, "告警", "测试告警")
 		actual := entity.NewAlarm("point001", "device001", "station001", entity.AlarmTypeLimit, entity.AlarmLevelWarning, "告警", "测试告警")
+		actual.TriggeredAt = expected.TriggeredAt
+		actual.CreatedAt = expected.CreatedAt
 
 		match, err := harness.VerifyAlarmOutput(ctx, expected, actual)
 		assert.NoError(t, err)

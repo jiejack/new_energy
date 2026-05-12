@@ -183,9 +183,10 @@ func TestNewExportService(t *testing.T) {
 
 	service := NewExportService(mockAlarmRepo, mockDeviceRepo, mockStationRepo)
 	assert.NotNil(t, service)
-	assert.Equal(t, mockAlarmRepo, service.alarmRepo)
-	assert.Equal(t, mockDeviceRepo, service.deviceRepo)
-	assert.Equal(t, mockStationRepo, service.stationRepo)
+	concrete := service.(*ExportService)
+	assert.Equal(t, mockAlarmRepo, concrete.alarmRepo)
+	assert.Equal(t, mockDeviceRepo, concrete.deviceRepo)
+	assert.Equal(t, mockStationRepo, concrete.stationRepo)
 }
 
 func TestExportService_Export_UnsupportedType(t *testing.T) {
@@ -502,7 +503,7 @@ func TestExportService_StreamExportAlarms_Excel(t *testing.T) {
 		Filters:   map[string]interface{}{"station_id": stationID},
 	}
 
-	result, err := service.StreamExportAlarms(context.Background(), req, 100)
+	result, err := service.(*ExportService).StreamExportAlarms(context.Background(), req, 100)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.NotNil(t, result.Buffer)
@@ -529,7 +530,7 @@ func TestExportService_StreamExportAlarms_CSV(t *testing.T) {
 		Filters:   map[string]interface{}{"station_id": stationID},
 	}
 
-	result, err := service.StreamExportAlarms(context.Background(), req, 100)
+	result, err := service.(*ExportService).StreamExportAlarms(context.Background(), req, 100)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.NotNil(t, result.Buffer)
@@ -545,7 +546,7 @@ func TestExportService_StreamExportAlarms_UnsupportedFormat(t *testing.T) {
 		Format: ExportFormat("unsupported"),
 	}
 
-	result, err := service.StreamExportAlarms(context.Background(), req, 100)
+	result, err := service.(*ExportService).StreamExportAlarms(context.Background(), req, 100)
 	assert.Error(t, err)
 	assert.Nil(t, result)
 	assert.Contains(t, err.Error(), "unsupported export format")

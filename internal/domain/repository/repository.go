@@ -256,3 +256,30 @@ type ModelVersionRepository interface {
 	ListByModel(ctx context.Context, modelName string) ([]*entity.ModelVersion, error)
 	UpdateStatus(ctx context.Context, id string, status entity.ModelStatus) error
 }
+
+type ReportRepository interface {
+	GetStationPowerStats(ctx context.Context, stationID string, startTime, endTime time.Time) (*StationPowerStats, error)
+	GetStationAlarmStats(ctx context.Context, stationID string, startTime, endTime time.Time) (*StationAlarmStats, error)
+	GetStationOnlineStats(ctx context.Context, stationID string, startTime, endTime time.Time) (*StationOnlineStats, error)
+	GetAllStationPowerStats(ctx context.Context, startTime, endTime time.Time) ([]*StationPowerStats, error)
+	GetAllStationAlarmStats(ctx context.Context, startTime, endTime time.Time) ([]*StationAlarmStats, error)
+	GetAllStationOnlineStats(ctx context.Context, startTime, endTime time.Time) ([]*StationOnlineStats, error)
+}
+
+type StationPowerStats struct {
+	StationID   string  `json:"station_id"`
+	StationName string  `json:"station_name"`
+	TotalPower  float64 `json:"total_power"`
+	YoYChange   float64 `json:"yoy_change"`
+	MoMChange   float64 `json:"mom_change"`
+}
+
+type StationAlarmStats struct {
+	StationID  string `json:"station_id"`
+	AlarmCount int    `json:"alarm_count"`
+}
+
+type StationOnlineStats struct {
+	StationID  string  `json:"station_id"`
+	OnlineRate float64 `json:"online_rate"`
+}

@@ -234,6 +234,10 @@ func NewHTTPServer(
 	assetMaintenanceHandler *handler.AssetMaintenanceHandler,
 	assetDepreciationHandler *handler.AssetDepreciationHandler,
 	assetDocumentHandler *handler.AssetDocumentHandler,
+	forecastHandler *handler.ForecastHandler,
+	faultHandler *handler.FaultHandler,
+	edgeHandler *handler.EdgeHandler,
+	modelHandler *handler.ModelHandler,
 	// carbonEmissionHandler *handler.CarbonEmissionHandler,
 ) *http.Server {
 	// 设置 Gin 模式
@@ -335,7 +339,7 @@ func NewHTTPServer(
 			operationLogs.GET("", operationLogHandler.ListLogs)
 			operationLogs.GET("/:id", operationLogHandler.GetLog)
 			operationLogs.POST("", operationLogHandler.CreateLog)
-			operationLogs.DELETE("/cleanup", operationLogHandler.DeleteOldLogs)
+			operationLogs.DELETE("", operationLogHandler.DeleteOldLogs)
 		}
 
 		// 告警规则路由
@@ -348,6 +352,9 @@ func NewHTTPServer(
 			alarmRules.DELETE("/:id", alarmRuleHandler.DeleteAlarmRule)
 			alarmRules.POST("/:id/enable", alarmRuleHandler.EnableAlarmRule)
 			alarmRules.POST("/:id/disable", alarmRuleHandler.DisableAlarmRule)
+			alarmRules.GET("/by-point/:point_id", alarmRuleHandler.GetRulesByPoint)
+			alarmRules.GET("/by-device/:device_id", alarmRuleHandler.GetRulesByDevice)
+			alarmRules.GET("/by-station/:station_id", alarmRuleHandler.GetRulesByStation)
 		}
 
 		// 系统配置路由
@@ -369,8 +376,8 @@ func NewHTTPServer(
 			notificationConfigs.GET("", notificationConfigHandler.GetAllConfigs)
 			notificationConfigs.GET("/:type", notificationConfigHandler.GetConfigByType)
 			notificationConfigs.PUT("/:type", notificationConfigHandler.UpdateConfig)
-			notificationConfigs.POST("/:type/enable", notificationConfigHandler.EnableConfig)
-			notificationConfigs.POST("/:type/disable", notificationConfigHandler.DisableConfig)
+			notificationConfigs.PUT("/:type/enable", notificationConfigHandler.EnableConfig)
+			notificationConfigs.PUT("/:type/disable", notificationConfigHandler.DisableConfig)
 			notificationConfigs.POST("/:type/test", notificationConfigHandler.TestConfig)
 		}
 
@@ -389,6 +396,7 @@ func NewHTTPServer(
 		// 报表路由
 		reports := api.Group("/reports")
 		{
+			reports.GET("/types", reportHandler.GetReportTypes)
 			reports.GET("", reportHandler.GenerateReport)
 			reports.GET("/export", reportHandler.ExportReport)
 		}
@@ -552,7 +560,61 @@ func NewHTTPServer(
 			assetDocuments.PUT("/:id", assetDocumentHandler.UpdateDocument)
 			assetDocuments.DELETE("/:id", assetDocumentHandler.DeleteDocument)
 		}
+
+		// AI预测路由
+		forecasts := api.Group("/ai/forecasts")
+		{
+			forecasts.POST("/power", forecastHandler.PowerForecast)
+			forecasts.GET("/results", forecastHandler.GetResults)
+			forecasts.GET("/accuracy", forecastHandler.GetAccuracy)
+			forecasts.POST("/evaluate", forecastHandler.EvaluateModel)
+			forecasts.POST("/attribution", forecastHandler.AttributionAnalysis)
+		}
+
+		// AI故障检测路由
+		faults := api.Group("/ai/faults")
+		{
+			faults.POST("/detect", faultHandler.DetectFaults)
+			faults.GET("/detections", faultHandler.GetDetections)
+			faults.GET("/detections/:id", faultHandler.GetDetectionByID)
+			faults.PUT("/detections/:id/status", faultHandler.UpdateDetectionStatus)
+			faults.GET("/devices/:device_id/health", faultHandler.GetDeviceHealth)
+			faults.POST("/root-cause", faultHandler.AnalyzeRootCause)
+			faults.POST("/work-order", faultHandler.CreateWorkOrderFromDetection)
+		}
+
+		// 边缘计算路由
+		edgeNodes := api.Group("/ai/edge/nodes")
+		{
+			edgeNodes.GET("", edgeHandler.ListNodes)
+			edgeNodes.POST("", edgeHandler.RegisterNode)
+			edgeNodes.GET("/:id", edgeHandler.GetNode)
+			edgeNodes.PUT("/:id/config", edgeHandler.UpdateNodeConfig)
+			edgeNodes.POST("/:id/deploy", edgeHandler.DeployModel)
+			edgeNodes.GET("/:id/status", edgeHandler.GetNodeStatus)
+			edgeNodes.POST("/:id/sync", edgeHandler.TriggerSync)
+		}
+
+		// 模型管理路由
+		models := api.Group("/ai/models")
+		{
+			models.POST("", modelHandler.RegisterModel)
+			models.GET("", modelHandler.ListModels)
+			models.GET("/:id", modelHandler.GetModel)
+			models.GET("/production/:model_name", modelHandler.GetProductionModel)
+			models.PUT("/:id/promote", modelHandler.PromoteToProduction)
+			models.PUT("/:id/retire", modelHandler.RetireModel)
+		}
 		
+		// 导出路由
+		exports := api.Group("/export")
+		{
+			exports.POST("", exportHandler.Export)
+			exports.GET("/alarms", exportHandler.ExportAlarms)
+			exports.GET("/devices", exportHandler.ExportDevices)
+			exports.GET("/stations", exportHandler.ExportStations)
+		}
+
 		// 碳排放监测路由 (暂时注释，待后续完善)
 		// carbonEmission := api.Group("/carbon-emission")
 		// {

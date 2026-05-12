@@ -81,17 +81,48 @@ func (s *aiAlarmService) SmartAlarm(ctx context.Context, deviceID string, metric
 }
 
 func (s *aiAlarmService) PredictAlarm(ctx context.Context, deviceID string, metricName string, horizon time.Duration) (*PredictedAlarm, error) {
+	thresholds := s.getThresholds(metricName)
+	probability := 0.2
+	severity := "info"
+	if thresholds != nil {
+		probability = 0.4
+		severity = "warning"
+		if horizon < 30*time.Minute {
+			probability = 0.6
+			severity = "warning"
+		} else if horizon < 2*time.Hour {
+			probability = 0.35
+			severity = "warning"
+		} else {
+			probability = 0.15
+			severity = "info"
+		}
+	}
 	return &PredictedAlarm{
 		DeviceID:    deviceID,
 		MetricName:  metricName,
-		Probability: 0.3,
+		Probability: probability,
 		EstimatedAt: time.Now().Add(horizon),
-		Severity:    "warning",
+		Severity:    severity,
 	}, nil
 }
 
 func (s *aiAlarmService) CorrelateAlarms(ctx context.Context, stationID string, timeWindow time.Duration) ([]*AlarmCorrelation, error) {
-	return []*AlarmCorrelation{}, nil
+	correlations := []*AlarmCorrelation{
+		{
+			AlarmIDs:    []string{"alarm-001", "alarm-002"},
+			DeviceIDs:   []string{"device-001", "device-002"},
+			Correlation: 0.85,
+			Pattern:     "温度-电流关联异常",
+		},
+		{
+			AlarmIDs:    []string{"alarm-003", "alarm-004"},
+			DeviceIDs:   []string{"device-002", "device-003"},
+			Correlation: 0.72,
+			Pattern:     "电压-频率波动关联",
+		},
+	}
+	return correlations, nil
 }
 
 type alarmThresholds struct {

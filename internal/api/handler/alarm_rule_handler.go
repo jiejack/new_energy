@@ -142,3 +142,45 @@ func (h *AlarmRuleHandler) DisableAlarmRule(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, dto.Response{Code: 0, Message: "success"})
 }
+
+func (h *AlarmRuleHandler) GetRulesByPoint(c *gin.Context) {
+	pointID := c.Param("point_id")
+	if pointID == "" {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Code: 400, Message: "point_id is required"})
+		return
+	}
+	rules, err := h.ruleService.GetRulesByPointID(c.Request.Context(), pointID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: 500, Message: err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, dto.Response{Code: 0, Message: "success", Data: rules})
+}
+
+func (h *AlarmRuleHandler) GetRulesByDevice(c *gin.Context) {
+	deviceID := c.Param("device_id")
+	if deviceID == "" {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Code: 400, Message: "device_id is required"})
+		return
+	}
+	rules, err := h.ruleService.GetRulesByDeviceID(c.Request.Context(), deviceID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: 500, Message: err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, dto.Response{Code: 0, Message: "success", Data: rules})
+}
+
+func (h *AlarmRuleHandler) GetRulesByStation(c *gin.Context) {
+	stationID := c.Param("station_id")
+	if stationID == "" {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Code: 400, Message: "station_id is required"})
+		return
+	}
+	rules, err := h.ruleService.GetRulesByStationID(c.Request.Context(), stationID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: 500, Message: err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, dto.Response{Code: 0, Message: "success", Data: rules})
+}

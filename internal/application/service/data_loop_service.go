@@ -98,9 +98,16 @@ func (s *dataLoopService) EvaluateAndTrigger(ctx context.Context, stationID stri
 }
 
 func (s *dataLoopService) GetLoopStatus(ctx context.Context, stationID string) (*LoopStatus, error) {
+	ft := entity.ForecastTypeShortTerm
+	stats, err := s.forecastRepo.GetAccuracyStats(ctx, stationID, &ft, time.Now().AddDate(0, -1, 0), time.Now())
+	accuracy := 0.0
+	if err == nil && stats != nil {
+		accuracy = stats.AvgAccuracy
+	}
 	return &LoopStatus{
 		StationID:       stationID,
-		CurrentAccuracy: 0.90,
+		LastFeedbackAt:  time.Now(),
+		CurrentAccuracy: accuracy,
 		LoopCount:       0,
 	}, nil
 }

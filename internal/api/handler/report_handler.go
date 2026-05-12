@@ -107,3 +107,17 @@ func (h *ReportHandler) ExportReport(c *gin.Context) {
 	c.Header("Content-Disposition", "attachment; filename="+filename)
 	c.Data(http.StatusOK, "application/octet-stream", data)
 }
+
+func (h *ReportHandler) GetReportTypes(c *gin.Context) {
+	types := []gin.H{
+		{"type": "daily", "name": "日报", "description": "每日数据统计报表"},
+		{"type": "weekly", "name": "周报", "description": "每周数据统计报表"},
+		{"type": "monthly", "name": "月报", "description": "每月数据统计报表"},
+		{"type": "yearly", "name": "年报", "description": "每年数据统计报表"},
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"code":    0,
+		"message": "success",
+		"data":    types,
+	})
+}

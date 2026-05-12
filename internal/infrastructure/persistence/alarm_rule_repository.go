@@ -87,3 +87,21 @@ func (r *alarmRuleRepository) GetEnabledRules(ctx context.Context) ([]*entity.Al
 	err := r.db.WithContext(ctx).Where("status = ?", entity.AlarmRuleStatusEnabled).Find(&rules).Error
 	return rules, err
 }
+
+func (r *alarmRuleRepository) GetRulesByPointID(ctx context.Context, pointID string) ([]*entity.AlarmRule, error) {
+	var rules []*entity.AlarmRule
+	err := r.db.WithContext(ctx).Where("point_id = ? AND status = ?", pointID, entity.AlarmRuleStatusEnabled).Find(&rules).Error
+	return rules, err
+}
+
+func (r *alarmRuleRepository) GetRulesByDeviceID(ctx context.Context, deviceID string) ([]*entity.AlarmRule, error) {
+	var rules []*entity.AlarmRule
+	err := r.db.WithContext(ctx).Where("device_id = ? AND status = ?", deviceID, entity.AlarmRuleStatusEnabled).Find(&rules).Error
+	return rules, err
+}
+
+func (r *alarmRuleRepository) GetRulesByStationID(ctx context.Context, stationID string) ([]*entity.AlarmRule, error) {
+	var rules []*entity.AlarmRule
+	err := r.db.WithContext(ctx).Where("station_id = ? AND status = ?", stationID, entity.AlarmRuleStatusEnabled).Find(&rules).Error
+	return rules, err
+}

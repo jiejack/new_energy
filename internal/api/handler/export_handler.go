@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -116,15 +117,13 @@ func (h *ExportHandler) ExportAlarms(c *gin.Context) {
 	}
 
 	if startTime := c.Query("start_time"); startTime != "" {
-		var st int64
-		if _, err := time.Parse(time.RFC3339, startTime); err == nil {
+		if st, err := strconv.ParseInt(startTime, 10, 64); err == nil {
 			req.StartTime = st
 		}
 	}
 
 	if endTime := c.Query("end_time"); endTime != "" {
-		var et int64
-		if _, err := time.Parse(time.RFC3339, endTime); err == nil {
+		if et, err := strconv.ParseInt(endTime, 10, 64); err == nil {
 			req.EndTime = et
 		}
 	}
@@ -134,8 +133,7 @@ func (h *ExportHandler) ExportAlarms(c *gin.Context) {
 	}
 
 	if level := c.Query("level"); level != "" {
-		var l int
-		if _, err := time.Parse(time.RFC3339, level); err == nil {
+		if l, err := strconv.Atoi(level); err == nil {
 			req.Filters["level"] = l
 		}
 	}

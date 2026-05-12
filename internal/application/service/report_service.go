@@ -6,13 +6,16 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/new-energy-monitoring/internal/domain/repository"
 	"github.com/xuri/excelize/v2"
 )
 
-type ReportService struct{}
+type ReportService struct {
+	reportRepo repository.ReportRepository
+}
 
-func NewReportService() *ReportService {
-	return &ReportService{}
+func NewReportService(reportRepo repository.ReportRepository) *ReportService {
+	return &ReportService{reportRepo: reportRepo}
 }
 
 type ReportType string
@@ -55,45 +58,91 @@ type ReportSummary struct {
 }
 
 func (s *ReportService) GenerateStationReport(ctx context.Context, req *ReportRequest) (*ReportResponse, error) {
-	stations := []StationReport{
-		{
-			StationID:   "station_001",
-			StationName: "光伏电站A",
-			TotalPower:  125000,
-			YoYChange:   12.5,
-			MoMChange:   5.2,
-			AlarmCount:  15,
-			OnlineRate:  99.5,
-		},
-		{
-			StationID:   "station_002",
-			StationName: "风电场B",
-			TotalPower:  89000,
-			YoYChange:   8.3,
-			MoMChange:   -2.1,
-			AlarmCount:  8,
-			OnlineRate:  98.2,
-		},
-		{
-			StationID:   "station_003",
-			StationName: "储能电站C",
-			TotalPower:  45000,
-			YoYChange:   15.2,
-			MoMChange:   3.8,
-			AlarmCount:  3,
-			OnlineRate:  99.8,
-		},
+	if req.StationID != "" {
+		return s.generateSingleStationReport(ctx, req)
 	}
+	return s.generateAllStationsReport(ctx, req)
+}
 
+func (s *ReportService) generateSingleStationReport(ctx context.Context, req *ReportRequest) (*ReportResponse, error) {
+	powerStats, err := s.reportRepo.GetStationPowerStats(ctx, req.StationID, req.StartTime, req.EndTime)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get power stats: %w", err)
+	}
+	alarmStats, err := s.reportRepo.GetStationAlarmStats(ctx, req.StationID, req.StartTime, req.EndTime)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get alarm stats: %w", err)
+	}
+	onlineStats, err := s.reportRepo.GetStationOnlineStats(ctx, req.StationID, req.StartTime, req.EndTime)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get online stats: %w", err)
+	}
+	station := StationReport{
+		StationID:   powerStats.StationID,
+		StationName: powerStats.StationName,
+		TotalPower:  powerStats.TotalPower,
+		YoYChange:   powerStats.YoYChange,
+		MoMChange:   powerStats.MoMChange,
+		AlarmCount:  alarmStats.AlarmCount,
+		OnlineRate:  onlineStats.OnlineRate,
+	}
+	return &ReportResponse{
+		StartTime: req.StartTime.Format("2006-01-02"),
+		EndTime:   req.EndTime.Format("2006-01-02"),
+		Type:      req.Type,
+		Stations:  []StationReport{station},
+		Summary: ReportSummary{
+			TotalPower:    station.TotalPower,
+			TotalAlarms:   station.AlarmCount,
+			AvgOnlineRate: station.OnlineRate,
+		},
+	}, nil
+}
+
+func (s *ReportService) generateAllStationsReport(ctx context.Context, req *ReportRequest) (*ReportResponse, error) {
+	powerStats, err := s.reportRepo.GetAllStationPowerStats(ctx, req.StartTime, req.EndTime)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get power stats: %w", err)
+	}
+	alarmStats, err := s.reportRepo.GetAllStationAlarmStats(ctx, req.StartTime, req.EndTime)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get alarm stats: %w", err)
+	}
+	onlineStats, err := s.reportRepo.GetAllStationOnlineStats(ctx, req.StartTime, req.EndTime)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get online stats: %w", err)
+	}
+	alarmMap := make(map[string]int)
+	for _, a := range alarmStats {
+		alarmMap[a.StationID] = a.AlarmCount
+	}
+	onlineMap := make(map[string]float64)
+	for _, o := range onlineStats {
+		onlineMap[o.StationID] = o.OnlineRate
+	}
+	stations := make([]StationReport, 0, len(powerStats))
 	var totalPower float64
 	var totalAlarms int
 	var totalOnlineRate float64
-	for _, s := range stations {
-		totalPower += s.TotalPower
-		totalAlarms += s.AlarmCount
-		totalOnlineRate += s.OnlineRate
+	for _, p := range powerStats {
+		station := StationReport{
+			StationID:   p.StationID,
+			StationName: p.StationName,
+			TotalPower:  p.TotalPower,
+			YoYChange:   p.YoYChange,
+			MoMChange:   p.MoMChange,
+			AlarmCount:  alarmMap[p.StationID],
+			OnlineRate:  onlineMap[p.StationID],
+		}
+		stations = append(stations, station)
+		totalPower += station.TotalPower
+		totalAlarms += station.AlarmCount
+		totalOnlineRate += station.OnlineRate
 	}
-
+	avgOnlineRate := 0.0
+	if len(stations) > 0 {
+		avgOnlineRate = totalOnlineRate / float64(len(stations))
+	}
 	return &ReportResponse{
 		StartTime: req.StartTime.Format("2006-01-02"),
 		EndTime:   req.EndTime.Format("2006-01-02"),
@@ -102,7 +151,7 @@ func (s *ReportService) GenerateStationReport(ctx context.Context, req *ReportRe
 		Summary: ReportSummary{
 			TotalPower:    totalPower,
 			TotalAlarms:   totalAlarms,
-			AvgOnlineRate: totalOnlineRate / float64(len(stations)),
+			AvgOnlineRate: avgOnlineRate,
 		},
 	}, nil
 }

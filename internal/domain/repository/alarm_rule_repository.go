@@ -14,6 +14,9 @@ type AlarmRuleRepository interface {
 	GetByName(ctx context.Context, name string) (*entity.AlarmRule, error)
 	List(ctx context.Context, query *AlarmRuleQuery) ([]*entity.AlarmRule, int64, error)
 	GetEnabledRules(ctx context.Context) ([]*entity.AlarmRule, error)
+	GetRulesByPointID(ctx context.Context, pointID string) ([]*entity.AlarmRule, error)
+	GetRulesByDeviceID(ctx context.Context, deviceID string) ([]*entity.AlarmRule, error)
+	GetRulesByStationID(ctx context.Context, stationID string) ([]*entity.AlarmRule, error)
 }
 
 type AlarmRuleQuery struct {
