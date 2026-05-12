@@ -12,8 +12,8 @@ import (
 	"go.uber.org/zap"
 )
 
-// Config 指标配置
-type Config struct {
+// ServerConfig 指标配置
+type ServerConfig struct {
 	// Port 指标暴露端口
 	Port int `yaml:"port" json:"port"`
 	// Path 指标路径
@@ -24,9 +24,9 @@ type Config struct {
 	EnableProcessMetrics bool `yaml:"enable_process_metrics" json:"enable_process_metrics"`
 }
 
-// DefaultConfig 默认配置
-func DefaultConfig() Config {
-	return Config{
+// DefaultServerConfig 默认配置
+func DefaultServerConfig() ServerConfig {
+	return ServerConfig{
 		Port:                 8080,
 		Path:                 "/metrics",
 		EnableGoMetrics:      true,
@@ -36,7 +36,7 @@ func DefaultConfig() Config {
 
 // Server 指标服务器
 type Server struct {
-	config Config
+	config ServerConfig
 	server *http.Server
 	logger *zap.Logger
 
@@ -51,7 +51,7 @@ type Server struct {
 }
 
 // NewServer 创建指标服务器
-func NewServer(config Config, logger *zap.Logger) *Server {
+func NewServer(config ServerConfig, logger *zap.Logger) *Server {
 	if config.Port == 0 {
 		config.Port = 8080
 	}

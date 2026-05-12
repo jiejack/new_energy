@@ -56,11 +56,11 @@ func (s *AssetDocumentService) CreateDocument(ctx context.Context, req *CreateDo
 
 	// 创建文档实体
 	document := &entity.AssetDocument{
-		AssetID:      req.AssetID,
-		DocumentType: req.DocumentType,
-		Title:        req.Title,
-		FilePath:     req.FilePath,
-		Description:  req.Description,
+		AssetID:     req.AssetID,
+		Type:        req.DocumentType,
+		Title:       req.Title,
+		FilePath:    req.FilePath,
+		Description: req.Description,
 	}
 
 	// 解析上传日期
@@ -110,7 +110,7 @@ func (s *AssetDocumentService) UpdateDocument(ctx context.Context, id string, re
 
 	// 更新其他字段
 	if req.DocumentType != "" {
-		existing.DocumentType = req.DocumentType
+		existing.Type = req.DocumentType
 	}
 	if req.Title != "" {
 		existing.Title = req.Title

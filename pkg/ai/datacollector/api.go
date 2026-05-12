@@ -1,12 +1,10 @@
 package datacollector
 
 import (
-	"context"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type APIHandler struct {

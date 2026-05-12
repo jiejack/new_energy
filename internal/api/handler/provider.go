@@ -34,5 +34,9 @@ var HandlerSet = wire.NewSet(
 	NewAssetMaintenanceHandler,
 	NewAssetDepreciationHandler,
 	NewAssetDocumentHandler,
+	NewForecastHandler,
+	NewFaultHandler,
+	NewEdgeHandler,
+	NewModelHandler,
 	// NewCarbonEmissionHandler,
 )

@@ -36,5 +36,13 @@ var ServiceSet = wire.NewSet(
 	NewAssetMaintenanceService,
 	NewAssetDepreciationService,
 	NewAssetDocumentService,
+	NewForecastService,
+	NewFaultService,
+	NewFaultWorkOrderBridge,
+	NewEdgeService,
+	NewAIStatisticsService,
+	NewAIAlarmService,
+	NewModelService,
+	NewDataLoopService,
 	// NewCarbonEmissionService,
 )

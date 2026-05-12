@@ -36,5 +36,9 @@ var RepositorySet = wire.NewSet(
 	NewAssetMaintenanceRepository,
 	NewAssetDepreciationRepository,
 	NewAssetDocumentRepository,
+	NewForecastResultRepository,
+	NewFaultDetectionResultRepository,
+	NewEdgeNodeRepository,
+	NewModelVersionRepository,
 	// NewCarbonEmissionRepository,
 )

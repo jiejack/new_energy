@@ -92,9 +92,9 @@ func (s *AssetService) CreateAsset(ctx context.Context, req *CreateAssetRequest)
 		Manufacturer:  req.Manufacturer,
 		Model:         req.Model,
 		SerialNumber:  req.SerialNumber,
-		PurchasePrice: req.PurchasePrice,
-		ExpectedLife:  req.ExpectedLife,
-		ResidualValue: req.ResidualValue,
+		Cost:          req.PurchasePrice,
+		UsefulLife:    req.ExpectedLife,
+		SalvageValue:  req.ResidualValue,
 		Location:      req.Location,
 		Status:        req.Status,
 		Description:   req.Description,
@@ -104,7 +104,7 @@ func (s *AssetService) CreateAsset(ctx context.Context, req *CreateAssetRequest)
 	if req.PurchaseDate != "" {
 		purchaseDate, err := time.Parse("2006-01-02", req.PurchaseDate)
 		if err == nil {
-			asset.PurchaseDate = &purchaseDate
+			asset.PurchaseDate = purchaseDate
 		}
 	}
 
@@ -116,7 +116,7 @@ func (s *AssetService) CreateAsset(ctx context.Context, req *CreateAssetRequest)
 		asset.UsageStatus = "in_use"
 	}
 	if asset.CurrentValue == 0 {
-		asset.CurrentValue = asset.PurchasePrice
+		asset.CurrentValue = asset.Cost
 	}
 
 	asset.CreatedAt = time.Now()
@@ -171,13 +171,13 @@ func (s *AssetService) UpdateAsset(ctx context.Context, id string, req *UpdateAs
 		existing.SerialNumber = req.SerialNumber
 	}
 	if req.PurchasePrice > 0 {
-		existing.PurchasePrice = req.PurchasePrice
+		existing.Cost = req.PurchasePrice
 	}
 	if req.ExpectedLife > 0 {
-		existing.ExpectedLife = req.ExpectedLife
+		existing.UsefulLife = req.ExpectedLife
 	}
 	if req.ResidualValue > 0 {
-		existing.ResidualValue = req.ResidualValue
+		existing.SalvageValue = req.ResidualValue
 	}
 	if req.Location != "" {
 		existing.Location = req.Location
@@ -193,7 +193,7 @@ func (s *AssetService) UpdateAsset(ctx context.Context, id string, req *UpdateAs
 	if req.PurchaseDate != "" {
 		purchaseDate, err := time.Parse("2006-01-02", req.PurchaseDate)
 		if err == nil {
-			existing.PurchaseDate = &purchaseDate
+			existing.PurchaseDate = purchaseDate
 		}
 	}
 
@@ -270,7 +270,7 @@ func (s *AssetService) CalculateDepreciation(ctx context.Context, id, method str
 	}
 
 	// 验证资产是否可折旧
-	if asset.ExpectedLife <= 0 {
+	if asset.UsefulLife <= 0 {
 		return nil, errors.New("资产不可折旧")
 	}
 
@@ -285,7 +285,7 @@ func (s *AssetService) CalculateDepreciation(ctx context.Context, id, method str
 
 	if err != nil {
 		// 首次折旧
-		bookValue = asset.PurchasePrice
+		bookValue = asset.Cost
 	} else {
 		bookValue = latestRecord.BookValue
 		accumulatedDepreciation = latestRecord.AccumulatedDepreciation
@@ -295,19 +295,19 @@ func (s *AssetService) CalculateDepreciation(ctx context.Context, id, method str
 	switch method {
 	case "straight-line":
 		// 直线法
-		annualDepreciation = (asset.PurchasePrice - asset.ResidualValue) / float64(asset.ExpectedLife)
+		annualDepreciation = (asset.Cost - asset.SalvageValue) / float64(asset.UsefulLife)
 		monthlyDepreciation = annualDepreciation / 12
 	case "declining-balance":
 		// 双倍余额递减法
-		if bookValue <= asset.ResidualValue {
+		if bookValue <= asset.SalvageValue {
 			return nil, errors.New("资产已折旧完毕")
 		}
-		depreciationRate := 2.0 / float64(asset.ExpectedLife)
+		depreciationRate := 2.0 / float64(asset.UsefulLife)
 		annualDepreciation = bookValue * depreciationRate
 		monthlyDepreciation = annualDepreciation / 12
 		// 确保账面价值不低于残值
-		if bookValue-annualDepreciation < asset.ResidualValue {
-			annualDepreciation = bookValue - asset.ResidualValue
+		if bookValue-annualDepreciation < asset.SalvageValue {
+			annualDepreciation = bookValue - asset.SalvageValue
 			monthlyDepreciation = annualDepreciation / 12
 		}
 	default:

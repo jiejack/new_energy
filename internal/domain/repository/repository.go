@@ -210,3 +210,49 @@ type AssetDocumentRepository interface {
 	ListByAssetID(ctx context.Context, assetID string, documentType *string, offset, limit int) ([]*entity.AssetDocument, int64, error)
 	GetByType(ctx context.Context, documentType string, offset, limit int) ([]*entity.AssetDocument, int64, error)
 }
+
+type ForecastResultRepository interface {
+	Create(ctx context.Context, result *entity.ForecastResult) error
+	GetByID(ctx context.Context, id string) (*entity.ForecastResult, error)
+	ListByStation(ctx context.Context, stationID string, forecastType *entity.ForecastType, startTime, endTime *time.Time, offset, limit int) ([]*entity.ForecastResult, int64, error)
+	UpdateActualPower(ctx context.Context, id string, actualPower float64) error
+	GetAccuracyStats(ctx context.Context, stationID string, forecastType *entity.ForecastType, start, end time.Time) (*ForecastAccuracyStats, error)
+}
+
+type ForecastAccuracyStats struct {
+	StationID    string  `json:"station_id"`
+	ForecastType string  `json:"forecast_type"`
+	TotalPoints  int64   `json:"total_points"`
+	AvgAccuracy  float64 `json:"avg_accuracy"`
+	RMSE         float64 `json:"rmse"`
+	MAE          float64 `json:"mae"`
+}
+
+type FaultDetectionResultRepository interface {
+	Create(ctx context.Context, result *entity.FaultDetectionResult) error
+	GetByID(ctx context.Context, id string) (*entity.FaultDetectionResult, error)
+	ListByDevice(ctx context.Context, deviceID string, severity *entity.FaultSeverity, status *entity.FaultDetectionStatus, offset, limit int) ([]*entity.FaultDetectionResult, int64, error)
+	ListByStation(ctx context.Context, stationID string, severity *entity.FaultSeverity, offset, limit int) ([]*entity.FaultDetectionResult, int64, error)
+	UpdateStatus(ctx context.Context, id string, status entity.FaultDetectionStatus) error
+	UpdateRootCause(ctx context.Context, id, rootCause string) error
+	LinkWorkOrder(ctx context.Context, id, workOrderID string) error
+	CountBySeverity(ctx context.Context, deviceID *string) (map[entity.FaultSeverity]int64, error)
+}
+
+type EdgeNodeRepository interface {
+	Create(ctx context.Context, node *entity.EdgeNode) error
+	GetByID(ctx context.Context, id string) (*entity.EdgeNode, error)
+	List(ctx context.Context, stationID *string, status *entity.EdgeNodeStatus) ([]*entity.EdgeNode, error)
+	Update(ctx context.Context, node *entity.EdgeNode) error
+	UpdateStatus(ctx context.Context, id string, status entity.EdgeNodeStatus) error
+	UpdateHeartbeat(ctx context.Context, id string, cpuUsage, memoryUsage float64) error
+	Delete(ctx context.Context, id string) error
+}
+
+type ModelVersionRepository interface {
+	Create(ctx context.Context, model *entity.ModelVersion) error
+	GetByID(ctx context.Context, id string) (*entity.ModelVersion, error)
+	GetProductionModel(ctx context.Context, modelName string) (*entity.ModelVersion, error)
+	ListByModel(ctx context.Context, modelName string) ([]*entity.ModelVersion, error)
+	UpdateStatus(ctx context.Context, id string, status entity.ModelStatus) error
+}

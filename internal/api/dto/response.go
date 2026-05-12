@@ -332,10 +332,10 @@ type AssetResponse struct {
 
 // AssetListResponse 资产列表响应
 type AssetListResponse struct {
-	Items []AssetResponse `json:"items"`
-	Total int64           `json:"total"`
-	Page  int             `json:"page"`
-	Size  int             `json:"size"`
+	Items any    `json:"items"`
+	Total int64  `json:"total"`
+	Page  int    `json:"page"`
+	Size  int    `json:"size"`
 }
 
 // AssetMaintenanceResponse 资产维护记录响应
@@ -354,10 +354,10 @@ type AssetMaintenanceResponse struct {
 
 // AssetMaintenanceListResponse 资产维护记录列表响应
 type AssetMaintenanceListResponse struct {
-	Items []AssetMaintenanceResponse `json:"items"`
-	Total int64                      `json:"total"`
-	Page  int                        `json:"page"`
-	Size  int                        `json:"size"`
+	Items any   `json:"items"`
+	Total int64 `json:"total"`
+	Page  int   `json:"page"`
+	Size  int   `json:"size"`
 }
 
 // AssetDepreciationResponse 资产折旧记录响应
@@ -375,10 +375,10 @@ type AssetDepreciationResponse struct {
 
 // AssetDepreciationListResponse 资产折旧记录列表响应
 type AssetDepreciationListResponse struct {
-	Items []AssetDepreciationResponse `json:"items"`
-	Total int64                       `json:"total"`
-	Page  int                         `json:"page"`
-	Size  int                         `json:"size"`
+	Items any   `json:"items"`
+	Total int64 `json:"total"`
+	Page  int   `json:"page"`
+	Size  int   `json:"size"`
 }
 
 // AssetDocumentResponse 资产文档响应
@@ -396,10 +396,10 @@ type AssetDocumentResponse struct {
 
 // AssetDocumentListResponse 资产文档列表响应
 type AssetDocumentListResponse struct {
-	Items []AssetDocumentResponse `json:"items"`
-	Total int64                   `json:"total"`
-	Page  int                     `json:"page"`
-	Size  int                     `json:"size"`
+	Items any   `json:"items"`
+	Total int64 `json:"total"`
+	Page  int   `json:"page"`
+	Size  int   `json:"size"`
 }
 
 // DepreciationResponse 折旧计算响应

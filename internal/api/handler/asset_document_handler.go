@@ -2,10 +2,11 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/new-energy-monitoring/internal/application/service"
 	"github.com/new-energy-monitoring/internal/api/dto"
+	"github.com/new-energy-monitoring/internal/application/service"
 )
 
 type AssetDocumentHandler struct {
@@ -30,7 +31,7 @@ func NewAssetDocumentHandler(service *service.AssetDocumentService) *AssetDocume
 func (h *AssetDocumentHandler) CreateDocument(c *gin.Context) {
 	var req dto.AssetDocumentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Code: http.StatusBadRequest, Message: err.Error()})
 		return
 	}
 
@@ -45,7 +46,7 @@ func (h *AssetDocumentHandler) CreateDocument(c *gin.Context) {
 
 	document, err := h.service.CreateDocument(c.Request.Context(), serviceReq)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: http.StatusInternalServerError, Message: err.Error()})
 		return
 	}
 
@@ -68,7 +69,7 @@ func (h *AssetDocumentHandler) GetDocument(c *gin.Context) {
 
 	document, err := h.service.GetDocument(c.Request.Context(), id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusNotFound, dto.ErrorResponse{Code: http.StatusNotFound, Message: err.Error()})
 		return
 	}
 
@@ -92,7 +93,7 @@ func (h *AssetDocumentHandler) UpdateDocument(c *gin.Context) {
 	id := c.Param("id")
 	var req dto.AssetDocumentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Code: http.StatusBadRequest, Message: err.Error()})
 		return
 	}
 
@@ -107,7 +108,7 @@ func (h *AssetDocumentHandler) UpdateDocument(c *gin.Context) {
 
 	document, err := h.service.UpdateDocument(c.Request.Context(), id, serviceReq)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: http.StatusInternalServerError, Message: err.Error()})
 		return
 	}
 
@@ -130,7 +131,7 @@ func (h *AssetDocumentHandler) DeleteDocument(c *gin.Context) {
 
 	err := h.service.DeleteDocument(c.Request.Context(), id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: http.StatusInternalServerError, Message: err.Error()})
 		return
 	}
 
@@ -153,12 +154,18 @@ func (h *AssetDocumentHandler) DeleteDocument(c *gin.Context) {
 func (h *AssetDocumentHandler) ListDocuments(c *gin.Context) {
 	assetID := c.Query("asset_id")
 	documentType := c.Query("type")
-	page := dto.GetIntQuery(c, "page", 1)
-	pageSize := dto.GetIntQuery(c, "page_size", 10)
+	page := 1
+	if v, err := strconv.Atoi(c.Query("page")); err == nil && v > 0 {
+		page = v
+	}
+	pageSize := 10
+	if v, err := strconv.Atoi(c.Query("page_size")); err == nil && v > 0 {
+		pageSize = v
+	}
 
 	documents, total, err := h.service.ListDocuments(c.Request.Context(), assetID, documentType, page, pageSize)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Code: http.StatusInternalServerError, Message: err.Error()})
 		return
 	}
 
