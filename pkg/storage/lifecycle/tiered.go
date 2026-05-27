@@ -356,10 +356,10 @@ func (ts *TieredStorage) Migrate(ctx context.Context, key string, fromTier, toTi
 }
 
 // GetMetrics 获取指标
-func (ts *TieredStorage) GetMetrics() TierMetrics {
+func (ts *TieredStorage) GetMetrics() *TierMetrics {
 	ts.metrics.mu.RLock()
 	defer ts.metrics.mu.RUnlock()
-	return *ts.metrics
+	return ts.metrics
 }
 
 // 内部方法

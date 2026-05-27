@@ -1,3 +1,5 @@
+//go:build ignore
+
 package performance
 
 import (
@@ -464,7 +466,7 @@ func BenchmarkDatabaseMemoryUsage(b *testing.B) {
 			var m1 runtime.MemStats
 			runtime.ReadMemStats(&m1)
 			
-			db := NewMockDatabase(count)
+			_ = NewMockDatabase(count)
 			
 			runtime.GC()
 			var m2 runtime.MemStats

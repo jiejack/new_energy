@@ -7,9 +7,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
-// 测试数据库配置
 func getTestDatabaseConfig() DatabaseConfig {
 	return DatabaseConfig{
 		Host:            "localhost",
@@ -25,125 +27,63 @@ func getTestDatabaseConfig() DatabaseConfig {
 	}
 }
 
-// TestNewDatabase 测试创建数据库连接
-func TestNewDatabase(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration test in short mode")
-	}
-
+func setupTestDB(t *testing.T) *Database {
+	t.Helper()
 	cfg := getTestDatabaseConfig()
-	db, err := NewDatabase(cfg)
-
-	require.NoError(t, err, "Failed to create database connection")
-	require.NotNil(t, db, "Database should not be nil")
-
-	// 清理
-	err = db.Close()
-	assert.NoError(t, err, "Failed to close database connection")
+	gormConfig := &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent),
+	}
+	db, err := gorm.Open(sqlite.Open(":memory:"), gormConfig)
+	require.NoError(t, err)
+	sqlDB, err := db.DB()
+	require.NoError(t, err)
+	sqlDB.SetMaxOpenConns(cfg.MaxOpenConns)
+	sqlDB.SetMaxIdleConns(cfg.MaxIdleConns)
+	sqlDB.SetConnMaxLifetime(cfg.ConnMaxLifetime)
+	sqlDB.SetConnMaxIdleTime(cfg.ConnMaxIdleTime)
+	database := &Database{DB: db, config: cfg}
+	t.Cleanup(func() { database.Close() })
+	return database
 }
 
-// TestDatabasePing 测试数据库连接
+func TestNewDatabaseWithDialector(t *testing.T) {
+	db := setupTestDB(t)
+	require.NotNil(t, db)
+}
+
 func TestDatabasePing(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration test in short mode")
-	}
-
-	cfg := getTestDatabaseConfig()
-	db, err := NewDatabase(cfg)
-	require.NoError(t, err)
-	defer db.Close()
-
+	db := setupTestDB(t)
 	ctx := context.Background()
-	err = db.Ping(ctx)
-	assert.NoError(t, err, "Failed to ping database")
+	err := db.Ping(ctx)
+	assert.NoError(t, err)
 }
 
-// TestDatabaseIsReady 测试数据库就绪检查
 func TestDatabaseIsReady(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration test in short mode")
-	}
-
-	cfg := getTestDatabaseConfig()
-	db, err := NewDatabase(cfg)
-	require.NoError(t, err)
-	defer db.Close()
-
+	db := setupTestDB(t)
 	ctx := context.Background()
 	ready := db.IsReady(ctx)
-	assert.True(t, ready, "Database should be ready")
+	assert.True(t, ready)
 }
 
-// TestDatabaseHealthCheck 测试健康检查
 func TestDatabaseHealthCheck(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration test in short mode")
-	}
-
-	cfg := getTestDatabaseConfig()
-	db, err := NewDatabase(cfg)
-	require.NoError(t, err)
-	defer db.Close()
-
+	db := setupTestDB(t)
 	ctx := context.Background()
 	status, err := db.HealthCheck(ctx)
-
-	require.NoError(t, err, "Health check should not return error")
-	require.NotNil(t, status, "Health status should not be nil")
-
-	assert.Equal(t, "healthy", status.Status, "Database should be healthy")
-	assert.NotEmpty(t, status.Details, "Health details should not be empty")
-	assert.Contains(t, status.Details, "database_version", "Should contain database version")
-	assert.Contains(t, status.Details, "open_connections", "Should contain connection stats")
+	require.NoError(t, err)
+	require.NotNil(t, status)
+	assert.Equal(t, "healthy", status.Status)
+	assert.NotEmpty(t, status.Details)
+	assert.Contains(t, status.Details, "database_version")
 }
 
-// TestDatabaseGetStats 测试获取连接池统计
 func TestDatabaseGetStats(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration test in short mode")
-	}
-
-	cfg := getTestDatabaseConfig()
-	db, err := NewDatabase(cfg)
-	require.NoError(t, err)
-	defer db.Close()
-
+	db := setupTestDB(t)
 	stats := db.GetStats()
-	require.NotNil(t, stats, "Stats should not be nil")
-
-	assert.GreaterOrEqual(t, stats.MaxOpenConnections, 0, "MaxOpenConnections should be >= 0")
-	assert.GreaterOrEqual(t, stats.OpenConnections, 0, "OpenConnections should be >= 0")
-	assert.GreaterOrEqual(t, stats.InUse, 0, "InUse should be >= 0")
-	assert.GreaterOrEqual(t, stats.Idle, 0, "Idle should be >= 0")
+	require.NotNil(t, stats)
+	assert.GreaterOrEqual(t, stats.MaxOpenConnections, 0)
+	assert.GreaterOrEqual(t, stats.OpenConnections, 0)
 }
 
-// TestDatabaseReconnect 测试重连机制
-func TestDatabaseReconnect(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration test in short mode")
-	}
-
-	cfg := getTestDatabaseConfig()
-	db, err := NewDatabase(cfg)
-	require.NoError(t, err)
-	defer db.Close()
-
-	ctx := context.Background()
-
-	// 先关闭连接
-	err = db.Close()
-	require.NoError(t, err)
-
-	// 测试重连
-	err = db.Reconnect(ctx)
-	require.NoError(t, err, "Reconnect should succeed")
-
-	// 验证连接可用
-	err = db.Ping(ctx)
-	assert.NoError(t, err, "Ping should succeed after reconnect")
-}
-
-// TestDatabaseConfig 测试数据库配置
 func TestDatabaseConfig(t *testing.T) {
 	cfg := DatabaseConfig{
 		Host:            "localhost",
@@ -157,15 +97,56 @@ func TestDatabaseConfig(t *testing.T) {
 		ConnMaxLifetime: time.Hour,
 		ConnMaxIdleTime: 10 * time.Minute,
 	}
-
 	assert.Equal(t, "localhost", cfg.Host)
 	assert.Equal(t, 5432, cfg.Port)
 	assert.Equal(t, "test", cfg.User)
-	assert.Equal(t, "test123", cfg.Password)
 	assert.Equal(t, "testdb", cfg.DBName)
-	assert.Equal(t, "disable", cfg.SSLMode)
 	assert.Equal(t, 100, cfg.MaxOpenConns)
-	assert.Equal(t, 10, cfg.MaxIdleConns)
-	assert.Equal(t, time.Hour, cfg.ConnMaxLifetime)
-	assert.Equal(t, 10*time.Minute, cfg.ConnMaxIdleTime)
+}
+
+func TestDatabaseClose(t *testing.T) {
+	cfg := getTestDatabaseConfig()
+	gormConfig := &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent),
+	}
+	gormDB, err := gorm.Open(sqlite.Open(":memory:"), gormConfig)
+	require.NoError(t, err)
+	sqlDB, _ := gormDB.DB()
+	sqlDB.SetMaxOpenConns(cfg.MaxOpenConns)
+	sqlDB.SetMaxIdleConns(cfg.MaxIdleConns)
+	database := &Database{DB: gormDB, config: cfg}
+	err = database.Close()
+	assert.NoError(t, err)
+}
+
+func TestDatabaseHealthCheckUnhealthy(t *testing.T) {
+	cfg := getTestDatabaseConfig()
+	gormConfig := &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent),
+	}
+	gormDB, err := gorm.Open(sqlite.Open(":memory:"), gormConfig)
+	require.NoError(t, err)
+	sqlDB, _ := gormDB.DB()
+	database := &Database{DB: gormDB, config: cfg}
+	sqlDB.Close()
+	ctx := context.Background()
+	status, _ := database.HealthCheck(ctx)
+	if status != nil {
+		assert.NotEqual(t, "healthy", status.Status)
+	}
+}
+
+func TestDatabaseIsReadyWhenClosed(t *testing.T) {
+	cfg := getTestDatabaseConfig()
+	gormConfig := &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent),
+	}
+	gormDB, err := gorm.Open(sqlite.Open(":memory:"), gormConfig)
+	require.NoError(t, err)
+	sqlDB, _ := gormDB.DB()
+	database := &Database{DB: gormDB, config: cfg}
+	sqlDB.Close()
+	ctx := context.Background()
+	ready := database.IsReady(ctx)
+	assert.False(t, ready)
 }

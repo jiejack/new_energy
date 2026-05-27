@@ -2,7 +2,6 @@ package persistence
 
 import (
 	"context"
-	"embed"
 	"fmt"
 	"io/fs"
 	"path/filepath"
@@ -38,7 +37,7 @@ type MigrationStatus struct {
 }
 
 // RunMigrations 执行数据库迁移
-func (m *MigrationManager) RunMigrations(ctx context.Context, migrationsFS embed.FS) error {
+func (m *MigrationManager) RunMigrations(ctx context.Context, migrationsFS fs.FS) error {
 	// 创建迁移记录表
 	if err := m.createMigrationsTable(ctx); err != nil {
 		return fmt.Errorf("failed to create migrations table: %w", err)
@@ -86,7 +85,7 @@ func (m *MigrationManager) RunMigrations(ctx context.Context, migrationsFS embed
 }
 
 // RunMigrationsWithLimit 执行指定数量的迁移
-func (m *MigrationManager) RunMigrationsWithLimit(ctx context.Context, migrationsFS embed.FS, limit int) error {
+func (m *MigrationManager) RunMigrationsWithLimit(ctx context.Context, migrationsFS fs.FS, limit int) error {
 	// 创建迁移记录表
 	if err := m.createMigrationsTable(ctx); err != nil {
 		return fmt.Errorf("failed to create migrations table: %w", err)
@@ -145,7 +144,7 @@ func (m *MigrationManager) createMigrationsTable(ctx context.Context) error {
 	sql := `
 	CREATE TABLE IF NOT EXISTS schema_migrations (
 		version VARCHAR(255) PRIMARY KEY,
-		applied_at TIMESTAMP NOT NULL DEFAULT NOW()
+		applied_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 	)
 	`
 	return m.db.WithContext(ctx).Exec(sql).Error
@@ -170,7 +169,7 @@ func (m *MigrationManager) getAppliedMigrations(ctx context.Context) (map[string
 }
 
 // readMigrationFiles 读取迁移文件
-func (m *MigrationManager) readMigrationFiles(migrationsFS embed.FS) ([]fs.DirEntry, error) {
+func (m *MigrationManager) readMigrationFiles(migrationsFS fs.FS) ([]fs.DirEntry, error) {
 	files, err := fs.ReadDir(migrationsFS, "migrations")
 	if err != nil {
 		return nil, err
@@ -266,7 +265,7 @@ func (m *MigrationManager) validateMigration(sql string) error {
 }
 
 // GetMigrationStatusSummary 获取迁移状态摘要
-func (m *MigrationManager) GetMigrationStatusSummary(ctx context.Context, migrationsFS embed.FS) (*MigrationStatus, error) {
+func (m *MigrationManager) GetMigrationStatusSummary(ctx context.Context, migrationsFS fs.FS) (*MigrationStatus, error) {
 	// 确保迁移表存在
 	if err := m.createMigrationsTable(ctx); err != nil {
 		return nil, fmt.Errorf("failed to create migrations table: %w", err)
@@ -319,7 +318,7 @@ func (m *MigrationManager) IsMigrationApplied(ctx context.Context, version strin
 }
 
 // GetPendingMigrations 获取待执行的迁移列表
-func (m *MigrationManager) GetPendingMigrations(ctx context.Context, migrationsFS embed.FS) ([]string, error) {
+func (m *MigrationManager) GetPendingMigrations(ctx context.Context, migrationsFS fs.FS) ([]string, error) {
 	// 确保迁移表存在
 	if err := m.createMigrationsTable(ctx); err != nil {
 		return nil, fmt.Errorf("failed to create migrations table: %w", err)
@@ -350,7 +349,7 @@ func (m *MigrationManager) GetPendingMigrations(ctx context.Context, migrationsF
 }
 
 // ApplySpecificMigration 应用指定的迁移
-func (m *MigrationManager) ApplySpecificMigration(ctx context.Context, migrationsFS embed.FS, version string) error {
+func (m *MigrationManager) ApplySpecificMigration(ctx context.Context, migrationsFS fs.FS, version string) error {
 	// 确保迁移表存在
 	if err := m.createMigrationsTable(ctx); err != nil {
 		return fmt.Errorf("failed to create migrations table: %w", err)

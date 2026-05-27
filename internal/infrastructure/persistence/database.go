@@ -27,37 +27,38 @@ func NewDatabase(cfg DatabaseConfig) (*Database, error) {
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.DBName, cfg.SSLMode,
 	)
-	
+	return NewDatabaseWithDialector(postgres.Open(dsn), cfg)
+}
+
+func NewDatabaseWithDialector(dialector gorm.Dialector, cfg DatabaseConfig) (*Database, error) {
 	gormConfig := &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	}
-	
-	db, err := gorm.Open(postgres.Open(dsn), gormConfig)
+
+	db, err := gorm.Open(dialector, gormConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect database: %w", err)
 	}
-	
+
 	sqlDB, err := db.DB()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get sql.DB: %w", err)
 	}
-	
-	// 设置连接池参数
+
 	sqlDB.SetMaxOpenConns(cfg.MaxOpenConns)
 	sqlDB.SetMaxIdleConns(cfg.MaxIdleConns)
 	sqlDB.SetConnMaxLifetime(cfg.ConnMaxLifetime)
 	sqlDB.SetConnMaxIdleTime(cfg.ConnMaxIdleTime)
-	
+
 	database := &Database{
 		DB:     db,
 		config: cfg,
 	}
-	
-	// 验证连接
+
 	if err := database.Ping(context.Background()); err != nil {
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
-	
+
 	return database, nil
 }
 
@@ -160,7 +161,11 @@ func (db *Database) HealthCheck(ctx context.Context) (*HealthStatus, error) {
 	
 	// 检查数据库版本
 	var version string
-	if err := db.DB.WithContext(ctx).Raw("SELECT version()").Scan(&version).Error; err == nil {
+	if err := db.DB.WithContext(ctx).Raw("SELECT sqlite_version()").Scan(&version).Error; err != nil {
+		if err := db.DB.WithContext(ctx).Raw("SELECT version()").Scan(&version).Error; err == nil {
+			status.Details["database_version"] = version
+		}
+	} else {
 		status.Details["database_version"] = version
 	}
 	

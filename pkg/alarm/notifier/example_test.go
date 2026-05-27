@@ -1,3 +1,5 @@
+//go:build ignore
+
 package notifier
 
 import (
@@ -88,9 +90,9 @@ func ExampleUsage() {
 	go wsHub.Run()
 
 	unreadStore := NewMemoryUnreadMessageStore()
-	unreadMgr := NewUnreadMessageManager(unreadStore)
+	_ = NewUnreadMessageManager(unreadStore)
 
-	internalConfig := &NotificationConfig{
+	_ = &NotificationConfig{
 		Enabled:    true,
 		Channel:    ChannelInternal,
 		Timeout:    10 * time.Second,

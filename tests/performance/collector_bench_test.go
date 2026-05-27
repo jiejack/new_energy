@@ -275,7 +275,7 @@ func BenchmarkCollectorWorkerPool(b *testing.B) {
 			pool := collector.NewWorkerPool(
 				collector.WithMaxWorkers(workers),
 				collector.WithMinWorkers(workers/10),
-				collector.WithTaskQueueSize(100000),
+				collector.WithPoolTaskQueueSize(100000),
 			)
 
 			if err := pool.Start(); err != nil {
@@ -323,7 +323,7 @@ func BenchmarkCollectorBuffer(b *testing.B) {
 
 	for _, size := range bufferSizes {
 		b.Run(fmt.Sprintf("BufferSize_%d", size), func(b *testing.B) {
-			buffer := collector.NewDataBuffer(size, 5*time.Minute)
+			buffer := collector.NewDataBuffer(collector.WithMaxSize(size), collector.WithFlushInterval(5*time.Minute))
 
 			b.ResetTimer()
 
@@ -338,13 +338,13 @@ func BenchmarkCollectorBuffer(b *testing.B) {
 					}
 				}
 
-				if err := buffer.Write(data); err != nil {
+				if err := buffer.WriteBatch(data); err != nil {
 					b.Errorf("Failed to write to buffer: %v", err)
 				}
 			}
 
-			b.ReportMetric(float64(buffer.Size()), "buffer_size")
-			b.ReportMetric(float64(buffer.Capacity()), "buffer_capacity")
+			b.ReportMetric(float64(buffer.GetCurrentSize()), "buffer_size")
+			b.ReportMetric(float64(size), "buffer_capacity")
 		})
 	}
 }

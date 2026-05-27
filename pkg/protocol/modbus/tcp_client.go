@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -39,7 +40,7 @@ func (c *TCPClient) Connect() error {
 		return nil
 	}
 
-	address := fmt.Sprintf("%s:%d", c.config.Host, c.config.Port)
+	address := net.JoinHostPort(c.config.Host, strconv.Itoa(c.config.Port))
 	dialer := &net.Dialer{
 		Timeout: c.config.Timeout,
 	}

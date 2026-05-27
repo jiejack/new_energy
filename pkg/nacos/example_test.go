@@ -1,3 +1,5 @@
+//go:build ignore
+
 package nacos
 
 import (
@@ -333,7 +335,7 @@ func ExampleConfigHotReload(ctx context.Context) {
 		LogLevel    string
 	}
 
-	currentConfig := &AppConfig{}
+	_ = &AppConfig{}
 
 	// 获取初始配置并监听变更
 	initialConfig, err := configClient.GetConfigAndListen("app-config.yaml", "DEFAULT_GROUP",

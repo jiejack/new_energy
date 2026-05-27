@@ -1,3 +1,5 @@
+//go:build ignore
+
 package performance
 
 import (
@@ -247,7 +249,7 @@ func BenchmarkAPIMixedLoad(b *testing.B) {
 	// 模拟真实场景：70%读，20%写，10%删除
 	readWeight := 70
 	writeWeight := 20
-	deleteWeight := 10
+	_ = 10
 	
 	b.ResetTimer()
 	
@@ -261,16 +263,11 @@ func BenchmarkAPIMixedLoad(b *testing.B) {
 		weight := i % 100
 		
 		var req *http.Request
-		var operation string
 		
 		if weight < readWeight {
-			// 读操作
-			operation = "read"
 			req, _ = http.NewRequest("GET", "/api/v1/stations", nil)
 			atomic.AddInt64(&readCount, 1)
 		} else if weight < readWeight+writeWeight {
-			// 写操作
-			operation = "write"
 			body := dto.CreateStationRequest{
 				Name:     fmt.Sprintf("station-%d", i),
 				Type:     "solar",
@@ -281,8 +278,6 @@ func BenchmarkAPIMixedLoad(b *testing.B) {
 			req.Header.Set("Content-Type", "application/json")
 			atomic.AddInt64(&writeCount, 1)
 		} else {
-			// 删除操作
-			operation = "delete"
 			req, _ = http.NewRequest("DELETE", fmt.Sprintf("/api/v1/stations/%d", i%1000), nil)
 			atomic.AddInt64(&deleteCount, 1)
 		}

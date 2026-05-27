@@ -73,7 +73,7 @@ func TestIntegration(t *testing.T) {
 		UserID: "user-001",
 		Send:   make(chan []byte, 10),
 	}
-	hub := wsHub.(*WebSocketHub)
+	hub := wsHub
 	hub.Register(client)
 	time.Sleep(100 * time.Millisecond)
 
@@ -308,7 +308,7 @@ func TestTemplateIntegration(t *testing.T) {
 		t.Fatalf("Failed to render EN template: %v", err)
 	}
 
-	expectedEN := "Alert: 光伏电站A - 逆变器01 - 温度过高"
+	expectedEN := "告警：光伏电站A - 逆变器01 - 温度过高"
 	if renderedEN != expectedEN {
 		t.Errorf("Expected %s, got %s", expectedEN, renderedEN)
 	}

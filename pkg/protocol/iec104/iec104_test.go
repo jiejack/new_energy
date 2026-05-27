@@ -673,7 +673,7 @@ func TestInterrogationCommandEncodeDecode(t *testing.T) {
 func TestClockSyncCommandEncodeDecode(t *testing.T) {
 	coder := NewASDUCoder()
 
-	now := time.Now()
+	now := time.Date(2015, 5, 27, 1, 9, 42, 553519122, time.UTC)
 	cmd := &ClockSyncCommand{Time: now}
 	data := coder.EncodeClockSyncCommand(1, cmd, CauseOfTransmission{Cause: COT_ACTIVATION})
 

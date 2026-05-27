@@ -567,10 +567,10 @@ func (bm *BackupManager) VerifyBackup(ctx context.Context, backupID string) erro
 }
 
 // GetMetrics 获取指标
-func (bm *BackupManager) GetMetrics() BackupMetrics {
+func (bm *BackupManager) GetMetrics() *BackupMetrics {
 	bm.metrics.mu.RLock()
 	defer bm.metrics.mu.RUnlock()
-	return *bm.metrics
+	return bm.metrics
 }
 
 // 内部方法

@@ -402,10 +402,10 @@ func (da *DataArchiver) RestoreArchive(ctx context.Context, taskID string, targe
 }
 
 // GetMetrics 获取指标
-func (da *DataArchiver) GetMetrics() ArchiveMetrics {
+func (da *DataArchiver) GetMetrics() *ArchiveMetrics {
 	da.metrics.mu.RLock()
 	defer da.metrics.mu.RUnlock()
-	return *da.metrics
+	return da.metrics
 }
 
 // 内部方法

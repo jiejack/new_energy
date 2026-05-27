@@ -20,6 +20,15 @@ func (m *MockDataWriter) Write(ctx context.Context, data []PointData) error {
 	return nil
 }
 
+func (m *MockDataWriter) WriteBatch(ctx context.Context, batch [][]PointData) error {
+	for _, b := range batch {
+		if err := m.Write(ctx, b); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (m *MockDataWriter) Close() error {
 	return nil
 }

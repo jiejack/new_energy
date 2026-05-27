@@ -356,10 +356,10 @@ func (dc *DataCleaner) GetCleanupLogs(ctx context.Context, taskID string, limit 
 }
 
 // GetMetrics 获取指标
-func (dc *DataCleaner) GetMetrics() CleanupMetrics {
+func (dc *DataCleaner) GetMetrics() *CleanupMetrics {
 	dc.metrics.mu.RLock()
 	defer dc.metrics.mu.RUnlock()
-	return *dc.metrics
+	return dc.metrics
 }
 
 // PreviewCleanup 预览清理

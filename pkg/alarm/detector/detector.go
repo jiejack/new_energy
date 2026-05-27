@@ -811,11 +811,11 @@ func (d *Detector) handleResult(ctx context.Context, result *DetectionResult) {
 }
 
 // GetStats 获取统计信息
-func (d *Detector) GetStats() DetectorStats {
+func (d *Detector) GetStats() *DetectorStats {
 	d.stats.mu.RLock()
 	defer d.stats.mu.RUnlock()
 
-	stats := DetectorStats{
+	stats := &DetectorStats{
 		TotalProcessed:  d.stats.TotalProcessed,
 		TotalTriggered:  d.stats.TotalTriggered,
 		TotalSuppressed: d.stats.TotalSuppressed,
@@ -912,7 +912,7 @@ func (r *RealtimeDetector) AddHandler(handler DetectionHandler) {
 }
 
 // GetStats 获取统计
-func (r *RealtimeDetector) GetStats() DetectorStats {
+func (r *RealtimeDetector) GetStats() *DetectorStats {
 	return r.detector.GetStats()
 }
 

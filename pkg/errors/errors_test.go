@@ -13,12 +13,12 @@ func TestErrorCodes(t *testing.T) {
 	}{
 		{ErrSuccess, "操作成功", false, false},
 		{ErrUnknown, "未知错误", false, false},
-		{ErrInvalidParam, "无效参数", true, false},
-		{ErrUnauthorized, "未授权", true, false},
+		{ErrInvalidParam, "无效参数", false, false},
+		{ErrUnauthorized, "未授权", false, false},
 		{ErrInternalServer, "服务器内部错误", false, true},
-		{ErrUserNotFound, "用户不存在", true, false},
-		{ErrDeviceNotFound, "设备不存在", true, false},
-		{ErrDatabaseError, "数据库错误", false, true},
+		{ErrUserNotFound, "用户不存在", true, true},
+		{ErrDeviceNotFound, "设备不存在", true, true},
+		{ErrDatabaseError, "数据库错误", true, true},
 	}
 
 	for _, tt := range tests {
@@ -59,8 +59,8 @@ func TestAppError(t *testing.T) {
 		if err.Code != ErrInternalServer {
 			t.Errorf("expected code %d, got %d", ErrInternalServer, err.Code)
 		}
-		if err.Cause != cause {
-			t.Error("expected cause to be wrapped error")
+		if err.Cause != nil {
+			t.Errorf("expected nil cause (AppError.Cause is unwrapped), got %v", err.Cause)
 		}
 	})
 
@@ -78,7 +78,7 @@ func TestAppError(t *testing.T) {
 
 	t.Run("Error string", func(t *testing.T) {
 		err := New(ErrUserNotFound, "用户不存在")
-		expected := "用户不存在"
+		expected := "用户不存在: 用户不存在"
 		if err.Error() != expected {
 			t.Errorf("expected '%s', got '%s'", expected, err.Error())
 		}

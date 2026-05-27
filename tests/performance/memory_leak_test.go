@@ -8,27 +8,29 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/new-energy-monitoring/pkg/collector"
 )
 
 // BenchmarkMemoryLeakLongRunning 长时间运行内存泄漏测试
 func BenchmarkMemoryLeakLongRunning(b *testing.B) {
 	// 创建需要测试的对象
-	collector := NewMockCollector("leak-test", 10000)
+	mockCollector := NewMockCollector("leak-test", 10000)
 	ctx := context.Background()
-	config := &CollectorConfig{
+	config := &collector.CollectorConfig{
 		ID:         "leak-test",
 		BufferSize: 10000,
 		BatchSize:  1000,
 	}
 	
-	if err := collector.Initialize(ctx, config); err != nil {
+	if err := mockCollector.Initialize(ctx, config); err != nil {
 		b.Fatalf("Failed to initialize: %v", err)
 	}
 	
-	if err := collector.Start(ctx); err != nil {
+	if err := mockCollector.Start(ctx); err != nil {
 		b.Fatalf("Failed to start: %v", err)
 	}
-	defer collector.Stop(ctx)
+	defer mockCollector.Stop(ctx)
 	
 	// 记录初始内存状态
 	runtime.GC()
@@ -41,7 +43,7 @@ func BenchmarkMemoryLeakLongRunning(b *testing.B) {
 	b.ResetTimer()
 	
 	for i := 0; i < iterations; i++ {
-		_, err := collector.Collect(ctx)
+		_, err := mockCollector.Collect(ctx)
 		if err != nil {
 			b.Errorf("Collect failed: %v", err)
 		}
@@ -343,24 +345,24 @@ func BenchmarkMemoryProfile(b *testing.B) {
 	defer memProfile.Close()
 	
 	// 执行测试
-	collector := NewMockCollector("profile-test", 10000)
+	mockCollector := NewMockCollector("profile-test", 10000)
 	ctx := context.Background()
-	config := &CollectorConfig{
+	config := &collector.CollectorConfig{
 		ID:         "profile-test",
 		BufferSize: 10000,
 		BatchSize:  1000,
 	}
 	
-	collector.Initialize(ctx, config)
-	collector.Start(ctx)
-	defer collector.Stop(ctx)
+	mockCollector.Initialize(ctx, config)
+	mockCollector.Start(ctx)
+	defer mockCollector.Stop(ctx)
 	
 	runtime.GC()
 	
 	b.ResetTimer()
 	
 	for i := 0; i < b.N; i++ {
-		_, err := collector.Collect(ctx)
+		_, err := mockCollector.Collect(ctx)
 		if err != nil {
 			b.Errorf("Collect failed: %v", err)
 		}
@@ -486,12 +488,6 @@ type ComplexStruct struct {
 	Data     []byte
 }
 
-type CollectorConfig struct {
-	ID         string
-	BufferSize int
-	BatchSize  int
-}
-
 type MockResource struct {
 	closed bool
 }
@@ -516,7 +512,10 @@ func (o *ObjectWithFinalizer) Cleanup() {
 	// 清理资源
 }
 
-func CreateMemProfile(filename string) (file interface{ Close() error }, err error) {
+func CreateMemProfile(filename string) (file interface {
+	Close() error
+	Write(p []byte) (int, error)
+}, err error) {
 	// 返回一个简单的文件接口
 	return &mockFile{}, nil
 }
@@ -524,3 +523,5 @@ func CreateMemProfile(filename string) (file interface{ Close() error }, err err
 type mockFile struct{}
 
 func (f *mockFile) Close() error { return nil }
+
+func (f *mockFile) Write(p []byte) (int, error) { return len(p), nil }

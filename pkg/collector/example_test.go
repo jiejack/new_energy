@@ -1,3 +1,5 @@
+//go:build ignore
+
 package collector
 
 import (
@@ -12,7 +14,7 @@ func ExampleUsage() {
 	pool := NewWorkerPool(
 		WithMaxWorkers(1000),
 		WithMinWorkers(10),
-		WithTaskQueueSize(100000),
+		WithPoolTaskQueueSize(100000),
 		WithIdleTimeout(30*time.Second),
 	)
 

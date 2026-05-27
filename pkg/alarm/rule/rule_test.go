@@ -10,7 +10,7 @@ import (
 func TestDSL(t *testing.T) {
 	rule := NewRuleDSL("test-rule-001", "测试规则", "1.0")
 	rule.Description = "这是一个测试规则"
-	rule.SetComparisonCondition("point-001", OpGT, ThresholdTypeAbsolute, 100)
+	rule.SetComparisonCondition("point_001", OpGT, ThresholdTypeAbsolute, 100)
 
 	if err := rule.Validate(); err != nil {
 		t.Errorf("Rule validation failed: %v", err)
@@ -38,27 +38,27 @@ func TestParser(t *testing.T) {
 	}{
 		{
 			name:    "简单比较条件",
-			input:   "point-001 > 100",
+			input:   "point_001 > 100",
 			wantErr: false,
 		},
 		{
 			name:    "窗口函数",
-			input:   "avg(point-001, 5m) > 50",
+			input:   "avg(point_001, 5m) > 50",
 			wantErr: false,
 		},
 		{
 			name:    "百分比阈值",
-			input:   "point-001 > percentage(80)",
+			input:   "point_001 > percentage(80)",
 			wantErr: false,
 		},
 		{
 			name:    "逻辑AND",
-			input:   "AND(point-001 > 100, point-002 < 50)",
+			input:   "AND(point_001 > 100, point_002 < 50)",
 			wantErr: false,
 		},
 		{
 			name:    "逻辑OR",
-			input:   "OR(point-001 > 100, point-002 < 50)",
+			input:   "OR(point_001 > 100, point_002 < 50)",
 			wantErr: false,
 		},
 	}
@@ -82,8 +82,8 @@ func TestEngine(t *testing.T) {
 	// 创建模拟数据提供者
 	provider := &mockDataProvider{
 		values: map[string]float64{
-			"point-001": 120.0,
-			"point-002": 40.0,
+			"point_001": 120.0,
+			"point_002": 40.0,
 		},
 	}
 
@@ -91,7 +91,7 @@ func TestEngine(t *testing.T) {
 
 	// 创建测试规则
 	rule := NewRuleDSL("test-rule-001", "测试规则", "1.0")
-	rule.SetComparisonCondition("point-001", OpGT, ThresholdTypeAbsolute, 100)
+	rule.SetComparisonCondition("point_001", OpGT, ThresholdTypeAbsolute, 100)
 
 	if err := engine.AddRule(rule); err != nil {
 		t.Fatalf("Failed to add rule: %v", err)
@@ -117,7 +117,7 @@ func TestVersionManager(t *testing.T) {
 	vm := NewVersionManager()
 
 	rule := NewRuleDSL("test-rule-001", "测试规则", "1.0")
-	rule.SetComparisonCondition("point-001", OpGT, ThresholdTypeAbsolute, 100)
+	rule.SetComparisonCondition("point_001", OpGT, ThresholdTypeAbsolute, 100)
 
 	// 创建版本
 	version, err := vm.CreateVersion(rule, "初始版本", "创建规则", "admin")
@@ -155,7 +155,7 @@ func TestRuleManager(t *testing.T) {
 	// 创建模拟数据提供者
 	provider := &mockDataProvider{
 		values: map[string]float64{
-			"point-001": 120.0,
+			"point_001": 120.0,
 		},
 	}
 
@@ -163,7 +163,7 @@ func TestRuleManager(t *testing.T) {
 	manager := NewRuleManager(engine, nil)
 
 	rule := NewRuleDSL("test-rule-001", "测试规则", "1.0")
-	rule.SetComparisonCondition("point-001", OpGT, ThresholdTypeAbsolute, 100)
+	rule.SetComparisonCondition("point_001", OpGT, ThresholdTypeAbsolute, 100)
 	rule.CreatedBy = "admin"
 
 	// 创建规则

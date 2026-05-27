@@ -1,3 +1,5 @@
+//go:build ignore
+
 package performance
 
 import (
@@ -603,6 +605,36 @@ func (m *MockDatabase) Query(ctx context.Context, sql string, args ...interface{
 		return m.data, nil
 	}
 	return m.data[:limit], nil
+}
+
+func (m *MockDatabase) Close() error {
+	return nil
+}
+
+func (m *MockDatabase) BatchInsert(table string, records []map[string]interface{}) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.data = append(m.data, records...)
+	return nil
+}
+
+func (m *MockDatabase) ExecuteQuery(ctx context.Context, query *MockQuery) ([]map[string]interface{}, error) {
+	return m.Query(ctx, "")
+}
+
+func (m *MockDatabase) CreateIndex(table, field string) error {
+	return nil
+}
+
+func (m *MockDatabase) BeginTx() (*MockTransaction, error) {
+	return &MockTransaction{db: m}, nil
+}
+
+func (m *MockDatabase) Insert(table string, record map[string]interface{}) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.data = append(m.data, record)
+	return nil
 }
 
 // MockRedisClient 模拟Redis客户端

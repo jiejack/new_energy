@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"net"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -42,7 +43,7 @@ func (c *MMSClient) setState(state ConnectionState) {
 func (c *MMSClient) Connect() error {
 	c.setState(ConnectionStateConnecting)
 
-	address := fmt.Sprintf("%s:%d", c.config.IPAddress, c.config.Port)
+	address := net.JoinHostPort(c.config.IPAddress, strconv.Itoa(c.config.Port))
 	
 	dialer := net.Dialer{
 		Timeout: c.config.ConnectTimeout,
