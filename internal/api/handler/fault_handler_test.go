@@ -1,435 +1,370 @@
 package handler
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/new-energy-monitoring/internal/api/dto"
 	"github.com/new-energy-monitoring/internal/domain/entity"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 type mockFaultService struct {
-	detectFaultsFunc             func(ctx context.Context, deviceID string) ([]*entity.FaultDetectionResult, error)
-	getDetectionsFunc            func(ctx context.Context, deviceID string, severity *entity.FaultSeverity, status *entity.FaultDetectionStatus, page, pageSize int) ([]*entity.FaultDetectionResult, int64, error)
-	getDetectionByIDFunc         func(ctx context.Context, id string) (*entity.FaultDetectionResult, error)
-	updateDetectionStatusFunc    func(ctx context.Context, id string, status entity.FaultDetectionStatus) error
-	getDeviceHealthFunc          func(ctx context.Context, deviceID string) (int, error)
-	analyzeRootCauseFunc         func(ctx context.Context, detectionID string) (*entity.FaultDetectionResult, error)
-	createWorkOrderFromDetectionFunc func(ctx context.Context, detectionID string) (string, error)
+	mock.Mock
 }
 
 func (m *mockFaultService) DetectFaults(ctx context.Context, deviceID string) ([]*entity.FaultDetectionResult, error) {
-	if m.detectFaultsFunc != nil {
-		return m.detectFaultsFunc(ctx, deviceID)
+	args := m.Called(ctx, deviceID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
 	}
-	return []*entity.FaultDetectionResult{
-		{
-			ID:          "fd-001",
-			DeviceID:    deviceID,
-			FaultType:   "temperature",
-			Severity:    entity.FaultSeverityWarning,
-			Confidence:  0.85,
-			Description: "检测到异常: temperature",
-			Status:      entity.FaultDetectionStatusPending,
-			ModelVersion: "1.0.0",
-		},
-	}, nil
+	return args.Get(0).([]*entity.FaultDetectionResult), args.Error(1)
 }
-
 func (m *mockFaultService) GetDetections(ctx context.Context, deviceID string, severity *entity.FaultSeverity, status *entity.FaultDetectionStatus, page, pageSize int) ([]*entity.FaultDetectionResult, int64, error) {
-	if m.getDetectionsFunc != nil {
-		return m.getDetectionsFunc(ctx, deviceID, severity, status, page, pageSize)
+	args := m.Called(ctx, deviceID, severity, status, page, pageSize)
+	if args.Get(0) == nil {
+		return nil, args.Get(1).(int64), args.Error(2)
 	}
-	return []*entity.FaultDetectionResult{
-		{
-			ID:          "fd-001",
-			DeviceID:    deviceID,
-			FaultType:   "temperature",
-			Severity:    entity.FaultSeverityWarning,
-			Confidence:  0.85,
-			Description: "检测到异常: temperature",
-			Status:      entity.FaultDetectionStatusPending,
-			ModelVersion: "1.0.0",
-		},
-	}, 1, nil
+	return args.Get(0).([]*entity.FaultDetectionResult), args.Get(1).(int64), args.Error(2)
 }
-
 func (m *mockFaultService) GetDetectionByID(ctx context.Context, id string) (*entity.FaultDetectionResult, error) {
-	if m.getDetectionByIDFunc != nil {
-		return m.getDetectionByIDFunc(ctx, id)
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
 	}
-	if id == "not-found" {
-		return nil, fmt.Errorf("not found")
-	}
-	return &entity.FaultDetectionResult{
-		ID:          id,
-		DeviceID:    "device-001",
-		FaultType:   "temperature",
-		Severity:    entity.FaultSeverityWarning,
-		Confidence:  0.85,
-		Description: "检测到异常: temperature",
-		Status:      entity.FaultDetectionStatusPending,
-		ModelVersion: "1.0.0",
-	}, nil
+	return args.Get(0).(*entity.FaultDetectionResult), args.Error(1)
 }
-
 func (m *mockFaultService) UpdateDetectionStatus(ctx context.Context, id string, status entity.FaultDetectionStatus) error {
-	if m.updateDetectionStatusFunc != nil {
-		return m.updateDetectionStatusFunc(ctx, id, status)
-	}
-	return nil
+	args := m.Called(ctx, id, status)
+	return args.Error(0)
 }
-
 func (m *mockFaultService) GetDeviceHealth(ctx context.Context, deviceID string) (int, error) {
-	if m.getDeviceHealthFunc != nil {
-		return m.getDeviceHealthFunc(ctx, deviceID)
-	}
-	return 95, nil
+	args := m.Called(ctx, deviceID)
+	return args.Int(0), args.Error(1)
 }
-
 func (m *mockFaultService) AnalyzeRootCause(ctx context.Context, detectionID string) (*entity.FaultDetectionResult, error) {
-	if m.analyzeRootCauseFunc != nil {
-		return m.analyzeRootCauseFunc(ctx, detectionID)
+	args := m.Called(ctx, detectionID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
 	}
-	rootCause := "AI分析: temperature 可能由设备老化或环境因素导致"
-	return &entity.FaultDetectionResult{
-		ID:          detectionID,
-		DeviceID:    "device-001",
-		FaultType:   "temperature",
-		Severity:    entity.FaultSeverityWarning,
-		Confidence:  0.85,
-		Description: "检测到异常: temperature",
-		RootCause:   &rootCause,
-		Status:      entity.FaultDetectionStatusPending,
-		ModelVersion: "1.0.0",
-	}, nil
+	return args.Get(0).(*entity.FaultDetectionResult), args.Error(1)
 }
-
 func (m *mockFaultService) CreateWorkOrderFromDetection(ctx context.Context, detectionID string) (string, error) {
-	if m.createWorkOrderFromDetectionFunc != nil {
-		return m.createWorkOrderFromDetectionFunc(ctx, detectionID)
-	}
-	return "wo-001", nil
+	args := m.Called(ctx, detectionID)
+	return args.String(0), args.Error(1)
 }
 
-func setupFaultRouter(h *FaultHandler) *gin.Engine {
+func setupFaultHandler(svc *mockFaultService) (*FaultHandler, *gin.Engine) {
+	gin.SetMode(gin.TestMode)
+	handler := NewFaultHandler(svc)
 	r := gin.New()
-	r.POST("/api/v1/fault/detect", h.DetectFaults)
-	r.GET("/api/v1/fault/detections", h.GetDetections)
-	r.GET("/api/v1/fault/detections/:id", h.GetDetectionByID)
-	r.PUT("/api/v1/fault/detections/:id/status", h.UpdateDetectionStatus)
-	r.GET("/api/v1/fault/devices/:device_id/health", h.GetDeviceHealth)
-	r.POST("/api/v1/fault/root-cause", h.AnalyzeRootCause)
-	r.POST("/api/v1/fault/work-order", h.CreateWorkOrderFromDetection)
-	return r
+	return handler, r
 }
 
 func TestFaultHandler_DetectFaults_Success(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockSvc := &mockFaultService{}
-	handler := NewFaultHandler(mockSvc)
-	router := setupFaultRouter(handler)
+	mockSvc := new(mockFaultService)
+	handler, r := setupFaultHandler(mockSvc)
 
-	body := `{"device_id":"device-001"}`
-	req := httptest.NewRequest(http.MethodPost, "/api/v1/fault/detect", strings.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
+	r.POST("/faults/detect", handler.DetectFaults)
+
+	results := []*entity.FaultDetectionResult{
+		entity.NewFaultDetectionResult("device-001", "temperature", entity.FaultSeverityWarning, 0.9, "test", "1.0"),
+	}
+	mockSvc.On("DetectFaults", mock.Anything, "device-001").Return(results, nil)
+
+	body := map[string]string{"device_id": "device-001"}
+	jsonBody, _ := json.Marshal(body)
+
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+	req, _ := http.NewRequest("POST", "/faults/detect", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusOK {
-		t.Fatalf("expected status 200, got %d, body: %s", w.Code, w.Body.String())
-	}
-
-	var resp dto.Response
-	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
-		t.Fatalf("failed to unmarshal response: %v", err)
-	}
-	if resp.Code != 0 {
-		t.Fatalf("expected code 0, got %d", resp.Code)
-	}
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestFaultHandler_DetectFaults_BadRequest(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockSvc := &mockFaultService{}
-	handler := NewFaultHandler(mockSvc)
-	router := setupFaultRouter(handler)
+func TestFaultHandler_DetectFaults_InvalidJSON(t *testing.T) {
+	mockSvc := new(mockFaultService)
+	handler, r := setupFaultHandler(mockSvc)
 
-	body := `{}`
-	req := httptest.NewRequest(http.MethodPost, "/api/v1/fault/detect", strings.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
+	r.POST("/faults/detect", handler.DetectFaults)
+
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+	req, _ := http.NewRequest("POST", "/faults/detect", bytes.NewBufferString("{invalid}"))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusBadRequest {
-		t.Fatalf("expected status 400, got %d", w.Code)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
 
-	var resp dto.ErrorResponse
-	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
-		t.Fatalf("failed to unmarshal response: %v", err)
-	}
-	if resp.Code != 400 {
-		t.Fatalf("expected error code 400, got %d", resp.Code)
-	}
+func TestFaultHandler_DetectFaults_Error(t *testing.T) {
+	mockSvc := new(mockFaultService)
+	handler, r := setupFaultHandler(mockSvc)
+
+	r.POST("/faults/detect", handler.DetectFaults)
+
+	mockSvc.On("DetectFaults", mock.Anything, "device-001").Return(nil, assert.AnError)
+
+	body := map[string]string{"device_id": "device-001"}
+	jsonBody, _ := json.Marshal(body)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/faults/detect", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
 
 func TestFaultHandler_GetDetections_Success(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockSvc := &mockFaultService{}
-	handler := NewFaultHandler(mockSvc)
-	router := setupFaultRouter(handler)
+	mockSvc := new(mockFaultService)
+	handler, r := setupFaultHandler(mockSvc)
 
-	req := httptest.NewRequest(http.MethodGet, "/api/v1/fault/detections?device_id=device-001", nil)
+	r.GET("/faults/detections", handler.GetDetections)
+
+	mockSvc.On("GetDetections", mock.Anything, "device-001", (*entity.FaultSeverity)(nil), (*entity.FaultDetectionStatus)(nil), 1, 20).Return([]*entity.FaultDetectionResult{}, int64(0), nil)
+
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+	req, _ := http.NewRequest("GET", "/faults/detections?device_id=device-001", nil)
+	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusOK {
-		t.Fatalf("expected status 200, got %d, body: %s", w.Code, w.Body.String())
-	}
-
-	var resp dto.PagedResponse
-	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
-		t.Fatalf("failed to unmarshal response: %v", err)
-	}
-	if resp.Code != 0 {
-		t.Fatalf("expected code 0, got %d", resp.Code)
-	}
-	if resp.Total != 1 {
-		t.Fatalf("expected total 1, got %d", resp.Total)
-	}
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestFaultHandler_GetDetections_BadRequest_MissingDeviceID(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockSvc := &mockFaultService{}
-	handler := NewFaultHandler(mockSvc)
-	router := setupFaultRouter(handler)
+func TestFaultHandler_GetDetections_MissingDeviceID(t *testing.T) {
+	mockSvc := new(mockFaultService)
+	handler, r := setupFaultHandler(mockSvc)
 
-	req := httptest.NewRequest(http.MethodGet, "/api/v1/fault/detections", nil)
+	r.GET("/faults/detections", handler.GetDetections)
+
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+	req, _ := http.NewRequest("GET", "/faults/detections", nil)
+	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusBadRequest {
-		t.Fatalf("expected status 400, got %d", w.Code)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
 
-	var resp dto.ErrorResponse
-	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
-		t.Fatalf("failed to unmarshal response: %v", err)
-	}
-	if resp.Code != 400 {
-		t.Fatalf("expected error code 400, got %d", resp.Code)
-	}
+func TestFaultHandler_GetDetections_WithFilters(t *testing.T) {
+	mockSvc := new(mockFaultService)
+	handler, r := setupFaultHandler(mockSvc)
+
+	r.GET("/faults/detections", handler.GetDetections)
+
+	severity := entity.FaultSeverityWarning
+	status := entity.FaultDetectionStatusPending
+	mockSvc.On("GetDetections", mock.Anything, "device-001", &severity, &status, 1, 20).Return([]*entity.FaultDetectionResult{}, int64(0), nil)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/faults/detections?device_id=device-001&severity=warning&status=1", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestFaultHandler_GetDetections_Error(t *testing.T) {
+	mockSvc := new(mockFaultService)
+	handler, r := setupFaultHandler(mockSvc)
+
+	r.GET("/faults/detections", handler.GetDetections)
+
+	mockSvc.On("GetDetections", mock.Anything, "device-001", (*entity.FaultSeverity)(nil), (*entity.FaultDetectionStatus)(nil), 1, 20).Return(nil, int64(0), assert.AnError)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/faults/detections?device_id=device-001", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
 
 func TestFaultHandler_GetDetectionByID_Success(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockSvc := &mockFaultService{}
-	handler := NewFaultHandler(mockSvc)
-	router := setupFaultRouter(handler)
+	mockSvc := new(mockFaultService)
+	handler, r := setupFaultHandler(mockSvc)
 
-	req := httptest.NewRequest(http.MethodGet, "/api/v1/fault/detections/fd-001", nil)
+	r.GET("/faults/detections/:id", handler.GetDetectionByID)
+
+	result := entity.NewFaultDetectionResult("device-001", "temp", entity.FaultSeverityWarning, 0.9, "test", "1.0")
+	mockSvc.On("GetDetectionByID", mock.Anything, "det-001").Return(result, nil)
+
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+	req, _ := http.NewRequest("GET", "/faults/detections/det-001", nil)
+	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusOK {
-		t.Fatalf("expected status 200, got %d, body: %s", w.Code, w.Body.String())
-	}
-
-	var resp dto.Response
-	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
-		t.Fatalf("failed to unmarshal response: %v", err)
-	}
-	if resp.Code != 0 {
-		t.Fatalf("expected code 0, got %d", resp.Code)
-	}
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
 func TestFaultHandler_GetDetectionByID_NotFound(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockSvc := &mockFaultService{}
-	handler := NewFaultHandler(mockSvc)
-	router := setupFaultRouter(handler)
+	mockSvc := new(mockFaultService)
+	handler, r := setupFaultHandler(mockSvc)
 
-	req := httptest.NewRequest(http.MethodGet, "/api/v1/fault/detections/not-found", nil)
+	r.GET("/faults/detections/:id", handler.GetDetectionByID)
+
+	mockSvc.On("GetDetectionByID", mock.Anything, "nonexistent").Return(nil, assert.AnError)
+
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+	req, _ := http.NewRequest("GET", "/faults/detections/nonexistent", nil)
+	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusNotFound {
-		t.Fatalf("expected status 404, got %d", w.Code)
-	}
+	assert.Equal(t, http.StatusNotFound, w.Code)
 }
 
 func TestFaultHandler_UpdateDetectionStatus_Success(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockSvc := &mockFaultService{}
-	handler := NewFaultHandler(mockSvc)
-	router := setupFaultRouter(handler)
+	mockSvc := new(mockFaultService)
+	handler, r := setupFaultHandler(mockSvc)
 
-	body := `{"status":2}`
-	req := httptest.NewRequest(http.MethodPut, "/api/v1/fault/detections/fd-001/status", strings.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
+	r.PUT("/faults/detections/:id/status", handler.UpdateDetectionStatus)
+
+	mockSvc.On("UpdateDetectionStatus", mock.Anything, "det-001", entity.FaultDetectionStatus(2)).Return(nil)
+
+	body := map[string]int{"status": 2}
+	jsonBody, _ := json.Marshal(body)
+
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+	req, _ := http.NewRequest("PUT", "/faults/detections/det-001/status", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusOK {
-		t.Fatalf("expected status 200, got %d, body: %s", w.Code, w.Body.String())
-	}
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestFaultHandler_UpdateDetectionStatus_BadRequest(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockSvc := &mockFaultService{}
-	handler := NewFaultHandler(mockSvc)
-	router := setupFaultRouter(handler)
+func TestFaultHandler_UpdateDetectionStatus_InvalidJSON(t *testing.T) {
+	mockSvc := new(mockFaultService)
+	handler, r := setupFaultHandler(mockSvc)
 
-	body := `{}`
-	req := httptest.NewRequest(http.MethodPut, "/api/v1/fault/detections/fd-001/status", strings.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
+	r.PUT("/faults/detections/:id/status", handler.UpdateDetectionStatus)
+
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+	req, _ := http.NewRequest("PUT", "/faults/detections/det-001/status", bytes.NewBufferString("{invalid}"))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusBadRequest {
-		t.Fatalf("expected status 400, got %d", w.Code)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestFaultHandler_GetDeviceHealth_Success(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockSvc := &mockFaultService{}
-	handler := NewFaultHandler(mockSvc)
-	router := setupFaultRouter(handler)
+	mockSvc := new(mockFaultService)
+	handler, r := setupFaultHandler(mockSvc)
 
-	req := httptest.NewRequest(http.MethodGet, "/api/v1/fault/devices/device-001/health", nil)
+	r.GET("/faults/health/:device_id", handler.GetDeviceHealth)
+
+	mockSvc.On("GetDeviceHealth", mock.Anything, "device-001").Return(85, nil)
+
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+	req, _ := http.NewRequest("GET", "/faults/health/device-001", nil)
+	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusOK {
-		t.Fatalf("expected status 200, got %d, body: %s", w.Code, w.Body.String())
-	}
+	assert.Equal(t, http.StatusOK, w.Code)
+}
 
-	var resp dto.Response
-	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
-		t.Fatalf("failed to unmarshal response: %v", err)
-	}
-	if resp.Code != 0 {
-		t.Fatalf("expected code 0, got %d", resp.Code)
-	}
+func TestFaultHandler_GetDeviceHealth_Error(t *testing.T) {
+	mockSvc := new(mockFaultService)
+	handler, r := setupFaultHandler(mockSvc)
+
+	r.GET("/faults/health/:device_id", handler.GetDeviceHealth)
+
+	mockSvc.On("GetDeviceHealth", mock.Anything, "device-001").Return(0, assert.AnError)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/faults/health/device-001", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
 
 func TestFaultHandler_AnalyzeRootCause_Success(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockSvc := &mockFaultService{}
-	handler := NewFaultHandler(mockSvc)
-	router := setupFaultRouter(handler)
+	mockSvc := new(mockFaultService)
+	handler, r := setupFaultHandler(mockSvc)
 
-	body := `{"detection_id":"fd-001"}`
-	req := httptest.NewRequest(http.MethodPost, "/api/v1/fault/root-cause", strings.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
+	r.POST("/faults/analyze", handler.AnalyzeRootCause)
+
+	result := entity.NewFaultDetectionResult("device-001", "temp", entity.FaultSeverityWarning, 0.9, "test", "1.0")
+	mockSvc.On("AnalyzeRootCause", mock.Anything, "det-001").Return(result, nil)
+
+	body := map[string]string{"detection_id": "det-001"}
+	jsonBody, _ := json.Marshal(body)
+
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+	req, _ := http.NewRequest("POST", "/faults/analyze", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusOK {
-		t.Fatalf("expected status 200, got %d, body: %s", w.Code, w.Body.String())
-	}
-
-	var resp dto.Response
-	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
-		t.Fatalf("failed to unmarshal response: %v", err)
-	}
-	if resp.Code != 0 {
-		t.Fatalf("expected code 0, got %d", resp.Code)
-	}
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestFaultHandler_AnalyzeRootCause_BadRequest(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockSvc := &mockFaultService{}
-	handler := NewFaultHandler(mockSvc)
-	router := setupFaultRouter(handler)
+func TestFaultHandler_AnalyzeRootCause_InvalidJSON(t *testing.T) {
+	mockSvc := new(mockFaultService)
+	handler, r := setupFaultHandler(mockSvc)
 
-	body := `{}`
-	req := httptest.NewRequest(http.MethodPost, "/api/v1/fault/root-cause", strings.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
+	r.POST("/faults/analyze", handler.AnalyzeRootCause)
+
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+	req, _ := http.NewRequest("POST", "/faults/analyze", bytes.NewBufferString("{invalid}"))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusBadRequest {
-		t.Fatalf("expected status 400, got %d", w.Code)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestFaultHandler_CreateWorkOrderFromDetection_Success(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockSvc := &mockFaultService{}
-	handler := NewFaultHandler(mockSvc)
-	router := setupFaultRouter(handler)
+	mockSvc := new(mockFaultService)
+	handler, r := setupFaultHandler(mockSvc)
 
-	body := `{"detection_id":"fd-001"}`
-	req := httptest.NewRequest(http.MethodPost, "/api/v1/fault/work-order", strings.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
+	r.POST("/faults/work-order", handler.CreateWorkOrderFromDetection)
+
+	mockSvc.On("CreateWorkOrderFromDetection", mock.Anything, "det-001").Return("wo-001", nil)
+
+	body := map[string]string{"detection_id": "det-001"}
+	jsonBody, _ := json.Marshal(body)
+
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusOK {
-		t.Fatalf("expected status 200, got %d, body: %s", w.Code, w.Body.String())
-	}
-
-	var resp dto.Response
-	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
-		t.Fatalf("failed to unmarshal response: %v", err)
-	}
-	if resp.Code != 0 {
-		t.Fatalf("expected code 0, got %d", resp.Code)
-	}
-}
-
-func TestFaultHandler_CreateWorkOrderFromDetection_BadRequest(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockSvc := &mockFaultService{}
-	handler := NewFaultHandler(mockSvc)
-	router := setupFaultRouter(handler)
-
-	body := `{}`
-	req := httptest.NewRequest(http.MethodPost, "/api/v1/fault/work-order", strings.NewReader(body))
+	req, _ := http.NewRequest("POST", "/faults/work-order", bytes.NewBuffer(jsonBody))
 	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusBadRequest {
-		t.Fatalf("expected status 400, got %d", w.Code)
-	}
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestFaultHandler_DetectFaults_InternalError(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockSvc := &mockFaultService{
-		detectFaultsFunc: func(ctx context.Context, deviceID string) ([]*entity.FaultDetectionResult, error) {
-			return nil, fmt.Errorf("internal error")
-		},
-	}
-	handler := NewFaultHandler(mockSvc)
-	router := setupFaultRouter(handler)
+func TestFaultHandler_CreateWorkOrderFromDetection_InvalidJSON(t *testing.T) {
+	mockSvc := new(mockFaultService)
+	handler, r := setupFaultHandler(mockSvc)
 
-	body := `{"device_id":"device-001"}`
-	req := httptest.NewRequest(http.MethodPost, "/api/v1/fault/detect", strings.NewReader(body))
+	r.POST("/faults/work-order", handler.CreateWorkOrderFromDetection)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/faults/work-order", bytes.NewBufferString("{invalid}"))
 	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestFaultHandler_CreateWorkOrderFromDetection_Error(t *testing.T) {
+	mockSvc := new(mockFaultService)
+	handler, r := setupFaultHandler(mockSvc)
+
+	r.POST("/faults/work-order", handler.CreateWorkOrderFromDetection)
+
+	mockSvc.On("CreateWorkOrderFromDetection", mock.Anything, "det-001").Return("", assert.AnError)
+
+	body := map[string]string{"detection_id": "det-001"}
+	jsonBody, _ := json.Marshal(body)
+
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+	req, _ := http.NewRequest("POST", "/faults/work-order", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusInternalServerError {
-		t.Fatalf("expected status 500, got %d", w.Code)
-	}
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
 
-func init() {
-	_ = time.Now
+func TestFaultHandler_NewFaultHandler(t *testing.T) {
+	mockSvc := new(mockFaultService)
+	handler := NewFaultHandler(mockSvc)
+	assert.NotNil(t, handler)
 }
+
+

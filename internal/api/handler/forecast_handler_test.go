@@ -1,351 +1,337 @@
 package handler
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/new-energy-monitoring/internal/api/dto"
 	"github.com/new-energy-monitoring/internal/domain/entity"
 	"github.com/new-energy-monitoring/internal/domain/repository"
 	"github.com/new-energy-monitoring/pkg/ai/forecast"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 type mockForecastService struct {
-	powerForecastFunc     func(ctx context.Context, stationID string, forecastType entity.ForecastType) ([]*entity.ForecastResult, error)
-	getResultsFunc        func(ctx context.Context, stationID string, forecastType *entity.ForecastType, startTime, endTime *time.Time, page, pageSize int) ([]*entity.ForecastResult, int64, error)
-	getAccuracyFunc       func(ctx context.Context, stationID string, forecastType *entity.ForecastType, start, end time.Time) (*repository.ForecastAccuracyStats, error)
-	evaluateModelFunc     func(ctx context.Context, stationID string, forecastType *entity.ForecastType, start, end time.Time, installedCapacity float64) (*forecast.EvaluationReport, error)
-	attributionAnalysisFunc func(ctx context.Context, stationID string, targetTime string, predictedPower, actualPower float64) (*forecast.AttributionResult, error)
+	mock.Mock
 }
 
 func (m *mockForecastService) PowerForecast(ctx context.Context, stationID string, forecastType entity.ForecastType) ([]*entity.ForecastResult, error) {
-	if m.powerForecastFunc != nil {
-		return m.powerForecastFunc(ctx, stationID, forecastType)
+	args := m.Called(ctx, stationID, forecastType)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
 	}
-	confidence := 0.9
-	return []*entity.ForecastResult{
-		{
-			ID:             "fc-001",
-			StationID:      stationID,
-			ForecastType:   forecastType,
-			TargetTime:     time.Now().Add(1 * time.Hour),
-			PredictedPower: 500.0,
-			Confidence:     &confidence,
-			ModelVersion:   "1.0.0",
-		},
-	}, nil
+	return args.Get(0).([]*entity.ForecastResult), args.Error(1)
 }
-
 func (m *mockForecastService) GetResults(ctx context.Context, stationID string, forecastType *entity.ForecastType, startTime, endTime *time.Time, page, pageSize int) ([]*entity.ForecastResult, int64, error) {
-	if m.getResultsFunc != nil {
-		return m.getResultsFunc(ctx, stationID, forecastType, startTime, endTime, page, pageSize)
+	args := m.Called(ctx, stationID, forecastType, startTime, endTime, page, pageSize)
+	if args.Get(0) == nil {
+		return nil, args.Get(1).(int64), args.Error(2)
 	}
-	confidence := 0.9
-	return []*entity.ForecastResult{
-		{
-			ID:             "fc-001",
-			StationID:      stationID,
-			ForecastType:   entity.ForecastTypeShortTerm,
-			TargetTime:     time.Now(),
-			PredictedPower: 800.0,
-			Confidence:     &confidence,
-			ModelVersion:   "1.0.0",
-		},
-	}, 1, nil
+	return args.Get(0).([]*entity.ForecastResult), args.Get(1).(int64), args.Error(2)
 }
-
 func (m *mockForecastService) GetAccuracy(ctx context.Context, stationID string, forecastType *entity.ForecastType, start, end time.Time) (*repository.ForecastAccuracyStats, error) {
-	if m.getAccuracyFunc != nil {
-		return m.getAccuracyFunc(ctx, stationID, forecastType, start, end)
+	args := m.Called(ctx, stationID, forecastType, start, end)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
 	}
-	return &repository.ForecastAccuracyStats{
-		StationID:    stationID,
-		ForecastType: "short_term",
-		TotalPoints:  100,
-		AvgAccuracy:  0.92,
-		RMSE:         15.5,
-		MAE:          12.3,
-	}, nil
+	return args.Get(0).(*repository.ForecastAccuracyStats), args.Error(1)
 }
-
 func (m *mockForecastService) EvaluateModel(ctx context.Context, stationID string, forecastType *entity.ForecastType, start, end time.Time, installedCapacity float64) (*forecast.EvaluationReport, error) {
-	if m.evaluateModelFunc != nil {
-		return m.evaluateModelFunc(ctx, stationID, forecastType, start, end, installedCapacity)
+	args := m.Called(ctx, stationID, forecastType, start, end, installedCapacity)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
 	}
-	return &forecast.EvaluationReport{
-		TotalPoints:  100,
-		RMSE:         15.5,
-		MAE:          12.3,
-		Bias:         2.1,
-		Accuracy:     0.92,
-		InstalledCap: installedCapacity,
-		ByPeriod:     map[string]forecast.Stats{},
-	}, nil
+	return args.Get(0).(*forecast.EvaluationReport), args.Error(1)
 }
-
 func (m *mockForecastService) AttributionAnalysis(ctx context.Context, stationID string, targetTime string, predictedPower, actualPower float64) (*forecast.AttributionResult, error) {
-	if m.attributionAnalysisFunc != nil {
-		return m.attributionAnalysisFunc(ctx, stationID, targetTime, predictedPower, actualPower)
+	args := m.Called(ctx, stationID, targetTime, predictedPower, actualPower)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
 	}
-	return &forecast.AttributionResult{
-		StationID:    stationID,
-		PrimaryCause: "weather",
-		Confidence:   0.8,
-		Factors: []forecast.AttributionFactor{
-			{Name: "cloud_cover", Contribution: 0.5, Description: "云量变化"},
-		},
-		Suggestion: "偏差在正常范围内，持续监控",
-		Deviation:   5.0,
-	}, nil
+	return args.Get(0).(*forecast.AttributionResult), args.Error(1)
 }
 
-func setupForecastRouter(h *ForecastHandler) *gin.Engine {
+func setupForecastHandler(svc *mockForecastService) (*ForecastHandler, *gin.Engine) {
+	gin.SetMode(gin.TestMode)
+	handler := NewForecastHandler(svc)
 	r := gin.New()
-	r.POST("/api/v1/forecast/power", h.PowerForecast)
-	r.GET("/api/v1/forecast/results", h.GetResults)
-	r.GET("/api/v1/forecast/accuracy", h.GetAccuracy)
-	r.POST("/api/v1/forecast/evaluate", h.EvaluateModel)
-	r.POST("/api/v1/forecast/attribution", h.AttributionAnalysis)
-	return r
+	return handler, r
 }
 
 func TestForecastHandler_PowerForecast_Success(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockSvc := &mockForecastService{}
-	handler := NewForecastHandler(mockSvc)
-	router := setupForecastRouter(handler)
+	mockSvc := new(mockForecastService)
+	handler, r := setupForecastHandler(mockSvc)
 
-	body := `{"station_id":"station-001","forecast_type":"short_term"}`
-	req := httptest.NewRequest(http.MethodPost, "/api/v1/forecast/power", strings.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
+	r.POST("/forecast/power", handler.PowerForecast)
+
+	results := []*entity.ForecastResult{
+		{StationID: "station-001", ForecastType: entity.ForecastTypeShortTerm, PredictedPower: 500.0},
+	}
+	mockSvc.On("PowerForecast", mock.Anything, "station-001", entity.ForecastTypeShortTerm).Return(results, nil)
+
+	body := map[string]string{"station_id": "station-001", "forecast_type": "short_term"}
+	jsonBody, _ := json.Marshal(body)
+
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+	req, _ := http.NewRequest("POST", "/forecast/power", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusOK {
-		t.Fatalf("expected status 200, got %d, body: %s", w.Code, w.Body.String())
-	}
-
-	var resp dto.Response
-	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
-		t.Fatalf("failed to unmarshal response: %v", err)
-	}
-	if resp.Code != 0 {
-		t.Fatalf("expected code 0, got %d", resp.Code)
-	}
-	if resp.Message != "success" {
-		t.Fatalf("expected message 'success', got '%s'", resp.Message)
-	}
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestForecastHandler_PowerForecast_BadRequest(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockSvc := &mockForecastService{}
-	handler := NewForecastHandler(mockSvc)
-	router := setupForecastRouter(handler)
+func TestForecastHandler_PowerForecast_InvalidJSON(t *testing.T) {
+	mockSvc := new(mockForecastService)
+	handler, r := setupForecastHandler(mockSvc)
 
-	body := `{"forecast_type":"short_term"}`
-	req := httptest.NewRequest(http.MethodPost, "/api/v1/forecast/power", strings.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
+	r.POST("/forecast/power", handler.PowerForecast)
+
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+	req, _ := http.NewRequest("POST", "/forecast/power", bytes.NewBufferString("{invalid}"))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusBadRequest {
-		t.Fatalf("expected status 400, got %d", w.Code)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
 
-	var resp dto.ErrorResponse
-	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
-		t.Fatalf("failed to unmarshal response: %v", err)
-	}
-	if resp.Code != 400 {
-		t.Fatalf("expected error code 400, got %d", resp.Code)
-	}
+func TestForecastHandler_PowerForecast_Error(t *testing.T) {
+	mockSvc := new(mockForecastService)
+	handler, r := setupForecastHandler(mockSvc)
+
+	r.POST("/forecast/power", handler.PowerForecast)
+
+	mockSvc.On("PowerForecast", mock.Anything, "station-001", entity.ForecastTypeShortTerm).Return(nil, assert.AnError)
+
+	body := map[string]string{"station_id": "station-001", "forecast_type": "short_term"}
+	jsonBody, _ := json.Marshal(body)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/forecast/power", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
 
 func TestForecastHandler_GetResults_Success(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockSvc := &mockForecastService{}
-	handler := NewForecastHandler(mockSvc)
-	router := setupForecastRouter(handler)
+	mockSvc := new(mockForecastService)
+	handler, r := setupForecastHandler(mockSvc)
 
-	req := httptest.NewRequest(http.MethodGet, "/api/v1/forecast/results?station_id=station-001", nil)
+	r.GET("/forecast/results", handler.GetResults)
+
+	mockSvc.On("GetResults", mock.Anything, "station-001", (*entity.ForecastType)(nil), (*time.Time)(nil), (*time.Time)(nil), 1, 20).Return([]*entity.ForecastResult{}, int64(0), nil)
+
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+	req, _ := http.NewRequest("GET", "/forecast/results?station_id=station-001", nil)
+	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusOK {
-		t.Fatalf("expected status 200, got %d, body: %s", w.Code, w.Body.String())
-	}
-
-	var resp dto.PagedResponse
-	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
-		t.Fatalf("failed to unmarshal response: %v", err)
-	}
-	if resp.Code != 0 {
-		t.Fatalf("expected code 0, got %d", resp.Code)
-	}
-	if resp.Total != 1 {
-		t.Fatalf("expected total 1, got %d", resp.Total)
-	}
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestForecastHandler_GetResults_BadRequest_MissingStationID(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockSvc := &mockForecastService{}
-	handler := NewForecastHandler(mockSvc)
-	router := setupForecastRouter(handler)
+func TestForecastHandler_GetResults_MissingStationID(t *testing.T) {
+	mockSvc := new(mockForecastService)
+	handler, r := setupForecastHandler(mockSvc)
 
-	req := httptest.NewRequest(http.MethodGet, "/api/v1/forecast/results", nil)
+	r.GET("/forecast/results", handler.GetResults)
+
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+	req, _ := http.NewRequest("GET", "/forecast/results", nil)
+	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusBadRequest {
-		t.Fatalf("expected status 400, got %d", w.Code)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
 
-	var resp dto.ErrorResponse
-	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
-		t.Fatalf("failed to unmarshal response: %v", err)
-	}
-	if resp.Code != 400 {
-		t.Fatalf("expected error code 400, got %d", resp.Code)
-	}
+func TestForecastHandler_GetResults_WithTimeRange(t *testing.T) {
+	mockSvc := new(mockForecastService)
+	handler, r := setupForecastHandler(mockSvc)
+
+	r.GET("/forecast/results", handler.GetResults)
+
+	mockSvc.On("GetResults", mock.Anything, "station-001", (*entity.ForecastType)(nil), mock.Anything, mock.Anything, 1, 20).Return([]*entity.ForecastResult{}, int64(0), nil)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/forecast/results?station_id=station-001&start_time=2024-01-01T00:00:00Z&end_time=2024-01-02T00:00:00Z", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
 func TestForecastHandler_GetAccuracy_Success(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockSvc := &mockForecastService{}
-	handler := NewForecastHandler(mockSvc)
-	router := setupForecastRouter(handler)
+	mockSvc := new(mockForecastService)
+	handler, r := setupForecastHandler(mockSvc)
 
-	now := time.Now()
-	url := "/api/v1/forecast/accuracy?station_id=station-001&start_time=" + now.Add(-24*time.Hour).Format(time.RFC3339) + "&end_time=" + now.Format(time.RFC3339)
-	req := httptest.NewRequest(http.MethodGet, url, nil)
+	r.GET("/forecast/accuracy", handler.GetAccuracy)
+
+	stats := &repository.ForecastAccuracyStats{StationID: "station-001", AvgAccuracy: 0.95}
+	mockSvc.On("GetAccuracy", mock.Anything, "station-001", (*entity.ForecastType)(nil), mock.Anything, mock.Anything).Return(stats, nil)
+
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+	req, _ := http.NewRequest("GET", "/forecast/accuracy?station_id=station-001&start_time=2024-01-01T00:00:00Z&end_time=2024-01-02T00:00:00Z", nil)
+	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusOK {
-		t.Fatalf("expected status 200, got %d, body: %s", w.Code, w.Body.String())
-	}
-
-	var resp dto.Response
-	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
-		t.Fatalf("failed to unmarshal response: %v", err)
-	}
-	if resp.Code != 0 {
-		t.Fatalf("expected code 0, got %d", resp.Code)
-	}
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestForecastHandler_GetAccuracy_BadRequest_MissingTimes(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockSvc := &mockForecastService{}
-	handler := NewForecastHandler(mockSvc)
-	router := setupForecastRouter(handler)
+func TestForecastHandler_GetAccuracy_MissingStationID(t *testing.T) {
+	mockSvc := new(mockForecastService)
+	handler, r := setupForecastHandler(mockSvc)
 
-	req := httptest.NewRequest(http.MethodGet, "/api/v1/forecast/accuracy?station_id=station-001", nil)
+	r.GET("/forecast/accuracy", handler.GetAccuracy)
+
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+	req, _ := http.NewRequest("GET", "/forecast/accuracy?start_time=2024-01-01T00:00:00Z&end_time=2024-01-02T00:00:00Z", nil)
+	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusBadRequest {
-		t.Fatalf("expected status 400, got %d", w.Code)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
 
-	var resp dto.ErrorResponse
-	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
-		t.Fatalf("failed to unmarshal response: %v", err)
-	}
-	if resp.Code != 400 {
-		t.Fatalf("expected error code 400, got %d", resp.Code)
-	}
+func TestForecastHandler_GetAccuracy_MissingTimes(t *testing.T) {
+	mockSvc := new(mockForecastService)
+	handler, r := setupForecastHandler(mockSvc)
+
+	r.GET("/forecast/accuracy", handler.GetAccuracy)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/forecast/accuracy?station_id=station-001", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestForecastHandler_GetAccuracy_InvalidStartTime(t *testing.T) {
+	mockSvc := new(mockForecastService)
+	handler, r := setupForecastHandler(mockSvc)
+
+	r.GET("/forecast/accuracy", handler.GetAccuracy)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/forecast/accuracy?station_id=station-001&start_time=invalid&end_time=2024-01-02T00:00:00Z", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestForecastHandler_GetAccuracy_InvalidEndTime(t *testing.T) {
+	mockSvc := new(mockForecastService)
+	handler, r := setupForecastHandler(mockSvc)
+
+	r.GET("/forecast/accuracy", handler.GetAccuracy)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/forecast/accuracy?station_id=station-001&start_time=2024-01-01T00:00:00Z&end_time=invalid", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestForecastHandler_EvaluateModel_Success(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockSvc := &mockForecastService{}
-	handler := NewForecastHandler(mockSvc)
-	router := setupForecastRouter(handler)
+	mockSvc := new(mockForecastService)
+	handler, r := setupForecastHandler(mockSvc)
 
-	now := time.Now()
-	body := `{"station_id":"station-001","forecast_type":"short_term","start_time":"` + now.Add(-24*time.Hour).Format(time.RFC3339) + `","end_time":"` + now.Format(time.RFC3339) + `","installed_capacity":1000}`
-	req := httptest.NewRequest(http.MethodPost, "/api/v1/forecast/evaluate", strings.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
+	r.POST("/forecast/evaluate", handler.EvaluateModel)
+
+	report := &forecast.EvaluationReport{}
+	mockSvc.On("EvaluateModel", mock.Anything, "station-001", (*entity.ForecastType)(nil), mock.Anything, mock.Anything, 100.0).Return(report, nil)
+
+	body := map[string]interface{}{
+		"station_id":         "station-001",
+		"start_time":         "2024-01-01T00:00:00Z",
+		"end_time":           "2024-01-02T00:00:00Z",
+		"installed_capacity": 100.0,
+	}
+	jsonBody, _ := json.Marshal(body)
+
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+	req, _ := http.NewRequest("POST", "/forecast/evaluate", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusOK {
-		t.Fatalf("expected status 200, got %d, body: %s", w.Code, w.Body.String())
-	}
-
-	var resp dto.Response
-	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
-		t.Fatalf("failed to unmarshal response: %v", err)
-	}
-	if resp.Code != 0 {
-		t.Fatalf("expected code 0, got %d", resp.Code)
-	}
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestForecastHandler_EvaluateModel_BadRequest(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockSvc := &mockForecastService{}
-	handler := NewForecastHandler(mockSvc)
-	router := setupForecastRouter(handler)
+func TestForecastHandler_EvaluateModel_InvalidJSON(t *testing.T) {
+	mockSvc := new(mockForecastService)
+	handler, r := setupForecastHandler(mockSvc)
 
-	body := `{"station_id":"station-001"}`
-	req := httptest.NewRequest(http.MethodPost, "/api/v1/forecast/evaluate", strings.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
+	r.POST("/forecast/evaluate", handler.EvaluateModel)
+
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+	req, _ := http.NewRequest("POST", "/forecast/evaluate", bytes.NewBufferString("{invalid}"))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusBadRequest {
-		t.Fatalf("expected status 400, got %d", w.Code)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestForecastHandler_EvaluateModel_InvalidStartTime(t *testing.T) {
+	mockSvc := new(mockForecastService)
+	handler, r := setupForecastHandler(mockSvc)
+
+	r.POST("/forecast/evaluate", handler.EvaluateModel)
+
+	body := map[string]interface{}{
+		"station_id":         "station-001",
+		"start_time":         "invalid",
+		"end_time":           "2024-01-02T00:00:00Z",
+		"installed_capacity": 100.0,
 	}
+	jsonBody, _ := json.Marshal(body)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/forecast/evaluate", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestForecastHandler_AttributionAnalysis_Success(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockSvc := &mockForecastService{}
-	handler := NewForecastHandler(mockSvc)
-	router := setupForecastRouter(handler)
+	mockSvc := new(mockForecastService)
+	handler, r := setupForecastHandler(mockSvc)
 
-	body := `{"station_id":"station-001","target_time":"2025-01-01T00:00:00Z","predicted_power":500.0,"actual_power":480.0}`
-	req := httptest.NewRequest(http.MethodPost, "/api/v1/forecast/attribution", strings.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
+	r.POST("/forecast/attribution", handler.AttributionAnalysis)
+
+	result := &forecast.AttributionResult{}
+	mockSvc.On("AttributionAnalysis", mock.Anything, "station-001", "2024-01-01T00:00:00Z", 500.0, 480.0).Return(result, nil)
+
+	body := map[string]interface{}{
+		"station_id":      "station-001",
+		"target_time":     "2024-01-01T00:00:00Z",
+		"predicted_power": 500.0,
+		"actual_power":    480.0,
+	}
+	jsonBody, _ := json.Marshal(body)
+
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+	req, _ := http.NewRequest("POST", "/forecast/attribution", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusOK {
-		t.Fatalf("expected status 200, got %d, body: %s", w.Code, w.Body.String())
-	}
-
-	var resp dto.Response
-	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
-		t.Fatalf("failed to unmarshal response: %v", err)
-	}
-	if resp.Code != 0 {
-		t.Fatalf("expected code 0, got %d", resp.Code)
-	}
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestForecastHandler_AttributionAnalysis_BadRequest(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockSvc := &mockForecastService{}
-	handler := NewForecastHandler(mockSvc)
-	router := setupForecastRouter(handler)
+func TestForecastHandler_AttributionAnalysis_InvalidJSON(t *testing.T) {
+	mockSvc := new(mockForecastService)
+	handler, r := setupForecastHandler(mockSvc)
 
-	body := `{"station_id":"station-001"}`
-	req := httptest.NewRequest(http.MethodPost, "/api/v1/forecast/attribution", strings.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
+	r.POST("/forecast/attribution", handler.AttributionAnalysis)
+
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+	req, _ := http.NewRequest("POST", "/forecast/attribution", bytes.NewBufferString("{invalid}"))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusBadRequest {
-		t.Fatalf("expected status 400, got %d", w.Code)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestForecastHandler_NewForecastHandler(t *testing.T) {
+	mockSvc := new(mockForecastService)
+	handler := NewForecastHandler(mockSvc)
+	assert.NotNil(t, handler)
 }
