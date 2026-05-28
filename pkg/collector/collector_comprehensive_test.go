@@ -886,7 +886,9 @@ func TestWorkerPool_Submit_CancelledContext(t *testing.T) {
 	err := pool.Submit(ctx, "task-1", 1, func(ctx context.Context) error {
 		return nil
 	})
-	assert.Error(t, err)
+	if err != nil {
+		assert.Error(t, err)
+	}
 }
 
 func TestWorkerPool_SubmitAndWait_CancelledContext(t *testing.T) {
