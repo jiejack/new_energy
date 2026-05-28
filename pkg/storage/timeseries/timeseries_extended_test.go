@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
 func TestNewBatchWriter(t *testing.T) {
@@ -595,6 +596,101 @@ func TestIndexSuggestion_Fields(t *testing.T) {
 	assert.Equal(t, "point_id", suggestion.ColumnName)
 	assert.Equal(t, "btree", suggestion.IndexType)
 	assert.Equal(t, "frequently used in WHERE clause", suggestion.Reason)
+}
+
+func TestDorisClient_Closed_WriteWithTable(t *testing.T) {
+	client := &DorisClient{closed: true, logger: zap.L().Named("doris")}
+	err := client.WriteWithTable(context.Background(), "db", "tbl", []*DataPoint{{PointID: 1}})
+	assert.Equal(t, ErrClosed, err)
+}
+
+func TestDorisClient_Closed_QueryNil(t *testing.T) {
+	client := &DorisClient{logger: zap.L().Named("doris")}
+	_, err := client.Query(context.Background(), nil)
+	assert.Equal(t, ErrInvalidQuery, err)
+}
+
+func TestDorisClient_Closed_QueryLatest(t *testing.T) {
+	client := &DorisClient{closed: true, logger: zap.L().Named("doris")}
+	_, err := client.QueryLatest(context.Background(), []int64{1})
+	assert.Equal(t, ErrClosed, err)
+}
+
+func TestDorisClient_QueryLatest_EmptyIDs(t *testing.T) {
+	client := &DorisClient{logger: zap.L().Named("doris")}
+	result, err := client.QueryLatest(context.Background(), []int64{})
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(result))
+}
+
+func TestDorisClient_Closed_Downsample(t *testing.T) {
+	client := &DorisClient{closed: true, logger: zap.L().Named("doris")}
+	err := client.Downsample(context.Background(), &DownsampleQuery{})
+	assert.Equal(t, ErrClosed, err)
+}
+
+func TestDorisClient_WriteWithTable_InvalidTable(t *testing.T) {
+	client := &DorisClient{logger: zap.L().Named("doris")}
+	err := client.WriteWithTable(context.Background(), "valid_db", "123invalid", []*DataPoint{{PointID: 1}})
+	assert.Error(t, err)
+}
+
+func TestDorisClient_CreateTable_InvalidTable(t *testing.T) {
+	client := &DorisClient{logger: zap.L().Named("doris")}
+	err := client.CreateTable(context.Background(), "db", "123invalid", &TableSchema{})
+	assert.Error(t, err)
+}
+
+func TestDorisClient_CreateTable_InvalidColumn(t *testing.T) {
+	client := &DorisClient{logger: zap.L().Named("doris")}
+	schema := &TableSchema{
+		Columns: []ColumnSchema{{Name: "123invalid", Type: "Int64"}},
+	}
+	err := client.CreateTable(context.Background(), "db", "tbl", schema)
+	assert.Error(t, err)
+}
+
+func TestDorisClient_DropTable_InvalidTable(t *testing.T) {
+	client := &DorisClient{logger: zap.L().Named("doris")}
+	err := client.DropTable(context.Background(), "db", "123invalid")
+	assert.Error(t, err)
+}
+
+func TestDorisClient_ParseTags_WithEquals(t *testing.T) {
+	client := &DorisClient{logger: zap.L().Named("doris")}
+	result := client.parseTags("key=val=with=equals")
+	assert.Equal(t, "val=with=equals", result["key"])
+}
+
+func TestDorisClient_ParseTags_Invalid(t *testing.T) {
+	client := &DorisClient{logger: zap.L().Named("doris")}
+	result := client.parseTags("invalid")
+	assert.Equal(t, 0, len(result))
+}
+
+func TestClickHouseClient_Closed_WriteWithTable(t *testing.T) {
+	client := &ClickHouseClient{closed: true, logger: zap.L().Named("ch")}
+	err := client.WriteWithTable(context.Background(), "db", "tbl", []*DataPoint{{PointID: 1}})
+	assert.Equal(t, ErrClosed, err)
+}
+
+func TestClickHouseClient_Closed_QueryLatest(t *testing.T) {
+	client := &ClickHouseClient{closed: true, logger: zap.L().Named("ch")}
+	_, err := client.QueryLatest(context.Background(), []int64{1})
+	assert.Equal(t, ErrClosed, err)
+}
+
+func TestClickHouseClient_QueryLatest_EmptyIDs(t *testing.T) {
+	client := &ClickHouseClient{logger: zap.L().Named("ch")}
+	result, err := client.QueryLatest(context.Background(), []int64{})
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(result))
+}
+
+func TestClickHouseClient_Closed_Downsample(t *testing.T) {
+	client := &ClickHouseClient{closed: true, logger: zap.L().Named("ch")}
+	err := client.Downsample(context.Background(), &DownsampleQuery{})
+	assert.Equal(t, ErrClosed, err)
 }
 
 func TestWriteBatchRequest_Fields(t *testing.T) {

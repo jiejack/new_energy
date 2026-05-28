@@ -1,6 +1,8 @@
 package iec104
 
 import (
+	"math"
+	"net"
 	"testing"
 	"time"
 
@@ -1071,6 +1073,221 @@ func TestMaster_encodeInfoObject_WithCP24Timestamp(t *testing.T) {
 	assert.NotNil(t, data)
 }
 
+func TestDecodeStepPositionInfo_InsufficientData(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_SPONTANEOUS}
+	header := coder.EncodeASDUHeader(TYPE_ID_STEP_POSITION_INFO, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(5001)
+	infoData := append(infoAddr, 0x0A)
+	data := append(header, infoData...)
+
+	_, err := coder.DecodeASDU(data)
+	assert.Error(t, err)
+}
+
+func TestDecodeBitstring32_InsufficientData(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_SPONTANEOUS}
+	header := coder.EncodeASDUHeader(TYPE_ID_BITSTRING32, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(7001)
+	infoData := append(infoAddr, 0x01, 0x02, 0x03)
+	data := append(header, infoData...)
+
+	_, err := coder.DecodeASDU(data)
+	assert.Error(t, err)
+}
+
+func TestDecodeNormalizedValue_InsufficientData(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_SPONTANEOUS}
+	header := coder.EncodeASDUHeader(TYPE_ID_MEASURE_VALUE_NORMAL, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(3001)
+	infoData := append(infoAddr, 0x01)
+	data := append(header, infoData...)
+
+	_, err := coder.DecodeASDU(data)
+	assert.Error(t, err)
+}
+
+func TestDecodeScaledValue_InsufficientData(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_SPONTANEOUS}
+	header := coder.EncodeASDUHeader(TYPE_ID_MEASURE_VALUE_SCALED, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(4001)
+	infoData := append(infoAddr, 0x01)
+	data := append(header, infoData...)
+
+	_, err := coder.DecodeASDU(data)
+	assert.Error(t, err)
+}
+
+func TestDecodeFloatValue_InsufficientData(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_SPONTANEOUS}
+	header := coder.EncodeASDUHeader(TYPE_ID_MEASURE_VALUE_FLOAT, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(5001)
+	infoData := append(infoAddr, 0x01, 0x02, 0x03)
+	data := append(header, infoData...)
+
+	_, err := coder.DecodeASDU(data)
+	assert.Error(t, err)
+}
+
+func TestDecodeIntegratedTotal_InsufficientData(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_SPONTANEOUS}
+	header := coder.EncodeASDUHeader(TYPE_ID_INTEGRITY_TOTAL, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(6001)
+	infoData := append(infoAddr, 0x01, 0x02, 0x03)
+	data := append(header, infoData...)
+
+	_, err := coder.DecodeASDU(data)
+	assert.Error(t, err)
+}
+
+func TestDecodeSingleCommand_InsufficientData(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_ACTIVATION}
+	header := coder.EncodeASDUHeader(TYPE_ID_SINGLE_COMMAND, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(1001)
+	data := append(header, infoAddr...)
+
+	_, err := coder.DecodeASDU(data)
+	assert.Error(t, err)
+}
+
+func TestDecodeDoubleCommand_InsufficientData(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_ACTIVATION}
+	header := coder.EncodeASDUHeader(TYPE_ID_DOUBLE_COMMAND, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(2001)
+	data := append(header, infoAddr...)
+
+	_, err := coder.DecodeASDU(data)
+	assert.Error(t, err)
+}
+
+func TestDecodeRegulatingStepCommand_InsufficientData(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_ACTIVATION}
+	header := coder.EncodeASDUHeader(TYPE_ID_REGULATING_STEP_COMMAND, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(3001)
+	data := append(header, infoAddr...)
+
+	_, err := coder.DecodeASDU(data)
+	assert.Error(t, err)
+}
+
+func TestDecodeSetPointCommandNormal_InsufficientData(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_ACTIVATION}
+	header := coder.EncodeASDUHeader(TYPE_ID_SET_POINT_COMMAND_NORMAL, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(1001)
+	infoData := append(infoAddr, 0x01)
+	data := append(header, infoData...)
+
+	_, err := coder.DecodeASDU(data)
+	assert.Error(t, err)
+}
+
+func TestDecodeSetPointCommandScaled_InsufficientData(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_ACTIVATION}
+	header := coder.EncodeASDUHeader(TYPE_ID_SET_POINT_COMMAND_SCALED, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(1001)
+	infoData := append(infoAddr, 0x01)
+	data := append(header, infoData...)
+
+	_, err := coder.DecodeASDU(data)
+	assert.Error(t, err)
+}
+
+func TestDecodeSetPointCommandFloat_InsufficientData(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_ACTIVATION}
+	header := coder.EncodeASDUHeader(TYPE_ID_SET_POINT_COMMAND_FLOAT, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(1001)
+	infoData := append(infoAddr, 0x01, 0x02, 0x03)
+	data := append(header, infoData...)
+
+	_, err := coder.DecodeASDU(data)
+	assert.Error(t, err)
+}
+
+func TestDecodeInterrogationCommand_InsufficientData(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_ACTIVATION}
+	header := coder.EncodeASDUHeader(TYPE_ID_INTERROGATION_CMD, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(0)
+	data := append(header, infoAddr...)
+
+	_, err := coder.DecodeASDU(data)
+	assert.Error(t, err)
+}
+
+func TestDecodeCounterInterrogationCommand_InsufficientData(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_ACTIVATION}
+	header := coder.EncodeASDUHeader(TYPE_ID_COUNTER_INTERROGATION_CMD, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(0)
+	data := append(header, infoAddr...)
+
+	_, err := coder.DecodeASDU(data)
+	assert.Error(t, err)
+}
+
+func TestDecodeClockSyncCommand_InsufficientData(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_ACTIVATION}
+	header := coder.EncodeASDUHeader(TYPE_ID_CLOCK_SYNC_CMD, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(0)
+	infoData := append(infoAddr, 0x01, 0x02, 0x03)
+	data := append(header, infoData...)
+
+	_, err := coder.DecodeASDU(data)
+	assert.Error(t, err)
+}
+
+func TestDecodeTestCommand_InsufficientData(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_ACTIVATION}
+	header := coder.EncodeASDUHeader(TYPE_ID_TEST_COMMAND, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(0)
+	infoData := append(infoAddr, 0x01)
+	data := append(header, infoData...)
+
+	_, err := coder.DecodeASDU(data)
+	assert.Error(t, err)
+}
+
+func TestDecodeEndOfInitialization_InsufficientData(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_INITIALIZED}
+	header := coder.EncodeASDUHeader(TYPE_ID_END_OF_INITIALIZATION, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(0)
+	data := append(header, infoAddr...)
+
+	_, err := coder.DecodeASDU(data)
+	assert.Error(t, err)
+}
+
 func TestMaster_handleAPDU_NilASDU(t *testing.T) {
 	config := DefaultMasterConfig()
 	master := NewMaster(config)
@@ -1279,4 +1496,521 @@ func TestMasterState_String(t *testing.T) {
 	assert.Equal(t, MasterState(1), MASTER_STATE_STARTING)
 	assert.Equal(t, MasterState(2), MASTER_STATE_RUNNING)
 	assert.Equal(t, MasterState(3), MASTER_STATE_STOPPING)
+}
+
+func TestDecodeStepPositionInfo_WithTime(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_SPONTANEOUS}
+	ts := time.Date(2015, 6, 15, 10, 30, 0, 0, time.Local)
+
+	header := coder.EncodeASDUHeader(TYPE_ID_STEP_POSITION_INFO_TIME, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(5001)
+	cp24 := EncodeCP24Time2a(ts)
+	infoData := append(infoAddr, 0x0A, 0x00)
+	infoData = append(infoData, cp24...)
+	data := append(header, infoData...)
+
+	asdu, err := coder.DecodeASDU(data)
+	require.NoError(t, err)
+	assert.Equal(t, uint8(TYPE_ID_STEP_POSITION_INFO_TIME), asdu.TypeID)
+
+	spi, ok := asdu.Information[0].Value.(*StepPositionInfo)
+	require.True(t, ok)
+	assert.Equal(t, int16(10), spi.Value)
+}
+
+func TestDecodeStepPositionInfo_WithCP56Time(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_SPONTANEOUS}
+	ts := time.Date(2015, 6, 15, 10, 30, 0, 0, time.Local)
+
+	header := coder.EncodeASDUHeader(TYPE_ID_STEP_POSITION_INFO_TIME_CP56, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(5001)
+	cp56 := EncodeCP56Time2a(ts)
+	infoData := append(infoAddr, 0x8A, 0x00)
+	infoData = append(infoData, cp56...)
+	data := append(header, infoData...)
+
+	asdu, err := coder.DecodeASDU(data)
+	require.NoError(t, err)
+	assert.Equal(t, uint8(TYPE_ID_STEP_POSITION_INFO_TIME_CP56), asdu.TypeID)
+
+	spi, ok := asdu.Information[0].Value.(*StepPositionInfo)
+	require.True(t, ok)
+	assert.Equal(t, int16(10), spi.Value)
+	assert.True(t, spi.Transient)
+}
+
+func TestDecodeBitstring32_WithTime(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_SPONTANEOUS}
+	ts := time.Date(2015, 6, 15, 10, 30, 0, 0, time.Local)
+
+	header := coder.EncodeASDUHeader(TYPE_ID_BITSTRING32_TIME, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(7001)
+	cp24 := EncodeCP24Time2a(ts)
+	infoData := append(infoAddr, 0x01, 0x02, 0x03, 0x04, 0x00)
+	infoData = append(infoData, cp24...)
+	data := append(header, infoData...)
+
+	asdu, err := coder.DecodeASDU(data)
+	require.NoError(t, err)
+	assert.Equal(t, uint8(TYPE_ID_BITSTRING32_TIME), asdu.TypeID)
+}
+
+func TestDecodeBitstring32_WithCP56Time(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_SPONTANEOUS}
+	ts := time.Date(2015, 6, 15, 10, 30, 0, 0, time.Local)
+
+	header := coder.EncodeASDUHeader(TYPE_ID_BITSTRING32_TIME_CP56, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(7001)
+	cp56 := EncodeCP56Time2a(ts)
+	infoData := append(infoAddr, 0x01, 0x02, 0x03, 0x04, 0x00)
+	infoData = append(infoData, cp56...)
+	data := append(header, infoData...)
+
+	asdu, err := coder.DecodeASDU(data)
+	require.NoError(t, err)
+	assert.Equal(t, uint8(TYPE_ID_BITSTRING32_TIME_CP56), asdu.TypeID)
+}
+
+func TestDecodeNormalizedValue_WithTime(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_SPONTANEOUS}
+	ts := time.Date(2015, 6, 15, 10, 30, 0, 0, time.Local)
+
+	header := coder.EncodeASDUHeader(TYPE_ID_MEASURE_VALUE_NORMAL_TIME, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(3001)
+	cp24 := EncodeCP24Time2a(ts)
+	intVal := int16(16383)
+	infoData := append(infoAddr, byte(intVal), byte(intVal>>8), 0x00)
+	infoData = append(infoData, cp24...)
+	data := append(header, infoData...)
+
+	asdu, err := coder.DecodeASDU(data)
+	require.NoError(t, err)
+	assert.Equal(t, uint8(TYPE_ID_MEASURE_VALUE_NORMAL_TIME), asdu.TypeID)
+}
+
+func TestDecodeFloatValue_WithTime(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_SPONTANEOUS}
+	ts := time.Date(2015, 6, 15, 10, 30, 0, 0, time.Local)
+
+	header := coder.EncodeASDUHeader(TYPE_ID_MEASURE_VALUE_FLOAT_TIME, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(5001)
+	cp24 := EncodeCP24Time2a(ts)
+	bits := math.Float32bits(123.456)
+	infoData := append(infoAddr, byte(bits), byte(bits>>8), byte(bits>>16), byte(bits>>24), 0x00)
+	infoData = append(infoData, cp24...)
+	data := append(header, infoData...)
+
+	asdu, err := coder.DecodeASDU(data)
+	require.NoError(t, err)
+	assert.Equal(t, uint8(TYPE_ID_MEASURE_VALUE_FLOAT_TIME), asdu.TypeID)
+}
+
+func TestDecodeScaledValue_WithTime(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_SPONTANEOUS}
+	ts := time.Date(2015, 6, 15, 10, 30, 0, 0, time.Local)
+
+	header := coder.EncodeASDUHeader(TYPE_ID_MEASURE_VALUE_SCALED_TIME, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(4001)
+	cp24 := EncodeCP24Time2a(ts)
+	infoData := append(infoAddr, 0xE8, 0x03, 0x00)
+	infoData = append(infoData, cp24...)
+	data := append(header, infoData...)
+
+	asdu, err := coder.DecodeASDU(data)
+	require.NoError(t, err)
+	assert.Equal(t, uint8(TYPE_ID_MEASURE_VALUE_SCALED_TIME), asdu.TypeID)
+}
+
+func TestDecodeIntegratedTotal_WithTime(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_SPONTANEOUS}
+	ts := time.Date(2015, 6, 15, 10, 30, 0, 0, time.Local)
+
+	header := coder.EncodeASDUHeader(TYPE_ID_INTEGRITY_TOTAL_TIME, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(6001)
+	cp24 := EncodeCP24Time2a(ts)
+	infoData := append(infoAddr, 0x39, 0x30, 0x00, 0x00, 0x01, 0x00)
+	infoData = append(infoData, cp24...)
+	data := append(header, infoData...)
+
+	asdu, err := coder.DecodeASDU(data)
+	require.NoError(t, err)
+	assert.Equal(t, uint8(TYPE_ID_INTEGRITY_TOTAL_TIME), asdu.TypeID)
+}
+
+func TestDecodeDoublePointInfo_WithTime(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_SPONTANEOUS}
+	ts := time.Date(2015, 6, 15, 10, 30, 0, 0, time.Local)
+
+	header := coder.EncodeASDUHeader(TYPE_ID_DOUBLE_POINT_INFO_TIME, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(2001)
+	cp24 := EncodeCP24Time2a(ts)
+	infoData := append(infoAddr, 0x01)
+	infoData = append(infoData, cp24...)
+	data := append(header, infoData...)
+
+	asdu, err := coder.DecodeASDU(data)
+	require.NoError(t, err)
+	assert.Equal(t, uint8(TYPE_ID_DOUBLE_POINT_INFO_TIME), asdu.TypeID)
+}
+
+func TestDecodeSinglePointInfo_InsufficientData(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_SPONTANEOUS}
+	header := coder.EncodeASDUHeader(TYPE_ID_SINGLE_POINT_INFO, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(1001)
+	data := append(header, infoAddr...)
+
+	_, err := coder.DecodeASDU(data)
+	assert.Error(t, err)
+}
+
+func TestDecodeSinglePointInfo_TimeInsufficientData(t *testing.T) {
+	coder := NewASDUCoder()
+	vsq := VSQ{Number: 1, IsSequence: false}
+	cot := CauseOfTransmission{Cause: COT_SPONTANEOUS}
+	header := coder.EncodeASDUHeader(TYPE_ID_SINGLE_POINT_INFO_TIME, vsq, cot, 1)
+	infoAddr := coder.EncodeInfoAddress(1001)
+	infoData := append(infoAddr, 0x01)
+	data := append(header, infoData...)
+
+	_, err := coder.DecodeASDU(data)
+	assert.Error(t, err)
+}
+
+func TestConnection_WithLocalServer(t *testing.T) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+	defer listener.Close()
+
+	go func() {
+		conn, err := listener.Accept()
+		if err != nil {
+			return
+		}
+		defer conn.Close()
+		buf := make([]byte, 1024)
+		for {
+			n, err := conn.Read(buf)
+			if err != nil {
+				return
+			}
+			if n >= 6 && buf[0] == 0x68 {
+				frameLen := int(buf[1])
+				if buf[2] == U_FRAME_STARTDT_ACT {
+					resp := []byte{0x68, 0x04, U_FRAME_STARTDT_CON, 0x00, 0x00, 0x00}
+					conn.Write(resp)
+				} else if buf[2] == U_FRAME_TESTFR_ACT {
+					resp := []byte{0x68, 0x04, U_FRAME_TESTFR_CON, 0x00, 0x00, 0x00}
+					conn.Write(resp)
+				} else if buf[2] == U_FRAME_STOPDT_ACT {
+					resp := []byte{0x68, 0x04, U_FRAME_STOPDT_CON, 0x00, 0x00, 0x00}
+					conn.Write(resp)
+				} else if frameLen > 4 {
+					_ = frameLen
+				}
+			}
+		}
+	}()
+
+	addr := listener.Addr().(*net.TCPAddr)
+	config := DefaultConnectionConfig()
+	config.Host = "127.0.0.1"
+	config.Port = addr.Port
+	config.Timeout = 5 * time.Second
+	config.HeartbeatInterval = 1 * time.Hour
+	config.HeartbeatTimeout = 1 * time.Hour
+
+	conn := NewConnection(config)
+	err = conn.Connect()
+	require.NoError(t, err)
+
+	time.Sleep(200 * time.Millisecond)
+	assert.True(t, conn.IsActive())
+
+	stats := conn.GetStats()
+	assert.Equal(t, uint64(1), stats.ConnectCount)
+	assert.Greater(t, stats.BytesSent, uint64(0))
+
+	err = conn.Disconnect()
+	require.NoError(t, err)
+	assert.Equal(t, STATE_DISCONNECTED, conn.GetState())
+}
+
+func TestConnection_BalancedMode(t *testing.T) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+	defer listener.Close()
+
+	go func() {
+		conn, err := listener.Accept()
+		if err != nil {
+			return
+		}
+		defer conn.Close()
+		buf := make([]byte, 1024)
+		for {
+			n, err := conn.Read(buf)
+			if err != nil {
+				return
+			}
+			_ = n
+		}
+	}()
+
+	addr := listener.Addr().(*net.TCPAddr)
+	config := DefaultConnectionConfig()
+	config.Host = "127.0.0.1"
+	config.Port = addr.Port
+	config.Timeout = 5 * time.Second
+	config.BalancedMode = true
+	config.HeartbeatInterval = 1 * time.Hour
+	config.HeartbeatTimeout = 1 * time.Hour
+
+	conn := NewConnection(config)
+	err = conn.Connect()
+	require.NoError(t, err)
+	assert.Equal(t, STATE_ACTIVE, conn.GetState())
+
+	err = conn.Disconnect()
+	require.NoError(t, err)
+}
+
+func TestConnection_Reconnect(t *testing.T) {
+	config := DefaultConnectionConfig()
+	config.Host = "127.0.0.1"
+	config.Port = 19999
+	config.Timeout = 1 * time.Second
+	config.MaxReconnectAttempts = 1
+	config.ReconnectInterval = 100 * time.Millisecond
+
+	conn := NewConnection(config)
+	conn.StopReconnect()
+
+	err := conn.Connect()
+	assert.Error(t, err)
+}
+
+func TestConnectionPool_ConnectAll_Failed(t *testing.T) {
+	pool := NewConnectionPool()
+	config := DefaultConnectionConfig()
+	config.Host = "127.0.0.1"
+	config.Port = 19999
+	config.Timeout = 1 * time.Second
+	pool.AddConfig("fail_conn", config)
+
+	err := pool.ConnectAll()
+	assert.Error(t, err)
+}
+
+func TestMaster_WithLocalServer(t *testing.T) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+	defer listener.Close()
+
+	go func() {
+		conn, err := listener.Accept()
+		if err != nil {
+			return
+		}
+		defer conn.Close()
+		buf := make([]byte, 1024)
+		for {
+			n, err := conn.Read(buf)
+			if err != nil {
+				return
+			}
+			if n >= 6 && buf[0] == 0x68 && buf[2] == U_FRAME_STARTDT_ACT {
+				resp := []byte{0x68, 0x04, U_FRAME_STARTDT_CON, 0x00, 0x00, 0x00}
+				conn.Write(resp)
+			}
+		}
+	}()
+
+	addr := listener.Addr().(*net.TCPAddr)
+	config := DefaultMasterConfig()
+	config.Host = "127.0.0.1"
+	config.Port = addr.Port
+	config.Timeout = 5 * time.Second
+	config.HeartbeatInterval = 1 * time.Hour
+	config.HeartbeatTimeout = 1 * time.Hour
+
+	master := NewMaster(config)
+	err = master.Start()
+	require.NoError(t, err)
+
+	time.Sleep(200 * time.Millisecond)
+	assert.True(t, master.IsRunning())
+
+	stats := master.GetStats()
+	assert.Equal(t, uint64(0), stats.TotalASDUReceived)
+
+	err = master.Stop()
+	require.NoError(t, err)
+}
+
+func TestMaster_Start_AlreadyRunning(t *testing.T) {
+	config := DefaultMasterConfig()
+	master := NewMaster(config)
+	master.state = int32(MASTER_STATE_RUNNING)
+	err := master.Start()
+	assert.Error(t, err)
+	master.state = int32(MASTER_STATE_STOPPED)
+}
+
+func TestDecodeSinglePointInfo_WithCP56Time(t *testing.T) {
+	coder := NewASDUCoder()
+	ts := time.Date(2015, 6, 15, 10, 30, 0, 0, time.Local)
+	objects := []InformationObject{
+		{Address: 1001, Value: &SinglePointInfo{Value: true, Quality: Quality{}}, Timestamp: ts},
+	}
+	data, err := coder.EncodeSinglePointInfo(objects, true, 7)
+	require.NoError(t, err)
+
+	asdu, err := coder.DecodeASDU(data)
+	require.NoError(t, err)
+	assert.Equal(t, uint8(TYPE_ID_SINGLE_POINT_INFO_TIME_CP56), asdu.TypeID)
+	assert.False(t, asdu.Information[0].Timestamp.IsZero())
+}
+
+func TestDecodeDoublePointInfo_WithCP56Time(t *testing.T) {
+	coder := NewASDUCoder()
+	ts := time.Date(2015, 6, 15, 10, 30, 0, 0, time.Local)
+	objects := []InformationObject{
+		{Address: 2001, Value: &DoublePointInfo{Value: DP_ON, Quality: Quality{}}, Timestamp: ts},
+	}
+	data, err := coder.EncodeDoublePointInfo(objects, true, 7)
+	require.NoError(t, err)
+
+	asdu, err := coder.DecodeASDU(data)
+	require.NoError(t, err)
+	assert.Equal(t, uint8(TYPE_ID_DOUBLE_POINT_INFO_TIME_CP56), asdu.TypeID)
+	assert.False(t, asdu.Information[0].Timestamp.IsZero())
+}
+
+func TestDecodeNormalizedValue_WithCP56Time(t *testing.T) {
+	coder := NewASDUCoder()
+	ts := time.Date(2015, 6, 15, 10, 30, 0, 0, time.Local)
+	objects := []InformationObject{
+		{Address: 3001, Value: &NormalizedValue{Value: 0.75, Quality: Quality{}}, Timestamp: ts},
+	}
+	data, err := coder.EncodeNormalizedValue(objects, true, 7)
+	require.NoError(t, err)
+
+	asdu, err := coder.DecodeASDU(data)
+	require.NoError(t, err)
+	assert.Equal(t, uint8(TYPE_ID_MEASURE_VALUE_NORMAL_TIME_CP56), asdu.TypeID)
+	assert.False(t, asdu.Information[0].Timestamp.IsZero())
+}
+
+func TestDecodeScaledValue_WithCP56Time(t *testing.T) {
+	coder := NewASDUCoder()
+	ts := time.Date(2015, 6, 15, 10, 30, 0, 0, time.Local)
+	objects := []InformationObject{
+		{Address: 4001, Value: &ScaledValue{Value: 500, Quality: Quality{}}, Timestamp: ts},
+	}
+	data, err := coder.EncodeScaledValue(objects, true, 7)
+	require.NoError(t, err)
+
+	asdu, err := coder.DecodeASDU(data)
+	require.NoError(t, err)
+	assert.Equal(t, uint8(TYPE_ID_MEASURE_VALUE_SCALED_TIME_CP56), asdu.TypeID)
+	assert.False(t, asdu.Information[0].Timestamp.IsZero())
+}
+
+func TestDecodeFloatValue_WithCP56Time(t *testing.T) {
+	coder := NewASDUCoder()
+	ts := time.Date(2015, 6, 15, 10, 30, 0, 0, time.Local)
+	objects := []InformationObject{
+		{Address: 5001, Value: &FloatValue{Value: 3.14, Quality: Quality{}}, Timestamp: ts},
+	}
+	data, err := coder.EncodeFloatValue(objects, true, 7)
+	require.NoError(t, err)
+
+	asdu, err := coder.DecodeASDU(data)
+	require.NoError(t, err)
+	assert.Equal(t, uint8(TYPE_ID_MEASURE_VALUE_FLOAT_TIME_CP56), asdu.TypeID)
+	assert.False(t, asdu.Information[0].Timestamp.IsZero())
+}
+
+func TestDecodeIntegratedTotal_WithCP56Time(t *testing.T) {
+	coder := NewASDUCoder()
+	ts := time.Date(2015, 6, 15, 10, 30, 0, 0, time.Local)
+	objects := []InformationObject{
+		{Address: 6001, Value: &IntegratedTotal{Value: 12345, Sequence: 1, Quality: Quality{}}, Timestamp: ts},
+	}
+	data, err := coder.EncodeIntegratedTotal(objects, true, 7)
+	require.NoError(t, err)
+
+	asdu, err := coder.DecodeASDU(data)
+	require.NoError(t, err)
+	assert.Equal(t, uint8(TYPE_ID_INTEGRITY_TOTAL_TIME_CP56), asdu.TypeID)
+	assert.False(t, asdu.Information[0].Timestamp.IsZero())
+}
+
+func TestMaster_encodeInfoObject_NormalizedValue(t *testing.T) {
+	config := DefaultMasterConfig()
+	master := NewMaster(config)
+	obj := InformationObject{
+		Address: 3001,
+		Value:   &NormalizedValue{Value: 0.5, Quality: Quality{}},
+	}
+	data, err := master.encodeInfoObject(TYPE_ID_MEASURE_VALUE_NORMAL, obj)
+	assert.NoError(t, err)
+	assert.NotNil(t, data)
+}
+
+func TestMaster_encodeInfoObject_ScaledValue(t *testing.T) {
+	config := DefaultMasterConfig()
+	master := NewMaster(config)
+	obj := InformationObject{
+		Address: 4001,
+		Value:   &ScaledValue{Value: 500, Quality: Quality{}},
+	}
+	data, err := master.encodeInfoObject(TYPE_ID_MEASURE_VALUE_SCALED, obj)
+	assert.NoError(t, err)
+	assert.NotNil(t, data)
+}
+
+func TestMaster_encodeInfoObject_FloatValueNonZero(t *testing.T) {
+	config := DefaultMasterConfig()
+	master := NewMaster(config)
+	obj := InformationObject{
+		Address: 5001,
+		Value:   &FloatValue{Value: 3.14, Quality: Quality{}},
+	}
+	data, err := master.encodeInfoObject(TYPE_ID_MEASURE_VALUE_FLOAT, obj)
+	assert.NoError(t, err)
+	assert.NotNil(t, data)
+}
+
+func TestMaster_encodeInfoObject_SinglePointWithTimestamp(t *testing.T) {
+	config := DefaultMasterConfig()
+	master := NewMaster(config)
+	obj := InformationObject{
+		Address:   1001,
+		Value:     &SinglePointInfo{Value: true, Quality: Quality{}},
+		Timestamp: time.Date(2015, 6, 15, 10, 30, 0, 0, time.Local),
+	}
+	data, err := master.encodeInfoObject(TYPE_ID_SINGLE_POINT_INFO_TIME, obj)
+	assert.NoError(t, err)
+	assert.NotNil(t, data)
 }
