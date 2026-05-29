@@ -61,7 +61,7 @@ func (h *Hub) Run() {
 			log.Printf("Client disconnected: %s, total: %d", client.ID, len(h.clients))
 
 		case message := <-h.broadcast:
-			h.mu.RLock()
+			h.mu.Lock()
 			for client := range h.clients {
 				select {
 				case client.Send <- message:
@@ -70,7 +70,7 @@ func (h *Hub) Run() {
 					delete(h.clients, client)
 				}
 			}
-			h.mu.RUnlock()
+			h.mu.Unlock()
 
 		case <-ticker.C:
 			h.sendHeartbeat()
@@ -84,7 +84,7 @@ func (h *Hub) sendHeartbeat() {
 		Timestamp: time.Now().Unix(),
 	}
 	data, _ := json.Marshal(msg)
-	h.mu.RLock()
+	h.mu.Lock()
 	for client := range h.clients {
 		select {
 		case client.Send <- data:
@@ -93,7 +93,7 @@ func (h *Hub) sendHeartbeat() {
 			delete(h.clients, client)
 		}
 	}
-	h.mu.RUnlock()
+	h.mu.Unlock()
 }
 
 func (h *Hub) BroadcastToAll(msg *Message) {
@@ -115,7 +115,7 @@ func (h *Hub) BroadcastToStation(stationID string, msg *Message) {
 		return
 	}
 
-	h.mu.RLock()
+	h.mu.Lock()
 	for client := range h.clients {
 		if client.StationID == "" || client.StationID == stationID {
 			select {
@@ -126,7 +126,7 @@ func (h *Hub) BroadcastToStation(stationID string, msg *Message) {
 			}
 		}
 	}
-	h.mu.RUnlock()
+	h.mu.Unlock()
 }
 
 func (h *Hub) BroadcastToUser(userID string, msg *Message) {
@@ -137,7 +137,7 @@ func (h *Hub) BroadcastToUser(userID string, msg *Message) {
 		return
 	}
 
-	h.mu.RLock()
+	h.mu.Lock()
 	for client := range h.clients {
 		if client.UserID == userID {
 			select {
@@ -148,7 +148,7 @@ func (h *Hub) BroadcastToUser(userID string, msg *Message) {
 			}
 		}
 	}
-	h.mu.RUnlock()
+	h.mu.Unlock()
 }
 
 func (h *Hub) GetClientCount() int {

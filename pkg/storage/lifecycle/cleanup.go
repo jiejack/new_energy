@@ -3,6 +3,7 @@ package lifecycle
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"sync"
 	"time"
 
@@ -35,7 +36,7 @@ type CleanupPolicy struct {
 	DryRun         bool          `json:"dry_run"`          // 试运行模式
 	ArchiveFirst   bool          `json:"archive_first"`    // 清理前先归档
 	NotifyOnComplete bool        `json:"notify_on_complete"` // 完成时通知
-	CreatedAt      time.Time     `json:"created_at" gorm:"autoCreateTime"`
+	CreatedAt      time.Time     `json:"created_at" gorm:"<-:create;autoCreateTime"`
 	UpdatedAt      time.Time     `json:"updated_at" gorm:"autoUpdateTime"`
 }
 
@@ -51,7 +52,7 @@ type CleanupTask struct {
 	DataFreed     int64         `json:"data_freed"`       // 释放空间（字节）
 	Error         string        `json:"error"`            // 错误信息
 	DryRun        bool          `json:"dry_run"`          // 是否试运行
-	CreatedAt     time.Time     `json:"created_at" gorm:"autoCreateTime"`
+	CreatedAt     time.Time     `json:"created_at" gorm:"<-:create;autoCreateTime"`
 }
 
 // CleanupLog 清理日志
@@ -62,7 +63,7 @@ type CleanupLog struct {
 	Message     string    `json:"message"`
 	RecordID    string    `json:"record_id"`    // 操作的记录ID
 	Details     string    `json:"details"`      // 详细信息 (JSON)
-	CreatedAt   time.Time `json:"created_at" gorm:"autoCreateTime"`
+	CreatedAt   time.Time `json:"created_at" gorm:"<-:create;autoCreateTime"`
 }
 
 // CleanupConfig 清理配置
@@ -109,6 +110,9 @@ type DataCleaner struct {
 
 	// 指标
 	metrics   *CleanupMetrics
+
+	lastCancelCheck     time.Time
+	cancelCheckInterval time.Duration
 }
 
 // CleanupMetrics 清理指标
@@ -126,12 +130,13 @@ type CleanupMetrics struct {
 // NewDataCleaner 创建数据清理器
 func NewDataCleaner(config CleanupConfig, db *gorm.DB, logger *zap.Logger) *DataCleaner {
 	return &DataCleaner{
-		config:    config,
-		db:        db,
-		logger:    logger,
-		taskQueue: make(chan *CleanupTask, 1000),
-		stopCh:    make(chan struct{}),
-		metrics:   &CleanupMetrics{},
+		config:              config,
+		db:                  db,
+		logger:              logger,
+		taskQueue:           make(chan *CleanupTask, 1000),
+		stopCh:              make(chan struct{}),
+		metrics:             &CleanupMetrics{},
+		cancelCheckInterval: 5 * time.Second,
 	}
 }
 
@@ -488,16 +493,43 @@ func (dc *DataCleaner) doCleanup(ctx context.Context, task *CleanupTask, policy 
 			return fmt.Errorf("task cancelled")
 		}
 
-		// 查询需要删除的记录
 		var records []map[string]interface{}
-		query := dc.db.Table(policy.DataType).
-			Select("id, created_at").
-			Where("created_at < ?", cutoffTime).
-			Order("created_at ASC").
-			Limit(policy.BatchSize)
+		var ids []string
+		var deleted int64
 
-		if err := query.Find(&records).Error; err != nil {
-			return fmt.Errorf("failed to query records: %w", err)
+		err := dc.db.Transaction(func(tx *gorm.DB) error {
+			query := tx.Table(policy.DataType).
+				Select("id, created_at").
+				Where("created_at < ?", cutoffTime).
+				Order("created_at ASC").
+				Limit(policy.BatchSize)
+
+			if err := query.Find(&records).Error; err != nil {
+				return fmt.Errorf("failed to query records: %w", err)
+			}
+
+			if len(records) == 0 {
+				return nil
+			}
+
+			ids = make([]string, len(records))
+			for i, record := range records {
+				ids[i] = fmt.Sprintf("%v", record["id"])
+			}
+
+			if !task.DryRun {
+				result := tx.Table(policy.DataType).Where("id IN ?", ids).Delete(nil)
+				if result.Error != nil {
+					return fmt.Errorf("failed to delete records: %w", result.Error)
+				}
+				deleted = result.RowsAffected
+			}
+
+			return nil
+		})
+
+		if err != nil {
+			return err
 		}
 
 		if len(records) == 0 {
@@ -506,37 +538,24 @@ func (dc *DataCleaner) doCleanup(ctx context.Context, task *CleanupTask, policy 
 
 		totalScanned += int64(len(records))
 
-		// 提取ID
-		ids := make([]string, len(records))
-		for i, record := range records {
-			ids[i] = fmt.Sprintf("%v", record["id"])
-		}
-
-		// 删除记录
 		if !task.DryRun {
-			result := dc.db.Table(policy.DataType).Where("id IN ?", ids).Delete(nil)
-			if result.Error != nil {
-				return fmt.Errorf("failed to delete records: %w", result.Error)
-			}
-
-			deleted := result.RowsAffected
 			totalDeleted += deleted
-
-			// 估算释放空间（简化计算）
-			estimatedSize := deleted * 1024 // 假设每条记录约1KB
+			estimatedSize := deleted * 1024
 			totalFreed += estimatedSize
-
 			dc.logTask(task.ID, "info", fmt.Sprintf("Deleted %d records", deleted), "", fmt.Sprintf("IDs: %v", ids[:min(10, len(ids))]))
 		} else {
 			totalDeleted += int64(len(records))
 			dc.logTask(task.ID, "info", fmt.Sprintf("[DRY RUN] Would delete %d records", len(records)), "", "")
 		}
 
-		// 更新任务进度
 		task.RecordsScanned = totalScanned
 		task.RecordsDeleted = totalDeleted
 		task.DataFreed = totalFreed
 		dc.db.Save(task)
+
+		if task.DryRun {
+			break
+		}
 	}
 
 	dc.logTask(task.ID, "info", fmt.Sprintf("Cleanup completed: %d records scanned, %d deleted", totalScanned, totalDeleted), "", "")
@@ -564,6 +583,12 @@ func (dc *DataCleaner) failTask(task *CleanupTask, errMsg string) {
 }
 
 func (dc *DataCleaner) checkTaskCancelled(taskID string) bool {
+	now := time.Now()
+	if now.Sub(dc.lastCancelCheck) < dc.cancelCheckInterval {
+		return false
+	}
+	dc.lastCancelCheck = now
+
 	var task CleanupTask
 	if err := dc.db.Select("status").First(&task, "id = ?", taskID).Error; err != nil {
 		return false
@@ -709,6 +734,9 @@ func (dc *DataCleaner) updateMetrics(ctx context.Context) {
 
 // CleanupByQuery 按查询条件清理
 func (dc *DataCleaner) CleanupByQuery(ctx context.Context, tableName string, whereClause string, args ...interface{}) (int64, error) {
+	if err := validateIdentifier(tableName, "table"); err != nil {
+		return 0, err
+	}
 	result := dc.db.Table(tableName).Where(whereClause, args...).Delete(nil)
 	if result.Error != nil {
 		return 0, fmt.Errorf("failed to cleanup by query: %w", result.Error)
@@ -724,6 +752,12 @@ func (dc *DataCleaner) CleanupByQuery(ctx context.Context, tableName string, whe
 
 // CleanupByDate 按日期清理
 func (dc *DataCleaner) CleanupByDate(ctx context.Context, tableName string, dateField string, beforeDate time.Time) (int64, error) {
+	if err := validateIdentifier(tableName, "table"); err != nil {
+		return 0, err
+	}
+	if err := validateIdentifier(dateField, "column"); err != nil {
+		return 0, err
+	}
 	result := dc.db.Table(tableName).Where(fmt.Sprintf("%s < ?", dateField), beforeDate).Delete(nil)
 	if result.Error != nil {
 		return 0, fmt.Errorf("failed to cleanup by date: %w", result.Error)
@@ -822,6 +856,15 @@ func (dc *DataCleaner) EstimateCleanupSize(ctx context.Context, policyID string)
 
 // CleanupOrphanedRecords 清理孤立记录
 func (dc *DataCleaner) CleanupOrphanedRecords(ctx context.Context, childTable, parentTable, foreignKey string) (int64, error) {
+	if err := validateIdentifier(childTable, "table"); err != nil {
+		return 0, err
+	}
+	if err := validateIdentifier(parentTable, "table"); err != nil {
+		return 0, err
+	}
+	if err := validateIdentifier(foreignKey, "column"); err != nil {
+		return 0, err
+	}
 	// 删除子表中没有对应父记录的记录
 	query := fmt.Sprintf(`
 		DELETE FROM %s 
@@ -846,6 +889,14 @@ func (dc *DataCleaner) CleanupOrphanedRecords(ctx context.Context, childTable, p
 func (dc *DataCleaner) CleanupDuplicates(ctx context.Context, tableName string, uniqueFields []string, keepOldest bool) (int64, error) {
 	if len(uniqueFields) == 0 {
 		return 0, fmt.Errorf("unique fields cannot be empty")
+	}
+	if err := validateIdentifier(tableName, "table"); err != nil {
+		return 0, err
+	}
+	for _, field := range uniqueFields {
+		if err := validateIdentifier(field, "column"); err != nil {
+			return 0, err
+		}
 	}
 
 	// 构建去重查询
@@ -890,6 +941,9 @@ func (dc *DataCleaner) CleanupDuplicates(ctx context.Context, tableName string, 
 
 // VacuumTable 清理表空间
 func (dc *DataCleaner) VacuumTable(ctx context.Context, tableName string) error {
+	if err := validateIdentifier(tableName, "table"); err != nil {
+		return err
+	}
 	// PostgreSQL VACUUM
 	result := dc.db.Exec(fmt.Sprintf("VACUUM ANALYZE %s", tableName))
 	if result.Error != nil {
@@ -905,6 +959,9 @@ func (dc *DataCleaner) VacuumTable(ctx context.Context, tableName string) error 
 
 // ReindexTable 重建索引
 func (dc *DataCleaner) ReindexTable(ctx context.Context, tableName string) error {
+	if err := validateIdentifier(tableName, "table"); err != nil {
+		return err
+	}
 	result := dc.db.Exec(fmt.Sprintf("REINDEX TABLE %s", tableName))
 	if result.Error != nil {
 		return fmt.Errorf("failed to reindex table: %w", result.Error)
@@ -945,6 +1002,9 @@ func (dc *DataCleaner) GetTableSize(ctx context.Context, tableName string) (map[
 
 // AnalyzeTable 分析表统计信息
 func (dc *DataCleaner) AnalyzeTable(ctx context.Context, tableName string) error {
+	if err := validateIdentifier(tableName, "table"); err != nil {
+		return err
+	}
 	result := dc.db.Exec(fmt.Sprintf("ANALYZE %s", tableName))
 	if result.Error != nil {
 		return fmt.Errorf("failed to analyze table: %w", result.Error)
@@ -958,6 +1018,15 @@ func (dc *DataCleaner) AnalyzeTable(ctx context.Context, tableName string) error
 }
 
 // 辅助函数
+
+var identifierRegex = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`)
+
+func validateIdentifier(identifier, identifierType string) error {
+	if !identifierRegex.MatchString(identifier) {
+		return fmt.Errorf("invalid %s identifier: %s", identifierType, identifier)
+	}
+	return nil
+}
 
 func min(a, b int) int {
 	if a < b {

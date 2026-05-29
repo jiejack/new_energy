@@ -3,6 +3,7 @@ package formula
 import (
 	"context"
 	"fmt"
+	"sort"
 	"sync"
 	"time"
 )
@@ -275,8 +276,13 @@ func (e *Executor) buildCacheKey(formula string, variables map[string]interface{
 	// 简化实现：使用公式和变量组合作为键
 	key := formula
 	if variables != nil {
-		for k, v := range variables {
-			key += fmt.Sprintf("|%s=%v", k, v)
+		keys := make([]string, 0, len(variables))
+		for k := range variables {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			key += fmt.Sprintf("|%s=%v", k, variables[k])
 		}
 	}
 	return key
