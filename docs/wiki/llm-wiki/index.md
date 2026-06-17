@@ -8,8 +8,8 @@
 
 ### 核心知识文档
 - [500轮迭代知识树图](knowledge-tree-500.md) - 完整的知识树结构
-- [500轮迭代项目技能总结](../skills/project-skills-500.md) - 可复用项目技能
-- [500轮迭代错误处理记录](../error-handling/iteration-errors-500.md) - 问题与解决方案
+- [500轮迭代项目技能总结](../../skills/project-skills-500.md) - 可复用项目技能
+- [500轮迭代错误处理记录](../../error-handling/iteration-errors-500.md) - 问题与解决方案
 
 ### 实体 (Entities)
 - [Go 编程语言](entities/go-language.md) - Go 1.24+ 编程语言

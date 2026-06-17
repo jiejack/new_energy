@@ -124,14 +124,14 @@
    - [docs/deployment-guide.md](deployment-guide.md) - 部署指南
 
 3. **错误处理文档**
-   - [doc/error-handling/iteration-errors-500.md](../doc/error-handling/iteration-errors-500.md) - 错误记录
-   - [doc/error-handling/process.md](../doc/error-handling/process.md) - 错误处理流程
-   - [doc/error-handling/solutions.md](../doc/error-handling/solutions.md) - 常见问题解决方案
+   - [docs/error-handling/iteration-errors-500.md](error-handling/iteration-errors-500.md) - 错误记录
+   - [docs/error-handling/process.md](error-handling/process.md) - 错误处理流程
+   - [docs/error-handling/solutions.md](error-handling/solutions.md) - 常见问题解决方案
 
 4. **知识库文档**
-   - [doc/skills/project-skills-500.md](../doc/skills/project-skills-500.md) - 项目技能
-   - [doc/wiki/knowledge-tree-500.md](../doc/wiki/knowledge-tree-500.md) - 知识树图
-   - [doc/wiki/index.md](../doc/wiki/index.md) - Wiki索引
+   - [docs/skills/project-skills-500.md](skills/project-skills-500.md) - 项目技能
+   - [docs/wiki/llm-wiki/knowledge-tree-500.md](wiki/llm-wiki/knowledge-tree-500.md) - 知识树图
+   - [docs/wiki/llm-wiki/index.md](wiki/llm-wiki/index.md) - Wiki索引
 
 ---
 

@@ -100,4 +100,4 @@ LLM-wiki 让 AI 在录入时就把知识编译成结构化的维基页面，而�
 
 ## 与本项目的关系
 
-本项目采用 LLM-wiki 架构思想，将知识库存放于 `/doc/wiki/` 目录，AGENT.md 作为 schema 文件，实现知识的持续积累和管理。
+本项目采用 LLM-wiki 架构思想，将知识库存放于 `/docs/wiki/llm-wiki/` 目录，AGENT.md 作为 schema 文件，实现知识的持续积累和管理。
